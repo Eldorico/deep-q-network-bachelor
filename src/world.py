@@ -4,6 +4,15 @@ from gym import spaces, logger
 from gym.utils import seeding
 import numpy as np
 
+import random
+random.seed()
+
+class GameEntity:
+    def __init__(self):
+        self.x = 0
+        self.y = 0
+
+
 class World(gym.Env):
     metadata = {
         'render.modes': ['human', 'rgb_array'],
@@ -18,68 +27,63 @@ class World(gym.Env):
         self.viewer = None
         self.state = None
 
-        self.steps_beyond_done = None
+        self.game_height = 40
+        self.game_width = 60
+
+        self.agent = GameEntity()
+
+        # self.steps_beyond_done = None
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
     def step(self, action):
-        pass
+        """
+        :param: action: an array of -1, 0 or 1. [left_right, up_down].[1,-1] == right down.
+        """
+        # update new agent position
+        self.agent.x +=  action[0] if self.agent.x + action[0] < self.game_width  and self.agent.x + action[0] >= 0 else 0
+        self.agent.y +=  action[1] if self.agent.y + action[1] < self.game_height and self.agent.y + action[1] >= 0 else 0
+
+        # do the rest... TODO
+        return 0,0,0,{}
         # return np.array(self.state), reward, done, {}
 
     def reset(self):
-        pass
+        # init agent's position
+        # self.agent.x = random.randint(0, self.game_width)
+        # self.agent.y = random.randint(0, self.game_height)
+        self.agent.x = self.game_width -1
+        self.agent.y = self.game_height -1
+
+
+        # do the rest TODO
+
         # return np.array(self.state)
 
-    def render(self, mode='human'):
+    def render(self, mode='human', close=False):
+        def add_entity_to_renderer(entity):
+            entity.geom = rendering.make_circle(radius)
+            entity.transform = rendering.Transform()
+            entity.geom.add_attr(entity.transform)
+            self.viewer.add_geom(entity.geom)
+
+        def render_entity(entity):
+            entity.transform.set_translation(entity.x*scale_x+radius, entity.y*scale_y+radius)
+
         screen_width = 600
         screen_height = 400
-
-        # world_width = self.x_threshold*2
-        # scale = screen_width/world_width
-        # carty = 100 # TOP OF CART
-        # polewidth = 10.0
-        # polelen = scale * 1.0
-        # cartwidth = 50.0
-        # cartheight = 30.0
+        radius = 10
+        scale_x = (screen_width - 1 * radius) / self.game_width
+        scale_y = (screen_height - 1 * radius) / self.game_height
 
         if self.viewer is None:
-            # https://github.com/openai/gym/blob/master/gym/envs/classic_control/rendering.py
             from gym.envs.classic_control import rendering
             self.viewer = rendering.Viewer(screen_width, screen_height)
-            agent = rendering.make_circle()
-            self.agentTrans = rendering.Transform()
-            agent.add_attr(self.agentTrans)
-            self.viewer.add_geom(agent)
-            # l,r,t,b = -cartwidth/2, cartwidth/2, cartheight/2, -cartheight/2
-            # axleoffset =cartheight/4.0
-            # cart = rendering.FilledPolygon([(l,b), (l,t), (r,t), (r,b)])
-            # self.carttrans = rendering.Transform()
-            # cart.add_attr(self.carttrans)
-            # self.viewer.add_geom(cart)
-            # l,r,t,b = -polewidth/2,polewidth/2,polelen-polewidth/2,-polewidth/2
-            # pole = rendering.FilledPolygon([(l,b), (l,t), (r,t), (r,b)])
-            # pole.set_color(.8,.6,.4)
-            # self.poletrans = rendering.Transform(translation=(0, axleoffset))
-            # pole.add_attr(self.poletrans)
-            # pole.add_attr(self.carttrans)
-            # self.viewer.add_geom(pole)
-            # self.axle = rendering.make_circle(polewidth/2)
-            # self.axle.add_attr(self.poletrans)
-            # self.axle.add_attr(self.carttrans)
-            # self.axle.set_color(.5,.5,.8)
-            # self.viewer.add_geom(self.axle)
-            # self.track = rendering.Line((0,carty), (screen_width,carty))
-            # self.track.set_color(0,0,0)
-            # self.viewer.add_geom(self.track)
+            add_entity_to_renderer(self.agent)
 
-        # if self.state is None: return None
-        #
-        # x = self.state
-        # cartx = x[0]*scale+screen_width/2.0 # MIDDLE OF CART
-        # self.carttrans.set_translation(cartx, carty)
-        # self.poletrans.set_rotation(-x[2])
+        render_entity(self.agent)
 
         return self.viewer.render(return_rgb_array = mode=='rgb_array')
 
@@ -88,7 +92,33 @@ class World(gym.Env):
 
 
 if __name__ == "__main__":
+    import time
+    import pygame
+    pygame.init()
+    screen = pygame.display.set_mode([50,50]) # needed to capture when the keyboard is pressed (the focus has to be on this window)
+
     world = World()
+    world = gym.wrappers.Monitor(world, 'video_output/', force=True) # force=True to overwrite the videos
+    world.reset()
     world.render()
-    while True:
-        pass
+
+    def move_agent(world):
+        x = 0
+        y = 0
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            x -= 1
+        if keys[pygame.K_RIGHT]:
+            x += 1
+        if keys[pygame.K_UP]:
+            y += 1
+        if keys[pygame.K_DOWN]:
+            y -= 1
+        pygame.event.pump()
+
+        world.step([x, y])
+
+    for i in range(0,480):
+        time.sleep(0.02)
+        move_agent(world)
+        world.render()
