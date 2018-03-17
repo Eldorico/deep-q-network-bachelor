@@ -1,5 +1,0 @@
-gym_wikinav.egg-info/PKG-INFO
-gym_wikinav.egg-info/SOURCES.txt
-gym_wikinav.egg-info/dependency_links.txt
-gym_wikinav.egg-info/requires.txt
-gym_wikinav.egg-info/top_level.txt
