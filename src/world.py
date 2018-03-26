@@ -5,12 +5,114 @@ from gym.utils import seeding
 import numpy as np
 
 import random
-random.seed()
+random.seed(1)
+
+class Direction:
+    N = 11
+    NE = 12
+    E = 13
+    SE = 14
+    S = 15
+    SW = 16
+    W = 17
+    NW = 18
+
+    dx = {
+        N: 0,
+        NE: 1,
+        E: 1,
+        SE: 1,
+        S: 0,
+        SW: -1,
+        W: -1,
+        NW: -1
+    }
+
+    dy = {
+        N: 1,
+        NE: 1,
+        E: 0,
+        SE: -1,
+        S: -1,
+        SW: -1,
+        W: 0,
+        NW: 1
+    }
+
+    inverse_x_direction = {
+        N: N,
+        NE: NW,
+        E: W,
+        SE: SW,
+        S: S,
+        SW: SE,
+        W: E,
+        NW: NE
+    }
+
+    inverse_y_direction = {
+        N: S,
+        NE: SE,
+        E: E,
+        SE: NE,
+        S: N,
+        SW: NW,
+        W: W,
+        NW: SW
+    }
+
 
 class GameEntity:
-    def __init__(self):
-        self.x = 0
-        self.y = 0
+    def __init__(self, x=0, y=0):
+        self.x = x
+        self.y = y
+
+class Ennemy(GameEntity):
+
+    def __init__(self, x=0, y=0, direction=random.randint(11,18)):
+        super().__init__(x, y)
+        self.direction = direction
+
+    def move(self, world):
+        self.x += Direction.dx[self.direction]
+        self.y += Direction.dy[self.direction]
+
+        if self.x <= 0 or self.x >= world.game_width:
+            self.direction = Direction.inverse_x_direction[self.direction]
+        if self.y <= 0 or self.y >= world.game_height:
+            self.direction = Direction.inverse_y_direction[self.direction]
+
+
+class PursuingEnnemy(Ennemy):
+    def __init__(self, x=0, y=0, direction=random.randint(11,18)):
+        super().__init__(x,y,direction)
+
+    def move(self, world):
+        agent = world.agent
+
+        # update direction
+        if agent.y > self.y:
+            if agent.x > self.x:
+                self.direction = Direction.NE
+            elif agent.x < self.x:
+                self.direction = Direction.NW
+            else:
+                self.direction = Direction.N
+        elif agent.y < self.y:
+            if agent.x > self.x:
+                self.direction = Direction.SE
+            elif agent.x < self.x:
+                self.direction = Direction.SW
+            else:
+                self.direction = Direction.S
+        else:
+            if agent.x > self.x:
+                self.direction = Direction.E
+            elif agent.x < self.x:
+                self.direction = Direction.W
+
+        self.x += 0.5 * Direction.dx[self.direction]
+        self.y += 0.5 * Direction.dy[self.direction]
 
 
 class World(gym.Env):
@@ -31,6 +133,9 @@ class World(gym.Env):
         self.game_width = 60
 
         self.agent = GameEntity()
+        self.ennemies = [Ennemy(25, 25), Ennemy(50,12), Ennemy(55,35), PursuingEnnemy(3,50)]
+
+        self.game_over = True
 
         # self.steps_beyond_done = None
 
@@ -42,13 +147,26 @@ class World(gym.Env):
         """
         :param: action: an array of -1, 0 or 1. [left_right, up_down].[1,-1] == right down.
         """
+        reward = 1
+
         # update new agent position
         self.agent.x +=  action[0] if self.agent.x + action[0] < self.game_width  and self.agent.x + action[0] >= 0 else 0
         self.agent.y +=  action[1] if self.agent.y + action[1] < self.game_height and self.agent.y + action[1] >= 0 else 0
 
+        # update ennemies position
+        for ennemy in self.ennemies:
+            ennemy.move(self)
+
+            # check if game is finished
+            if self.distance(self.agent, ennemy) <= 1:
+                self.game_over = True
+
         # do the rest... TODO
-        return 0,0,0,{}
+        return 0,reward,self.game_over,{}
         # return np.array(self.state), reward, done, {}
+
+    def distance(self, entity1, entity2):
+       return ( (entity1.x-entity2.x)**2 + (entity1.y-entity2.y)**2 ) ** 0.5
 
     def reset(self):
         # init agent's position
@@ -56,6 +174,7 @@ class World(gym.Env):
         # self.agent.y = random.randint(0, self.game_height)
         self.agent.x = self.game_width -1
         self.agent.y = self.game_height -1
+        self.game_over = False
 
 
         # do the rest TODO
@@ -68,6 +187,10 @@ class World(gym.Env):
             entity.transform = rendering.Transform()
             entity.geom.add_attr(entity.transform)
             self.viewer.add_geom(entity.geom)
+            if type(entity) == GameEntity:
+                entity.geom.set_color(0,0,128)
+            elif isinstance(entity, Ennemy):
+                entity.geom.set_color(128,0,0)
 
         def render_entity(entity):
             entity.transform.set_translation(entity.x*scale_x+radius, entity.y*scale_y+radius)
@@ -82,8 +205,12 @@ class World(gym.Env):
             from gym.envs.classic_control import rendering
             self.viewer = rendering.Viewer(screen_width, screen_height)
             add_entity_to_renderer(self.agent)
+            for ennemy in self.ennemies:
+                add_entity_to_renderer(ennemy)
 
         render_entity(self.agent)
+        for ennemy in self.ennemies:
+            render_entity(ennemy)
 
         return self.viewer.render(return_rgb_array = mode=='rgb_array')
 
@@ -100,6 +227,7 @@ if __name__ == "__main__":
     world = World()
     world = gym.wrappers.Monitor(world, 'video_output/', force=True) # force=True to overwrite the videos
     world.reset()
+    game_over = False
     world.render()
 
     def move_agent(world):
@@ -116,9 +244,10 @@ if __name__ == "__main__":
             y -= 1
         pygame.event.pump()
 
-        world.step([x, y])
+        _, _, game_over, _ = world.step([x, y])
+        return game_over
 
-    for i in range(0,480):
+    while not game_over:
         time.sleep(0.02)
-        move_agent(world)
+        game_over = move_agent(world)
         world.render()
