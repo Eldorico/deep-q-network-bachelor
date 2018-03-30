@@ -4,9 +4,6 @@ from gym import spaces, logger
 from gym.utils import seeding
 import numpy as np
 
-import random
-random.seed(1)
-
 class Direction:
     N = 11
     NE = 12
@@ -61,6 +58,10 @@ class Direction:
         NW: SW
     }
 
+import random
+random.seed()
+random_dir = [Direction.N, Direction.NE, Direction.E, Direction.SE, Direction.SW, Direction.W, Direction.NW]
+random.shuffle(random_dir)
 
 class GameEntity:
     def __init__(self, x=0, y=0):
@@ -69,9 +70,10 @@ class GameEntity:
 
 class Ennemy(GameEntity):
 
-    def __init__(self, x=0, y=0, direction=random.randint(11,18)):
+    def __init__(self, x=0, y=0, direction=None):
         super().__init__(x, y)
-        self.direction = direction
+        self.direction = direction if direction is not None else random_dir.pop(random.randint(0,len(random_dir)-1))
+        print(self.direction)
 
     def move(self, world):
         self.x += Direction.dx[self.direction]
@@ -84,7 +86,7 @@ class Ennemy(GameEntity):
 
 
 class PursuingEnnemy(Ennemy):
-    def __init__(self, x=0, y=0, direction=random.randint(11,18)):
+    def __init__(self, x=0, y=0, direction=None):
         super().__init__(x,y,direction)
 
     def move(self, world):
@@ -172,8 +174,8 @@ class World(gym.Env):
         # init agent's position
         # self.agent.x = random.randint(0, self.game_width)
         # self.agent.y = random.randint(0, self.game_height)
-        self.agent.x = self.game_width -1
-        self.agent.y = self.game_height -1
+        self.agent.x = 30
+        self.agent.y = 0
         self.game_over = False
 
 
