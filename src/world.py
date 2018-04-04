@@ -3,6 +3,7 @@ import gym
 from gym import spaces, logger
 from gym.utils import seeding
 import numpy as np
+from action import *
 
 class Direction:
     N = 11
@@ -152,8 +153,8 @@ class World(gym.Env):
         reward = 1
 
         # update new agent position
-        self.agent.x +=  action[0] if self.agent.x + action[0] < self.game_width  and self.agent.x + action[0] >= 0 else 0
-        self.agent.y +=  action[1] if self.agent.y + action[1] < self.game_height and self.agent.y + action[1] >= 0 else 0
+        self.agent.x +=  Action.to_dX[action] if self.agent.x + Action.to_dX[action] < self.game_width  and self.agent.x + Action.to_dX[action] >= 0 else 0
+        self.agent.y +=  Action.to_dY[action] if self.agent.y + Action.to_dY[action] < self.game_height and self.agent.y + Action.to_dY[action] >= 0 else 0
 
         # update ennemies position
         for ennemy in self.ennemies:
@@ -246,7 +247,7 @@ if __name__ == "__main__":
             y -= 1
         pygame.event.pump()
 
-        _, _, game_over, _ = world.step([x, y])
+        _, _, game_over, _ = world.step(Action.to_move(x, y))
         return game_over
 
     while not game_over:
