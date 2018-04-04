@@ -117,6 +117,9 @@ class PursuingEnnemy(Ennemy):
         self.x += 0.5 * Direction.dx[self.direction]
         self.y += 0.5 * Direction.dy[self.direction]
 
+CONFIG = {
+    'ennemies' : True,
+}
 
 class World(gym.Env):
     metadata = {
@@ -124,9 +127,10 @@ class World(gym.Env):
         'video.frames_per_second' : 50
     }
 
-    def __init__(self):
+    def __init__(self, configuration=CONFIG):
         # self.action_space = spaces.Discrete(2)
         # self.observation_space = spaces.Box(-high, high)
+        self.config = configuration
 
         self.seed()
         self.viewer = None
@@ -136,7 +140,8 @@ class World(gym.Env):
         self.game_width = 60
 
         self.agent = GameEntity()
-        self.ennemies = [Ennemy(25, 25), Ennemy(50,12), Ennemy(55,35), PursuingEnnemy(3,50)]
+        if self.config['ennemies']:
+            self.ennemies = [Ennemy(25, 25), Ennemy(50,12), Ennemy(55,35), PursuingEnnemy(3,50)]
 
         self.game_over = True
 
@@ -156,6 +161,14 @@ class World(gym.Env):
         self.agent.x +=  Action.to_dX[action] if self.agent.x + Action.to_dX[action] < self.game_width  and self.agent.x + Action.to_dX[action] >= 0 else 0
         self.agent.y +=  Action.to_dY[action] if self.agent.y + Action.to_dY[action] < self.game_height and self.agent.y + Action.to_dY[action] >= 0 else 0
 
+        if self.config['ennemies']:
+            self._manage_enemies()
+
+        # do the rest... TODO
+        return 0,reward,self.game_over,{}
+        # return np.array(self.state), reward, done, {}
+
+    def _manage_enemies(self):
         # update ennemies position
         for ennemy in self.ennemies:
             ennemy.move(self)
@@ -164,9 +177,6 @@ class World(gym.Env):
             if self.distance(self.agent, ennemy) <= 1:
                 self.game_over = True
 
-        # do the rest... TODO
-        return 0,reward,self.game_over,{}
-        # return np.array(self.state), reward, done, {}
 
     def distance(self, entity1, entity2):
        return ( (entity1.x-entity2.x)**2 + (entity1.y-entity2.y)**2 ) ** 0.5
@@ -208,12 +218,15 @@ class World(gym.Env):
             from gym.envs.classic_control import rendering
             self.viewer = rendering.Viewer(screen_width, screen_height)
             add_entity_to_renderer(self.agent)
-            for ennemy in self.ennemies:
-                add_entity_to_renderer(ennemy)
+
+            if self.config['ennemies']:
+                for ennemy in self.ennemies:
+                    add_entity_to_renderer(ennemy)
 
         render_entity(self.agent)
-        for ennemy in self.ennemies:
-            render_entity(ennemy)
+        if self.config['ennemies']:
+            for ennemy in self.ennemies:
+                render_entity(ennemy)
 
         return self.viewer.render(return_rgb_array = mode=='rgb_array')
 
@@ -227,6 +240,7 @@ if __name__ == "__main__":
     pygame.init()
     screen = pygame.display.set_mode([50,50]) # needed to capture when the keyboard is pressed (the focus has to be on this window)
 
+    CONFIG['ennemies'] = False
     world = World()
     world = gym.wrappers.Monitor(world, 'video_output/', force=True) # force=True to overwrite the videos
     world.reset()
