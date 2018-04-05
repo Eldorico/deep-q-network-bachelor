@@ -4,60 +4,7 @@ from gym import spaces, logger
 from gym.utils import seeding
 import numpy as np
 from action import *
-
-class Direction:
-    N = 11
-    NE = 12
-    E = 13
-    SE = 14
-    S = 15
-    SW = 16
-    W = 17
-    NW = 18
-
-    dx = {
-        N: 0,
-        NE: 1,
-        E: 1,
-        SE: 1,
-        S: 0,
-        SW: -1,
-        W: -1,
-        NW: -1
-    }
-
-    dy = {
-        N: 1,
-        NE: 1,
-        E: 0,
-        SE: -1,
-        S: -1,
-        SW: -1,
-        W: 0,
-        NW: 1
-    }
-
-    inverse_x_direction = {
-        N: N,
-        NE: NW,
-        E: W,
-        SE: SW,
-        S: S,
-        SW: SE,
-        W: E,
-        NW: NE
-    }
-
-    inverse_y_direction = {
-        N: S,
-        NE: SE,
-        E: E,
-        SE: NE,
-        S: N,
-        SW: NW,
-        W: W,
-        NW: SW
-    }
+from state import *
 
 import random
 random.seed()
@@ -136,12 +83,13 @@ class World(gym.Env):
         self.viewer = None
         self.state = None
 
+        self.game_width =  60
         self.game_height = 40
-        self.game_width = 60
+
 
         self.agent = GameEntity()
         if self.config['ennemies']:
-            self.ennemies = [Ennemy(25, 25), Ennemy(50,12), Ennemy(55,35), PursuingEnnemy(3,50)]
+            self.ennemies = [Ennemy(25, 25), Ennemy(50,12), Ennemy(55,35), PursuingEnnemy(3,39)]
 
         self.game_over = True
 
@@ -156,22 +104,25 @@ class World(gym.Env):
         :param: action: an array of -1, 0 or 1. [left_right, up_down].[1,-1] == right down.
         """
         reward = 1
+        current_state = State(self.game_width, self.game_height)
 
         # update new agent position
         self.agent.x +=  Action.to_dX[action] if self.agent.x + Action.to_dX[action] < self.game_width  and self.agent.x + Action.to_dX[action] >= 0 else 0
         self.agent.y +=  Action.to_dY[action] if self.agent.y + Action.to_dY[action] < self.game_height and self.agent.y + Action.to_dY[action] >= 0 else 0
+        current_state.place_agent(self.agent.x,self.agent.y)
 
         if self.config['ennemies']:
-            self._manage_enemies()
+            self._manage_enemies(current_state)
 
         # do the rest... TODO
-        return 0,reward,self.game_over,{}
+        return current_state,reward,self.game_over,{}
         # return np.array(self.state), reward, done, {}
 
-    def _manage_enemies(self):
+    def _manage_enemies(self, current_state):
         # update ennemies position
         for ennemy in self.ennemies:
             ennemy.move(self)
+            current_state.place_ennemy(ennemy)
 
             # check if game is finished
             if self.distance(self.agent, ennemy) <= 1:
@@ -208,12 +159,14 @@ class World(gym.Env):
         def render_entity(entity):
             entity.transform.set_translation(entity.x*scale_x+radius, entity.y*scale_y+radius)
 
+        # start
         screen_width = 600
         screen_height = 400
         radius = 10
         scale_x = (screen_width - 1 * radius) / self.game_width
         scale_y = (screen_height - 1 * radius) / self.game_height
 
+        # create renderer if no renderer has been created
         if self.viewer is None:
             from gym.envs.classic_control import rendering
             self.viewer = rendering.Viewer(screen_width, screen_height)
@@ -223,6 +176,7 @@ class World(gym.Env):
                 for ennemy in self.ennemies:
                     add_entity_to_renderer(ennemy)
 
+        # render agent + ennemies
         render_entity(self.agent)
         if self.config['ennemies']:
             for ennemy in self.ennemies:
@@ -240,7 +194,7 @@ if __name__ == "__main__":
     pygame.init()
     screen = pygame.display.set_mode([50,50]) # needed to capture when the keyboard is pressed (the focus has to be on this window)
 
-    CONFIG['ennemies'] = False
+    # CONFIG['ennemies'] = False
     world = World()
     world = gym.wrappers.Monitor(world, 'video_output/', force=True) # force=True to overwrite the videos
     world.reset()
@@ -261,10 +215,10 @@ if __name__ == "__main__":
             y -= 1
         pygame.event.pump()
 
-        _, _, game_over, _ = world.step(Action.to_move(x, y))
-        return game_over
+        state, _, game_over, _ = world.step(Action.to_move(x, y))
+        return state, game_over
 
     while not game_over:
         time.sleep(0.02)
-        game_over = move_agent(world)
+        state, game_over = move_agent(world)
         world.render()

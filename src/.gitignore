@@ -1,2 +1,4 @@
 *.json
 *.mp4
+video_output
+__pycache__
