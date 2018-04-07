@@ -6,14 +6,15 @@ from network import *
 from state import *
 from action import *
 
-bus = {}
-
 # create the world
 world_config = {
     'ennemies' : True
 }
 world = World(world_config)
 state = world.reset()
+
+# essencial
+bus = {}
 
 # create the neural network that will learn to avoid ennemies
 avoid_ennemy_model = Sequential([
@@ -35,7 +36,7 @@ avoid_ennemy_network = Network(
     True
 )
 
-# agent hyperparameters (config)
+# create agent and his hyperparameters (config)
 epsilon = Epsilon(0.05)
 def update_epsilon(epsilon):
     epsilon.value = epsilon.value
@@ -50,3 +51,5 @@ agent_config['min_experience_size'] = 1000
 agent_config['max_experience_size'] = 5000
 agent_config['batch_size'] = 256
 agent_config['gamma'] = 0.9
+
+agent = Agent(agent_config, bus)

@@ -43,6 +43,7 @@ class Agent:
             current_state = next_state
             episode_score += 1
             self.epsilon.update_epsilon()
+            self.nb_steps_played += 1
 
         return world_informations['score']
 
@@ -86,4 +87,21 @@ class Agent:
             if network.is_training:
                 network.copy_target_network()
 
-    def learn(self, )
+    def learn(self, world, nb_episodes, avg_every_n_episodes=100, stop_on_score_avg=None):
+        score_avg = 0
+        tmp_total_score = 0
+        for i in range(nb_episodes):
+
+            tmp_total_score += self.play_episode(world)
+
+            if i % avg_every_n_episodes == 0 and i != 0:
+                score_avg = tmp_total_score / avg_every_n_episodes
+                print("score avg after %d episodes: %f" % (i, score_avg) )
+                tmp_total_score = 0
+                if stop_on_score_avg is not None and score_avg >= stop_on_score_avg:
+                    print("Score avg reached. Stop learning")
+                    return
+
+            if i == nb_episodes:
+                print("Nb max episodes reached. Stop learning")
+                return

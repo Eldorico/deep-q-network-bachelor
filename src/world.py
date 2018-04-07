@@ -85,6 +85,8 @@ class World(gym.Env):
         self.seed()
         self.viewer = None
         self.state = None
+        self.game_over = True
+        self.score = 0
 
         self.game_width =  60
         self.game_height = 40
@@ -92,8 +94,6 @@ class World(gym.Env):
         self.agent = GameEntity()
         self.ennemies = None
 
-        self.game_over = True
-        self.score = 0
 
         # self.steps_beyond_done = None
 
