@@ -29,9 +29,6 @@ class Agent:
 
             current_state = next_state
 
-    def choose_action(state):
-        pass
-
     def flush_last_prediction_var(self):
         """ Removes the last prediction_values of the networks and sets their
             prediction_done variable to False, so the networks can redo a new prediction
@@ -40,12 +37,12 @@ class Agent:
         for network in self.networks:
             network.flush_last_prediction_var()
 
-    def predict_q(self, state):
+    def choose_action(self, state):
         nb_networks_that_predicted = 0
         while nb_networks_that_predicted != len(self.networks):
             for network in self.networks:
                 if len(network.depends_on) is 0 or all(dependency.prediction_done for dependency in network.depends_on):
-                    network.predict(state)
+                    network.predict(state, self.epsilon)
                     nb_networks_that_predicted += 1
 
         return self.output_network.last_prediction_values['action']

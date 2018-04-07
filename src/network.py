@@ -4,10 +4,11 @@ import random
 
 class Network:
 
-    def __init__(self, model, input_adapter=None, is_training=False):
+    def __init__(self, model, input_adapter=None, continue_exploration=False, is_training=False):
         self.is_training = is_training
         self.model = model
         self.input_adapter = input_adapter
+        self.explore = continue_exploration
 
         if self.is_training:
             self.target_model = keras.models.clone_model(self.model)
@@ -21,10 +22,16 @@ class Network:
     def add_dependency(network):
         self.depends_on.append(network)
 
-    def predict(self, state):
-        input_value = self.input_adapter(state)
-        prediction = self.model.predict(input_value)
-        action = np.argmax(prediction)
+    def predict(self, state, epsilon):
+        choose_randomly = True if random.random() <= epsilon and self.explore else False
+
+        if choose_randomly:
+            action = random.randint(0, Action.NB_POSSIBLE_ACTIONS -1)
+        else:
+            input_value = self.input_adapter(state)
+            prediction = self.model.predict(input_value)
+            action = np.argmax(prediction)
+
         self.last_prediction_values = {'action' : action, 's1': self.input_adapter(state) }
         self.prediction_done = True
 

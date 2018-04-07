@@ -30,6 +30,7 @@ def avoid_ennemy_input_adapter(state):
 avoid_ennemy_network = Network(
     avoid_ennemy_model,
     avoid_ennemy_input_adapter,
+    True,
     True
 )
 
