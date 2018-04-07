@@ -22,17 +22,17 @@ class Network:
     def add_dependency(network):
         self.depends_on.append(network)
 
-    def predict(self, state, epsilon):
+    def predict(self, bus, epsilon):
         choose_randomly = True if random.random() <= epsilon and self.explore else False
 
         if choose_randomly:
             action = random.randint(0, Action.NB_POSSIBLE_ACTIONS -1)
         else:
-            input_value = self.input_adapter(state)
+            input_value = self.input_adapter(bus)
             prediction = self.model.predict(input_value)
             action = np.argmax(prediction)
 
-        self.last_prediction_values = {'action' : action, 's1': self.input_adapter(state) }
+        self.last_prediction_values = {'action' : action, 's1': self.input_adapter(bus) }
         self.prediction_done = True
 
         # debug

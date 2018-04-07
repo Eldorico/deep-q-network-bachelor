@@ -6,6 +6,7 @@ from network import *
 from state import *
 from action import *
 
+bus = {}
 
 # create the world
 world_config = {
@@ -25,8 +26,8 @@ avoid_ennemy_model = Sequential([
 ])
 avoid_ennemy_model.compile(optimizer='adam',
               loss='mean_squared_error')
-def avoid_ennemy_input_adapter(state):
-    return state.get_ennemy_agent_layer_only()
+def avoid_ennemy_input_adapter(bus):
+    return bus['state'].get_ennemy_agent_layer_only()
 avoid_ennemy_network = Network(
     avoid_ennemy_model,
     avoid_ennemy_input_adapter,

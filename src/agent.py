@@ -2,7 +2,7 @@
 
 class Agent:
 
-    def __init__(self, config):
+    def __init__(self, config, bus):
         self.networks = config['networks']
         self.output_network = config['output_network']
         self.copy_target_period = config['copy_target_period']
@@ -10,6 +10,8 @@ class Agent:
         self.max_experience_size = config['max_experience_size']
         self.batch_size = config['batch_size']
         self.gamma = config['gamma']
+
+        self.bus = bus
 
         self.nb_steps_played = 0
 
@@ -38,11 +40,13 @@ class Agent:
             network.flush_last_prediction_var()
 
     def choose_action(self, state):
+        self.bus['state'] = state
+
         nb_networks_that_predicted = 0
         while nb_networks_that_predicted != len(self.networks):
             for network in self.networks:
                 if len(network.depends_on) is 0 or all(dependency.prediction_done for dependency in network.depends_on):
-                    network.predict(state, self.epsilon)
+                    network.predict(self.bus, self.epsilon)
                     nb_networks_that_predicted += 1
 
         return self.output_network.last_prediction_values['action']
