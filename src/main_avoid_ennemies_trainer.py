@@ -25,10 +25,23 @@ avoid_ennemy_model = Sequential([
 ])
 avoid_ennemy_model.compile(optimizer='adam',
               loss='mean_squared_error')
+def avoid_ennemy_input_adapter(state):
+    return state.get_ennemy_agent_layer_only()
+avoid_ennemy_network = Network(
+    avoid_ennemy_model,
+    avoid_ennemy_input_adapter,
+    True
+)
+
 
 # debug
 print(State.get_ennemy_agent_layer_shape(world))
-prediction = avoid_ennemy_model.predict(State.get_ennemy_agent_layer_only(state), verbose=1)
+prediction = avoid_ennemy_network.predict(state)
 print(prediction)
 print("Weights: ")
-print(model.layers[-2].get_weights())
+print(avoid_ennemy_network.model.layers[-2].get_weights())
+print("Weights target: ")
+print(avoid_ennemy_network.target_model.layers[-2].get_weights())
+print("ID checks")
+print(id(avoid_ennemy_network.model))
+print(id(avoid_ennemy_network.target_model))

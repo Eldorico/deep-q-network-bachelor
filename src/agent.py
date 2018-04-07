@@ -4,8 +4,12 @@ class Agent:
 
     def __init__(self, config):
         self.networks = config['networks']
-        self.last_network = config['last_network']
+        self.output_network = config['output_network']
         self.copy_target_period = config['copy_target_period']
+        self.min_experience_size = config['min_experience_size']
+        self.max_experience_size = config['max_experience_size']
+        self.batch_size = config['batch_size']
+        self.gamma = config['gamma']
 
         self.nb_steps_played = 0
 
@@ -14,12 +18,13 @@ class Agent:
 
         while not world.game_over:
             action = self.choose_action(current_state)
-            next_state, reward, _ = world.step(action)
+            next_state, reward, game_over, _ = world.step(action)
 
             if self.nb_steps_played % self.copy_target_period == 0:
                 self.copy_target_networks()
 
             self.add_experience(next_state, reward)
+            self.flush_last_prediction_var()
             self.train_networks()
 
             current_state = next_state
@@ -27,26 +32,40 @@ class Agent:
     def choose_action(state):
         pass
 
+    def flush_last_prediction_var(self):
+        """ Removes the last prediction_values of the networks and sets their
+            prediction_done variable to False, so the networks can redo a new prediction
+            after that.
+        """
+        for network in self.networks:
+            network.flush_last_prediction_var()
+
     def predict_q(self, state):
         nb_networks_that_predicted = 0
         while nb_networks_that_predicted != len(self.networks):
             for network in self.networks:
-                if len(network.depends_on) is 0:
+                if len(network.depends_on) is 0 or all(dependency.prediction_done for dependency in network.depends_on):
                     network.predict(state)
                     nb_networks_that_predicted += 1
-                elif all(dependency.prediction_done for dependency in network.depends_on):
-                    network.predict()
-                    nb_networks_that_predicted += 1
 
-        return self.last_network.output_placeholder
+        return self.output_network.last_prediction_values['action']
 
-    def add_experience(self, next_state, reward):
-        pass
+    def add_experience(self, next_state, reward, game_over):
+        """ add experiences to the networks that are training
+        """
+        for network in self.networks:
+            if network.is_training:
+                network.add_experience(next_state, reward, game_over, self.max_experience_size)
 
     def train_networks(self):
-        pass
+        for network in self.networks:
+            if network.is_training:
+                network.train_network(self.gamma, self.min_experience_size, self.batch_size)
 
     def copy_target_networks(self):
         """ Make the network that are training do a copy of themselves.
             (refresh TNetworks if the Network is in training mode)
         """
+        for network in self.networks:
+            if network.is_training:
+                network.copy_target_network()
