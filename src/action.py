@@ -13,6 +13,8 @@ class Action:
     USE = 10
     DROP = 11
 
+    NB_POSSIBLE_ACTIONS = 12
+
     to_dX = {
         DO_NOTHING : 0,
         MOVE_N : 0,

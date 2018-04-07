@@ -21,7 +21,7 @@ class Ennemy(GameEntity):
     def __init__(self, x=0, y=0, direction=None):
         super().__init__(x, y)
         self.direction = direction if direction is not None else random_dir.pop(random.randint(0,len(random_dir)-1))
-        print(self.direction)
+        # print(self.direction)
 
     def move(self, world):
         self.x += Direction.dx[self.direction]
@@ -86,10 +86,8 @@ class World(gym.Env):
         self.game_width =  60
         self.game_height = 40
 
-
         self.agent = GameEntity()
-        if self.config['ennemies']:
-            self.ennemies = [Ennemy(25, 25), Ennemy(50,12), Ennemy(55,35), PursuingEnnemy(3,39)]
+        self.ennemies = None
 
         self.game_over = True
 
@@ -140,8 +138,13 @@ class World(gym.Env):
         self.agent.y = 0
         self.game_over = False
 
+        if self.config['ennemies']:
+            self.ennemies = [Ennemy(25, 25), Ennemy(50,12), Ennemy(55,35), PursuingEnnemy(3,39)]
+
 
         # do the rest TODO
+        current_state, _, _, _ = self.step(Action.DO_NOTHING)
+        return current_state
 
         # return np.array(self.state)
 

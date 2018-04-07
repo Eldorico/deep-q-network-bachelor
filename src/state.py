@@ -76,3 +76,11 @@ class State:
 
     def agent_ennemies_pos_layer_to_string(self):
         return str(np.reshape(self.ennemy_agent_positions, (self.world_height, self.world_width)))
+
+    @staticmethod
+    def get_ennemy_agent_layer_shape(world):
+        return world.game_width * world.game_height
+
+    @staticmethod
+    def get_ennemy_agent_layer_only(state):
+        return state.ennemy_agent_positions.reshape(1,len(state.ennemy_agent_positions))
