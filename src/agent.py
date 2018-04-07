@@ -1,4 +1,14 @@
 
+class Epsilon:
+    def __init__(self, start_epsilon_value):
+        self.value = start_epsilon_value
+
+    def set_epsilon_function(self, epsilon_function):
+        self.epsilon_function = epsilon_function
+
+    def update_epsilon(self):
+        self.epsilon_function(self)
+
 
 class Agent:
 
@@ -10,6 +20,7 @@ class Agent:
         self.max_experience_size = config['max_experience_size']
         self.batch_size = config['batch_size']
         self.gamma = config['gamma']
+        self.epsilon = config['epsilon']
 
         self.bus = bus
 
@@ -20,7 +31,7 @@ class Agent:
 
         while not world.game_over:
             action = self.choose_action(current_state)
-            next_state, reward, game_over, _ = world.step(action)
+            next_state, reward, game_over, world_informations = world.step(action)
 
             if self.nb_steps_played % self.copy_target_period == 0:
                 self.copy_target_networks()
@@ -30,6 +41,10 @@ class Agent:
             self.train_networks()
 
             current_state = next_state
+            episode_score += 1
+            self.epsilon.update_epsilon()
+
+        return world_informations['score']
 
     def flush_last_prediction_var(self):
         """ Removes the last prediction_values of the networks and sets their
@@ -46,7 +61,7 @@ class Agent:
         while nb_networks_that_predicted != len(self.networks):
             for network in self.networks:
                 if len(network.depends_on) is 0 or all(dependency.prediction_done for dependency in network.depends_on):
-                    network.predict(self.bus, self.epsilon)
+                    network.predict(self.bus, self.epsilon.value)
                     nb_networks_that_predicted += 1
 
         return self.output_network.last_prediction_values['action']
@@ -70,3 +85,5 @@ class Agent:
         for network in self.networks:
             if network.is_training:
                 network.copy_target_network()
+
+    def learn(self, )

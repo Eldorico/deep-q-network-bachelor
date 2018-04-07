@@ -35,15 +35,18 @@ avoid_ennemy_network = Network(
     True
 )
 
+# agent hyperparameters (config)
+epsilon = Epsilon(0.05)
+def update_epsilon(epsilon):
+    epsilon.value = epsilon.value
+epsilon.set_epsilon_function(update_epsilon)
 
-# debug
-print(State.get_ennemy_agent_layer_shape(world))
-prediction = avoid_ennemy_network.predict(state)
-print(prediction)
-print("Weights: ")
-print(avoid_ennemy_network.model.layers[-2].get_weights())
-print("Weights target: ")
-print(avoid_ennemy_network.target_model.layers[-2].get_weights())
-print("ID checks")
-print(id(avoid_ennemy_network.model))
-print(id(avoid_ennemy_network.target_model))
+agent_config = {}
+agent_config['epsilon'] = epsilon
+agent_config['networks'] = [avoid_ennemy_network]
+agent_config['output_network'] = avoid_ennemy_network
+agent_config['copy_target_period'] = 100
+agent_config['min_experience_size'] = 1000
+agent_config['max_experience_size'] = 5000
+agent_config['batch_size'] = 256
+agent_config['gamma'] = 0.9

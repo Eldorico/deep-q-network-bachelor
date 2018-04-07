@@ -7,7 +7,10 @@ from action import *
 from state import *
 
 import random
-random.seed()
+import time
+seed = time.time()-round(time.time())
+random.seed(seed)
+print("random seed: %f" % seed)
 random_dir = [Direction.N, Direction.NE, Direction.E, Direction.SE, Direction.SW, Direction.W, Direction.NW]
 random.shuffle(random_dir)
 
@@ -18,8 +21,8 @@ class GameEntity:
 
 class Ennemy(GameEntity):
 
-    def __init__(self, x=0, y=0, direction=None):
-        super().__init__(x, y)
+    def __init__(self, position, direction=None):
+        super().__init__(position[0], position[1])
         self.direction = direction if direction is not None else random_dir.pop(random.randint(0,len(random_dir)-1))
         # print(self.direction)
 
@@ -34,8 +37,8 @@ class Ennemy(GameEntity):
 
 
 class PursuingEnnemy(Ennemy):
-    def __init__(self, x=0, y=0, direction=None):
-        super().__init__(x,y,direction)
+    def __init__(self, position, direction=None):
+        super().__init__(position, direction)
 
     def move(self, world):
         agent = world.agent
@@ -90,6 +93,7 @@ class World(gym.Env):
         self.ennemies = None
 
         self.game_over = True
+        self.score = 0
 
         # self.steps_beyond_done = None
 
@@ -112,8 +116,10 @@ class World(gym.Env):
         if self.config['ennemies']:
             self._manage_enemies(current_state)
 
+        self.score += 1
+
         # do the rest... TODO
-        return current_state,reward,self.game_over,{}
+        return current_state, reward, self.game_over, {'score': self.score}
         # return np.array(self.state), reward, done, {}
 
     def _manage_enemies(self, current_state):
@@ -134,19 +140,39 @@ class World(gym.Env):
         # init agent's position
         # self.agent.x = random.randint(0, self.game_width)
         # self.agent.y = random.randint(0, self.game_height)
-        self.agent.x = 30
-        self.agent.y = 0
+        # self.agent.x = 30
+        # self.agent.y = 0
         self.game_over = False
+        self.score = 0
 
         if self.config['ennemies']:
-            self.ennemies = [Ennemy(25, 25), Ennemy(50,12), Ennemy(55,35), PursuingEnnemy(3,39)]
-
+            # self.ennemies = [Ennemy(25, 25), Ennemy(50,12), Ennemy(55,35), PursuingEnnemy(3,39)]
+            self.ennemies = [Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), PursuingEnnemy(self.rand_pos())]
 
         # do the rest TODO
+
+        self.choose_random_but_safe_start_location_for_agent()
+
         current_state, _, _, _ = self.step(Action.DO_NOTHING)
         return current_state
 
         # return np.array(self.state)
+
+    def rand_pos(self):
+        return random.randint(0, self.game_width-1), random.randint(0, self.game_height-1)
+
+    def choose_random_but_safe_start_location_for_agent(self):
+        agent_too_close_from_ennemies = True
+        while agent_too_close_from_ennemies:
+            self.agent.x = random.randint(0, self.game_width)
+            self.agent.y = random.randint(0, self.game_height)
+            agent_too_close_from_ennemies = False
+            for ennemy in self.ennemies:
+                if self.distance(self.agent, ennemy) < 3:
+                    agent_too_close_from_ennemies = True
+                    break
+
+
 
     def render(self, mode='human', close=False):
         def add_entity_to_renderer(entity):
@@ -218,10 +244,14 @@ if __name__ == "__main__":
             y -= 1
         pygame.event.pump()
 
-        state, _, game_over, _ = world.step(Action.to_move(x, y))
-        return state, game_over
+        state, _, game_over, debug = world.step(Action.to_move(x, y))
+        return state, game_over, debug
 
+    time.sleep(5) # to have time to place the windows and start to play
     while not game_over:
         time.sleep(0.02)
-        state, game_over = move_agent(world)
+        # time.sleep(0.04)
+        state, game_over, debug = move_agent(world)
         world.render()
+
+    print("Score: %d" % debug['score'])
