@@ -61,17 +61,17 @@ class Network:
             return
 
         batch = random.sample(self.experiences, batch_size)
-        # targets = []
-        # inputs = []
+        inputs = []
+        targets = []
         for sample in batch:
             s1, s2, reward, game_over, action = sample['s1'], sample['s2'], sample['reward'], sample['game_over'], sample['action']
 
-            # inputs.append(s1)
+            inputs.append(s1[0])
 
             action_values_s2 = self.target_model.predict(s2)[0]
             action_value = action_values_s2[action]
             target = self.target_model.predict(s1)
             target[0][action] = reward if game_over else reward + gamma * action_value
-            # targets.append(target)
+            targets.append(target[0])
 
-            self.model.fit(s1, target, epochs=1, verbose=0)
+        self.model.fit(np.array(inputs), np.array(targets), batch_size=len(inputs), epochs=1, verbose=0)
