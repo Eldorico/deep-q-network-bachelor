@@ -56,7 +56,7 @@ class Network:
     def copy_target_network(self):
         self.target_model.set_weights(self.model.get_weights())
 
-    def train(self, gamma, min_experience_size, batch_size):
+    def train(self, gamma, min_experience_size, batch_size, tensorboard=None):
         if len(self.experiences) < min_experience_size:
             return
 
