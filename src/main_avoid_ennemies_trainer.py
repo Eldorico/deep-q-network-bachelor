@@ -6,6 +6,7 @@ from network import *
 from state import *
 from action import *
 from agent import *
+from tensorboard import *
 
 # create the world
 world_config = {
@@ -52,6 +53,7 @@ agent_config['min_experience_size'] = 1000
 agent_config['max_experience_size'] = 5000
 agent_config['batch_size'] = 256
 agent_config['gamma'] = 0.9
+agent_config['tensorboard'] = Logger('../TensorBoard/')
 
 agent = Agent(agent_config, bus)
 

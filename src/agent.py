@@ -21,6 +21,7 @@ class Agent:
         self.batch_size = config['batch_size']
         self.gamma = config['gamma']
         self.epsilon = config['epsilon']
+        self.tensorboard = config['tensorboard'] if 'tensorboard' in config else None
 
         self.bus = bus
 
@@ -77,7 +78,7 @@ class Agent:
     def train_networks(self):
         for network in self.networks:
             if network.is_training:
-                network.train(self.gamma, self.min_experience_size, self.batch_size)
+                network.train(self.gamma, self.min_experience_size, self.batch_size, self.tensorboard)
 
     def copy_target_networks(self):
         """ Make the network that are training do a copy of themselves.
@@ -93,7 +94,11 @@ class Agent:
         for i in range(nb_episodes):
             print("episode %d" % (i+1))
 
-            tmp_total_score += self.play_episode(world)
+            score = self.play_episode(world)
+            tmp_total_score += score
+
+            if self.tensorboard is not None:
+                self.tensorboard.write_summary('score', i, score)
 
             if i % avg_every_n_episodes == 0 and i != 0:
                 score_avg = tmp_total_score / avg_every_n_episodes
