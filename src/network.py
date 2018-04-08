@@ -1,6 +1,7 @@
 import numpy as np
 import keras
 import random
+from action import *
 
 class Network:
 
@@ -29,17 +30,17 @@ class Network:
             action = random.randint(0, Action.NB_POSSIBLE_ACTIONS -1)
         else:
             input_value = self.input_adapter(bus)
-            prediction = self.model.predict(input_value)
+            prediction = self.model.predict(input_value)[0]
             action = np.argmax(prediction)
 
         self.last_prediction_values = {'action' : action, 's1': self.input_adapter(bus) }
         self.prediction_done = True
 
         # debug
-        return prediction
+        # return prediction
 
-    def add_experience(self, next_state, reward, game_over, max_experience_size):
-        self.last_prediction_values['s2'] = self.input_adapter(next_state)
+    def add_experience(self, bus, reward, game_over, max_experience_size):
+        self.last_prediction_values['s2'] = self.input_adapter(bus, True)
         self.last_prediction_values['reward'] = reward
         self.last_prediction_values['game_over'] = game_over
 
@@ -60,17 +61,17 @@ class Network:
             return
 
         batch = random.sample(self.experiences, batch_size)
-        targets = []
-        inputs = []
+        # targets = []
+        # inputs = []
         for sample in batch:
             s1, s2, reward, game_over, action = sample['s1'], sample['s2'], sample['reward'], sample['game_over'], sample['action']
 
-            inputs.append(s1)
+            # inputs.append(s1)
 
-            action_values_s2 = self.target_model.predict(s2)
+            action_values_s2 = self.target_model.predict(s2)[0]
             action_value = action_values_s2[action]
             target = self.target_model.predict(s1)
-            target[action] = reward if game_over else reward + gamma * action_value
-            targets.append(target)
+            target[0][action] = reward if game_over else reward + gamma * action_value
+            # targets.append(target)
 
-        self.model.fit(inputs, targets, epochs=1, verbose=0)
+            self.model.fit(s1, target, epochs=1, verbose=0)

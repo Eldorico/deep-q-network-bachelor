@@ -5,6 +5,7 @@ from world import *
 from network import *
 from state import *
 from action import *
+from agent import *
 
 # create the world
 world_config = {
@@ -18,17 +19,17 @@ bus = {}
 
 # create the neural network that will learn to avoid ennemies
 avoid_ennemy_model = Sequential([
-    Dense(64, input_dim=State.get_ennemy_agent_layer_shape(world)),
-    Activation('relu'),
-    Dense(32),
-    Activation('relu'),
-    Dense(Action.NB_POSSIBLE_ACTIONS),
-    Activation('linear'),
+    Dense(64, input_dim=State.get_ennemy_agent_layer_shape(world), activation='relu'),
+    Dense(32, activation='relu'),
+    Dense(Action.NB_POSSIBLE_ACTIONS, activation='linear'),
 ])
 avoid_ennemy_model.compile(optimizer='adam',
               loss='mean_squared_error')
-def avoid_ennemy_input_adapter(bus):
-    return bus['state'].get_ennemy_agent_layer_only()
+def avoid_ennemy_input_adapter(bus, next_state=False):
+    if next_state:
+        return bus['next_state'].get_ennemy_agent_layer_only()
+    else:
+        return bus['state'].get_ennemy_agent_layer_only()
 avoid_ennemy_network = Network(
     avoid_ennemy_model,
     avoid_ennemy_input_adapter,
@@ -53,3 +54,6 @@ agent_config['batch_size'] = 256
 agent_config['gamma'] = 0.9
 
 agent = Agent(agent_config, bus)
+
+# train agent for avoiding ennemies
+agent.train(world, 5000)

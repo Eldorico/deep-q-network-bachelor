@@ -11,8 +11,8 @@ import time
 seed = time.time()-round(time.time())
 random.seed(seed)
 print("random seed: %f" % seed)
-random_dir = [Direction.N, Direction.NE, Direction.E, Direction.SE, Direction.SW, Direction.W, Direction.NW]
-random.shuffle(random_dir)
+# random_dir = [Direction.N, Direction.NE, Direction.E, Direction.SE, Direction.S, Direction.SW, Direction.W, Direction.NW]
+# random.shuffle(random_dir)
 
 class GameEntity:
     def __init__(self, x=0, y=0):
@@ -23,7 +23,7 @@ class Ennemy(GameEntity):
 
     def __init__(self, position, direction=None):
         super().__init__(position[0], position[1])
-        self.direction = direction if direction is not None else random_dir.pop(random.randint(0,len(random_dir)-1))
+        self.direction = direction if direction is not None else random.randint(1,8) # _dir.pop(random.randint(0,len(random_dir)-1))
         # print(self.direction)
 
     def move(self, world):
