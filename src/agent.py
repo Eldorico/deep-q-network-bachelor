@@ -105,7 +105,7 @@ class Agent:
 
             if self.tensorboard is not None:
                 self.tensorboard.write_summary('score', i, score)
-                # self.tensorboard.write_histograms(i)
+                self.tensorboard.write_histograms(i)
 
             if i % avg_every_n_episodes == 0 and i != 0:
                 score_avg = tmp_total_score / avg_every_n_episodes

@@ -6,20 +6,28 @@ class Logger(TensorBoard):
 
     def __init__(self, log_dir):
         super().__init__(log_dir, histogram_freq=1)
+
         # self.writer = tf.summary.FileWriter(self.log_dir)
         # self.log_dir = log_dir
 
     def write_summary(self, _tag, x_value, y_value):
-        if hasattr(self, 'writer') and self.writer is not None:
-            value = summary_pb2.Summary.Value(tag=_tag, simple_value=y_value)
-            summary = summary_pb2.Summary(value=[value])
-            self.writer.add_summary(summary, x_value)
+        # if hasattr(self, 'writer') and self.writer is not None:
+        #     value = summary_pb2.Summary.Value(tag=_tag, simple_value=y_value)
+        #     summary = summary_pb2.Summary(value=[value])
+        #     self.writer.add_summary(summary, x_value)
+        pass
 
     def on_train_end(self, _):
         pass # dont close the writer since the model will be trained after each episode
 
     def write_model_graph(self):
         self.writer.add_graph(self.sess.graph)
+
+    def set_model(self, model):
+        super().set_model(model)
+        weights_layer_0 = self.model.layers[0].weights
+        for weight in weights_layer_0:
+            tf.summary.histogram("weights layer 0", weight)
 
     # def on_epoch_end(self, epoch, logs):
     #     """ patch from https://github.com/keras-team/keras/issues/3358 in order to
@@ -40,7 +48,12 @@ class Logger(TensorBoard):
     #     return super().on_epoch_end(epoch, logs)
 
     def write_histograms(self, x_value):
+        # weights_layer_0 = self.model.layers[0].weights
+        # for weight in weights_layer_0:
+        #     tf.summary.histogram("weights layer 0", weight)
+        # print("histogram written")
         pass
+
 
 
 
