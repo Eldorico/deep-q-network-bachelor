@@ -23,12 +23,6 @@ class Logger(TensorBoard):
     def write_model_graph(self):
         self.writer.add_graph(self.sess.graph)
 
-    def set_model(self, model):
-        super().set_model(model)
-        weights_layer_0 = self.model.layers[0].weights
-        for weight in weights_layer_0:
-            tf.summary.histogram("weights layer 0", weight)
-
     # def on_epoch_end(self, epoch, logs):
     #     """ patch from https://github.com/keras-team/keras/issues/3358 in order to
     #         write histograms on tensorboard
@@ -48,10 +42,12 @@ class Logger(TensorBoard):
     #     return super().on_epoch_end(epoch, logs)
 
     def write_histograms(self, x_value):
-        # weights_layer_0 = self.model.layers[0].weights
-        # for weight in weights_layer_0:
-        #     tf.summary.histogram("weights layer 0", weight)
-        # print("histogram written")
+        # TODO: put this before the creation of the writer??? 
+        weights_layer_0 = self.model.layers[0].weights
+        for weight in weights_layer_0:
+            w = weight._variable
+            tf.summary.histogram("weights layer 0", w)
+        print("histogram written")
         pass
 
 
