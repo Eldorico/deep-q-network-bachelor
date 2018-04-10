@@ -13,25 +13,31 @@ world_config = {
     'ennemies' : True
 }
 world = World(world_config)
-state = world.reset()
+world.reset()
 
 # essencial
 bus = {}
 
 # create the neural network that will learn to avoid ennemies
-avoid_ennemy_model = Sequential([
-    Dense(64, input_dim=State.get_ennemy_agent_layer_shape(world), activation='relu'),
-    Dense(32, activation='relu'),
-    Dense(Action.NB_POSSIBLE_ACTIONS, activation='linear'),
-])
-avoid_ennemy_model.compile(optimizer='adam',
-              loss='mean_squared_error')
+avoid_ennemy_model = Model( State.get_ennemy_agent_layer_shape(world), 1e-2,
+    (64, 'relu'),
+    (32, 'relu'),
+    (Action.NB_POSSIBLE_ACTIONS, 'linear')
+)
+# avoid_ennemy_model = Sequential([
+#     Dense(64, input_dim=State.get_ennemy_agent_layer_shape(world), activation='relu'),
+#     Dense(32, activation='relu'),
+#     Dense(Action.NB_POSSIBLE_ACTIONS, activation='linear'),
+# ])
+# avoid_ennemy_model.compile(optimizer='adam',
+#               loss='mean_squared_error')
 def avoid_ennemy_input_adapter(bus, next_state=False):
     if next_state:
         return bus['next_state'].get_ennemy_agent_layer_only()
     else:
         return bus['state'].get_ennemy_agent_layer_only()
 avoid_ennemy_network = Network(
+    'avoid ennemy network',
     avoid_ennemy_model,
     avoid_ennemy_input_adapter,
     True,
