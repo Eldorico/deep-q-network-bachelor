@@ -25,30 +25,32 @@ class HiddenLayer:
             Z = tf.matmul(X, self.W) + self.b
             return self.activation_function(Z)
 
-
 class Model:
-    def __init__(self, input_size, learning_rate, *layers):
+    def __init__(self, input_size, learning_rate, layers):
         self.learning_rate = learning_rate
-
-        self.X = tf.placeholder(tf.float32, [None, input_size], name='X')
-        self.T = tf.placeholder(tf.float32, [None, ], name='T')
-        self.Y = tf.placeholder(tf.int32, [None, ], name='Y')
+        self.args = {'input_size': input_size, 'learning_rate': learning_rate, 'layers': layers} # keep the args in order to create a TargetModel easily
+        self.output_size = layers[-1][0]
 
         self.predict_op = None
         self.train_op = None
         self.session = None
+
+        # set placeholders
+        self.X = tf.placeholder(tf.float32, [None, input_size], name='X')
+        self.T = tf.placeholder(tf.float32, [None, self.output_size], name='T')
+        self.Y = tf.placeholder(tf.int32, [None, ], name='Y')
 
         # add layers
         self.layers = []
         for i, nb_neurons, activation in [ (i, n, a) for i, (n,a) in enumerate(layers)]:
             self.layers.append(HiddenLayer([input_size, nb_neurons], str(i), ACTIVATIONS[activation]))
             input_size = nb_neurons
-        self.output_size = self.layers[-1].size[1]
+
 
         # keep bias and weights to copy
         self.weights_and_biais = []
         for layer in self.layers:
-            self.weights_and_biais.append([layer.W, layer.b])
+            self.weights_and_biais += [layer.W, layer.b]
 
         # compute predict op
         with tf.name_scope("predict_op"):
@@ -60,8 +62,9 @@ class Model:
         # compute train op
         with tf.name_scope("train_op"):
             Y = self.predict_op * tf.one_hot(self.Y, self.output_size)
-            cost = tf.reduce_mean(tf.square(Y- self.T))
-            self.train_op = tf.train.AdamOptimizer(self.learning_rate).minimize(cost)
+            self.cost_op = tf.reduce_mean(tf.square(Y- self.T))
+            # self.train_op = tf.train.AdamOptimizer(self.learning_rate).minimize(self.cost_op)  # TODO: why using this optimizer it changes the weights?
+            self.train_op = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(self.cost_op)
 
     def set_name(self, name):
         self.name = name
@@ -72,9 +75,9 @@ class Model:
     def train(self, X, Y, T):
         """
         :param: X : the input
-        :param: Y (int): the action choosen.
+        :param: Y (int): the action choosen. (size [None, 1])
         :param: T ([float]): the targets with ONLY the value to update. ex: [0,0,13.24, 0 0]
-                the value to update corresponds to the choosen action
+                the value to update corresponds to the choosen action. The size of T as to be [None, output_dim]
         """
         self.session.run(
             self.train_op,
@@ -87,8 +90,8 @@ class Model:
 
     def copy_from(self, other):
         updates_to_run = []
-        my_params = self.layers_weights_bias
-        other_params = other.layers_weights_bias
+        my_params = self.weights_and_biais
+        other_params = other.weights_and_biais
         for my_param, other_param in zip(my_params, other_params):
             other_values = self.session.run(other_param)
             value_to_update = my_param.assign(other_values)
@@ -97,6 +100,21 @@ class Model:
 
     def set_session(self, session):
         self.session = session
+
+    def debug_return_cost(self, X, Y, T):
+        # print("Model.debug_return_cost(): Y=%s, T=%s")
+        return self.session.run(
+            self.cost_op,
+            feed_dict = {
+                self.X : X,
+                self.Y : Y,
+                self.T : T
+            }
+        )
+
+class TargetModel(Model):
+    def __init__(self, model):
+        super().__init__(model.args['input_size'], model.args['learning_rate'], model.args['layers'])
 
 class Network:
 
