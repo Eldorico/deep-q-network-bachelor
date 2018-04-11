@@ -2,6 +2,8 @@ import numpy as np
 import random
 from action import *
 import tensorflow as tf
+import os
+import json
 
 
 ACTIVATIONS = {
@@ -30,10 +32,12 @@ class Model:
         self.learning_rate = learning_rate
         self.args = {'input_size': input_size, 'learning_rate': learning_rate, 'layers': layers} # keep the args in order to create a TargetModel easily
         self.output_size = layers[-1][0]
+        self.name = None
 
         self.predict_op = None
         self.train_op = None
         self.session = None
+
 
         # set placeholders
         self.X = tf.placeholder(tf.float32, [None, input_size], name='X')
@@ -98,6 +102,19 @@ class Model:
             updates_to_run.append(value_to_update)
         self.session.run(updates_to_run)
 
+    def export_model(self, folder, filesname):
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+
+        # save the config model file
+        with open(folder + '/' + filesname + '.modelconfig', 'w') as outfile:
+            self.args['name'] = self.name
+            json.dump(self.args, outfile)
+
+        # save the graph and models
+        saver = tf.train.Saver()
+        saver.save(self.session, folder + '/' + filesname)
+
     def set_session(self, session):
         self.session = session
 
@@ -115,6 +132,7 @@ class Model:
 class TargetModel(Model):
     def __init__(self, model):
         super().__init__(model.args['input_size'], model.args['learning_rate'], model.args['layers'])
+
 
 class Network:
 

@@ -108,3 +108,19 @@ class ModelTest(unittest.TestCase):
         y_model = model.predict(x)
         y_target = target_model.predict(x)
         self.assertFalse(np.array_equal(y_model,y_target))
+
+    def test_model_export_import(self):
+        input_dim = 10
+        output_dim = 2
+        model = Model( input_dim, 1e-2,
+            [(64, 'relu'),
+            (32, 'relu'),
+            (output_dim, 'linear')]
+        )
+
+        init = tf.global_variables_initializer()
+        session = tf.Session()
+        model.set_session(session)
+        session.run(init)
+
+        model.export_model('./saves', 'test_model')
