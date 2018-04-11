@@ -14,9 +14,9 @@ class ModelTest(unittest.TestCase):
         input_dim = 10
         output_dim = 2
         model = Model( input_dim, 1e-2,
-            [(64, 'relu'),
-            (32, 'relu'),
-            (output_dim, 'linear')]
+            [[64, 'relu'],
+            [32, 'relu'],
+            [output_dim, 'linear']]
         )
 
         init = tf.global_variables_initializer()
@@ -36,9 +36,9 @@ class ModelTest(unittest.TestCase):
         input_dim = 10
         output_dim = 2
         model = Model( input_dim, 1e-4,
-            [(64, 'relu'),
-            (32, 'relu'),
-            (output_dim, 'linear')]
+            [[64, 'relu'],
+            [32, 'relu'],
+            [output_dim, 'linear']]
         )
 
         init = tf.global_variables_initializer()
@@ -76,9 +76,9 @@ class ModelTest(unittest.TestCase):
         input_dim = 10
         output_dim = 2
         model = Model( input_dim, 1e-2,
-            [(64, 'relu'),
-            (32, 'relu'),
-            (output_dim, 'linear')]
+            [[64, 'relu'],
+            [32, 'relu'],
+            [output_dim, 'linear']]
         )
         target_model = TargetModel(model)
 
@@ -113,9 +113,9 @@ class ModelTest(unittest.TestCase):
         input_dim = 10
         output_dim = 2
         model = Model( input_dim, 1e-2,
-            [(64, 'relu'),
-            (32, 'relu'),
-            (output_dim, 'linear')]
+            [[64, 'relu'],
+            [32, 'relu'],
+            [output_dim, 'linear']]
         )
 
         init = tf.global_variables_initializer()
@@ -124,3 +124,16 @@ class ModelTest(unittest.TestCase):
         session.run(init)
 
         model.export_model('./saves', 'test_model')
+
+        # close the session TODO: check if it REALLY closes the session and the new session is REALLY new session
+        session.close()
+        tf.reset_default_graph()  # TODO: do this on every test? 
+
+        # import model
+        imported_model = ImportModel('./saves', 'test_model')
+
+        # check for basic non tensorflow attributes
+        self.assertEqual(model.learning_rate, imported_model.learning_rate)
+        self.assertEqual(model.output_size, imported_model.output_size)
+        self.assertEqual(model.name, imported_model.name)
+        self.assertTrue(model.args == imported_model.args)

@@ -110,6 +110,7 @@ class Model:
         with open(folder + '/' + filesname + '.modelconfig', 'w') as outfile:
             self.args['name'] = self.name
             json.dump(self.args, outfile)
+            self.args.pop('name')
 
         # save the graph and models
         saver = tf.train.Saver()
@@ -129,9 +130,18 @@ class Model:
             }
         )
 
+
 class TargetModel(Model):
     def __init__(self, model):
         super().__init__(model.args['input_size'], model.args['learning_rate'], model.args['layers'])
+
+
+class ImportModel(Model):
+    def __init__(self, folder, filesname):
+        with open(folder + '/' + filesname + '.modelconfig', 'r') as config_file:
+            args = json.load(config_file)
+            super().__init__(args['input_size'], args['learning_rate'], args['layers'])
+            self.name = args['name']
 
 
 class Network:
