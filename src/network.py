@@ -16,10 +16,10 @@ ACTIVATIONS = {
 
 
 class HiddenLayer:
-    def __init__(self, size, layer_id, activation_function):
+    def __init__(self, model_name, size, layer_id, activation_function):
         self.id = layer_id
-        self.W = tf.Variable(tf.random_normal(size, stddev=0.01), name="W_"+self.id)
-        self.b = tf.Variable(tf.random_normal([size[1]], stddev=0.01), name="b_"+self.id)
+        self.W = tf.Variable(tf.random_normal(size, stddev=0.01), name=model_name+"_W_"+self.id)
+        self.b = tf.Variable(tf.random_normal([size[1]], stddev=0.01), name=model_name+"_b_"+self.id)
         self.activation_function = activation_function
         self.size = size
 
@@ -29,16 +29,15 @@ class HiddenLayer:
             return self.activation_function(Z)
 
 class Model:
-    def __init__(self, input_size, learning_rate, layers):
+    def __init__(self, model_name, input_size, learning_rate, layers):
         self.learning_rate = learning_rate
-        self.args = {'input_size': input_size, 'learning_rate': learning_rate, 'layers': layers} # keep the args in order to create a TargetModel easily
+        self.args = {'model_name': model_name, 'input_size': input_size, 'learning_rate': learning_rate, 'layers': layers} # keep the args in order to create a TargetModel easily
         self.output_size = layers[-1][0]
-        self.name = None
+        self.name = model_name
 
         self.predict_op = None
         self.train_op = None
         self.session = None
-
 
         # set placeholders
         self.X = tf.placeholder(tf.float32, [None, input_size], name='X')
@@ -48,7 +47,7 @@ class Model:
         # add layers
         self.layers = []
         for i, nb_neurons, activation in [ (i, n, a) for i, (n,a) in enumerate(layers)]:
-            self.layers.append(HiddenLayer([input_size, nb_neurons], str(i), ACTIVATIONS[activation]))
+            self.layers.append(HiddenLayer(self.name, [input_size, nb_neurons], str(i), ACTIVATIONS[activation]))
             input_size = nb_neurons
 
 
@@ -62,21 +61,18 @@ class Model:
 
     def _create_operations(self):
         # compute predict op
-        with tf.name_scope("predict_op"):
+        with tf.name_scope(self.name+"_predict_op"):
             Z = self.X
             for layer in self.layers:
                 Z = layer.forward(Z)
             self.predict_op = Z
 
         # compute train op
-        with tf.name_scope("train_op"):
+        with tf.name_scope(self.name+"_train_op"):
             Y = self.predict_op * tf.one_hot(self.Y, self.output_size)
             self.cost_op = tf.reduce_mean(tf.square(Y- self.T))
             # self.train_op = tf.train.AdamOptimizer(self.learning_rate).minimize(self.cost_op)  # TODO: why using this optimizer it changes the weights?
             self.train_op = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(self.cost_op)
-
-    def set_name(self, name):
-        self.name = name
 
     def predict(self, input_values):
         return self.session.run(self.predict_op, feed_dict={self.X: input_values})
@@ -112,7 +108,7 @@ class Model:
             os.makedirs(folder)
 
         # save the config model file
-        with open(folder + '/' + filesname + '.modelconfig', 'w') as outfile:
+        with open(folder + '/' + filesname + '_' + self.name + '.modelconfig', 'w') as outfile:
             self.args['name'] = self.name
             json.dump(self.args, outfile)
             self.args.pop('name')
@@ -123,14 +119,14 @@ class Model:
 
         # save weights / bias
         for layer_id, layer in enumerate(self.layers):
-            tensor_W_name = 'layer_'+ str(layer_id) + '_W'
+            tensor_W_name = self.name + '_layer_'+ str(layer_id) + '_W'
             tf.add_to_collection(tensor_W_name, layer.W)
-            tensor_b_name = 'layer_'+ str(layer_id) + '_b'
+            tensor_b_name = self.name + '_layer_'+ str(layer_id) + '_b'
             tf.add_to_collection(tensor_b_name, layer.b)
 
         # save the graph and models
         saver = tf.train.Saver()
-        saver.save(self.session, folder + '/' + filesname)
+        saver.save(self.session, folder + '/' + filesname + '_' + self.name)
 
     def set_session(self, session):
         self.session = session
@@ -149,12 +145,12 @@ class Model:
 
 class TargetModel(Model):
     def __init__(self, model):
-        super().__init__(model.args['input_size'], model.args['learning_rate'], model.args['layers'])
+        super().__init__(model.args['model_name'], model.args['input_size'], model.args['learning_rate'], model.args['layers'])
 
 
 class ImportModel(Model):
-    def __init__(self, session, folder, filesname):
-        base_path = folder + '/' + filesname
+    def __init__(self, session, folder, filesname, model_name):
+        base_path = folder + '/' + filesname + '_' + model_name
 
         # import the graph
         saver = tf.train.import_meta_graph( base_path + '.meta')
@@ -164,17 +160,16 @@ class ImportModel(Model):
         try:
             with open( base_path + '.modelconfig', 'r') as config_file:
                 args = json.load(config_file)
-                super().__init__(args['input_size'], args['learning_rate'], args['layers'])
-                self.name = args['name']
+                super().__init__(args['model_name'], args['input_size'], args['learning_rate'], args['layers'])
         except (OSError, IOError) as e:
             sys.stderr.write("ImportModel(): import file not found: " + base_path + '.modelconfig\n')
             exit(-1)
 
         # import the weights
         for layer_id, layer in enumerate(self.layers):
-            tensor_W_name = 'layer_'+ str(layer_id) + '_W'
+            tensor_W_name = self.name + '_layer_'+ str(layer_id) + '_W'
             layer.W = tf.get_collection(tensor_W_name)[0]
-            tensor_b_name = 'layer_'+ str(layer_id) + '_b'
+            tensor_b_name = self.name + '_layer_'+ str(layer_id) + '_b'
             layer.b = tf.get_collection(tensor_b_name)[0]
 
         # reset the operations
