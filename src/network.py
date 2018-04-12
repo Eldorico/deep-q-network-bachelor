@@ -22,9 +22,10 @@ class HiddenLayer:
         self.b = tf.Variable(tf.random_normal([size[1]], stddev=0.01), name=model_name+"_b_"+self.id)
         self.activation_function = activation_function
         self.size = size
+        self.model_name = model_name
 
     def forward(self, X):
-        with tf.name_scope("layer_"+self.id):
+        with tf.name_scope(self.model_name +"_layer_"+self.id):
             Z = tf.matmul(X, self.W) + self.b
             return self.activation_function(Z)
 

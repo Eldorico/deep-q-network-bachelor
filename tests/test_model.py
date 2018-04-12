@@ -9,9 +9,6 @@ import unittest
 
 class ModelTest(unittest.TestCase):
 
-    def tearDown(self):
-        tf.reset_default_graph()
-
     def test_model_sizes_prediction(self):
 
         input_dim = 10
@@ -144,43 +141,44 @@ class ModelTest(unittest.TestCase):
         y_imported_model = imported_model.predict(X)
         self.assertTrue(np.array_equal(y_model,y_imported_model))
 
-    # def test_model_export_import2(self):
-    #     """ checks if an imported model can create a good second imported model """
-    #     with tf.Session() as sess:
-    #         input_dim = 10
-    #         output_dim = 2
-    #         model = Model( input_dim, 1e-2,
-    #             [[64, 'relu'],
-    #             [32, 'relu'],
-    #             [output_dim, 'linear']]
-    #         )
-    #         init = tf.global_variables_initializer()
-    #         sess.run(init)
-    #         model.set_session(sess)
-    #         model.export_model('./saves', 'test_model')
-    #         #
-    #
-    #     # init = tf.global_variables_initializer()
-    #     # session = tf.Session()
-    #     # model.set_session(session)
-    #     # session.run(init)
-    #
-    #     # create an imported model, and then export the imported model
-    #     tf.reset_default_graph()
-    #
-    #
-    #     with tf.Session() as sess:
-    #         init = tf.global_variables_initializer()
-    #         sess.run(init)
-    #         # tf.initialize_all_variables().run()
-    #         imported_model = ImportModel(sess, './saves', 'test_model')
-    #         imported_model.export_model('./saves', 'test_imported_model')
-    #     #
-    #     # # import a model from the imported model
-    #     # imported_model2 = ImportModel(session, './saves', 'test_imported_model')
-    #     #
-    #     # # check for basic non tensorflow attributes
-    #     # self.assertEqual(imported_model.learning_rate, imported_model2.learning_rate)
-    #     # self.assertEqual(imported_model.output_size, imported_model2.output_size)
-    #     # self.assertEqual(imported_model.name, imported_model2.name)
-    #     # self.assertTrue(imported_model.args == imported_model2.args)
+    def test_model_export_import2(self):
+        """ checks if an imported model can create a good second imported model """
+        init = tf.global_variables_initializer()
+        session = tf.Session()
+        session.run(init)
+
+        input_dim = 10
+        output_dim = 2
+        model = Model('base_model', input_dim, 1e-2,
+            [[64, 'relu'],
+            [32, 'relu'],
+            [output_dim, 'linear']]
+        )
+        model.set_session(session)
+        model.export_model('./saves', 'test_model')
+
+        # create an imported model, and then export the imported model
+        # tf.reset_default_graph()
+
+        imported_model = ImportModel(session, './saves', 'test_model', 'imported_model')
+        imported_model.export_model('./saves', 'test_model')
+
+
+        # with tf.Session() as sess:
+        #     init = tf.global_variables_initializer()
+        #     sess.run(init)
+        #     # tf.initialize_all_variables().run()
+        #     imported_model = ImportModel(sess, './saves', 'test_model')
+        #     imported_model.export_model('./saves', 'test_imported_model')
+
+
+
+        #
+        # # import a model from the imported model
+        # imported_model2 = ImportModel(session, './saves', 'test_imported_model')
+        #
+        # # check for basic non tensorflow attributes
+        # self.assertEqual(imported_model.learning_rate, imported_model2.learning_rate)
+        # self.assertEqual(imported_model.output_size, imported_model2.output_size)
+        # self.assertEqual(imported_model.name, imported_model2.name)
+        # self.assertTrue(imported_model.args == imported_model2.args)
