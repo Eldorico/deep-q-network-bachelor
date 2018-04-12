@@ -14,9 +14,9 @@ class ModelTest(unittest.TestCase):
         input_dim = 10
         output_dim = 2
         model = Model( input_dim, 1e-2,
-            [(64, 'relu'),
-            (32, 'relu'),
-            (output_dim, 'linear')]
+            [[64, 'relu'],
+            [32, 'relu'],
+            [output_dim, 'linear']]
         )
 
         init = tf.global_variables_initializer()
@@ -36,9 +36,9 @@ class ModelTest(unittest.TestCase):
         input_dim = 10
         output_dim = 2
         model = Model( input_dim, 1e-4,
-            [(64, 'relu'),
-            (32, 'relu'),
-            (output_dim, 'linear')]
+            [[64, 'relu'],
+            [32, 'relu'],
+            [output_dim, 'linear']]
         )
 
         init = tf.global_variables_initializer()
@@ -76,9 +76,9 @@ class ModelTest(unittest.TestCase):
         input_dim = 10
         output_dim = 2
         model = Model( input_dim, 1e-2,
-            [(64, 'relu'),
-            (32, 'relu'),
-            (output_dim, 'linear')]
+            [[64, 'relu'],
+            [32, 'relu'],
+            [output_dim, 'linear']]
         )
         target_model = TargetModel(model)
 
@@ -113,9 +113,9 @@ class ModelTest(unittest.TestCase):
         input_dim = 10
         output_dim = 2
         model = Model( input_dim, 1e-2,
-            [(64, 'relu'),
-            (32, 'relu'),
-            (output_dim, 'linear')]
+            [[64, 'relu'],
+            [32, 'relu'],
+            [output_dim, 'linear']]
         )
 
         init = tf.global_variables_initializer()
@@ -124,3 +124,18 @@ class ModelTest(unittest.TestCase):
         session.run(init)
 
         model.export_model('./saves', 'test_model')
+
+        # import model
+        imported_model = ImportModel(session, './saves', 'test_model')
+
+        # check for basic non tensorflow attributes
+        self.assertEqual(model.learning_rate, imported_model.learning_rate)
+        self.assertEqual(model.output_size, imported_model.output_size)
+        self.assertEqual(model.name, imported_model.name)
+        self.assertTrue(model.args == imported_model.args)
+
+        # check if the wegiths have been correctly restored
+        X = np.array([[2,4,6,7,6,5,5,7,8,9]])
+        y_model = model.predict(X)
+        y_imported_model = imported_model.predict(X)
+        self.assertTrue(np.array_equal(y_model,y_imported_model))

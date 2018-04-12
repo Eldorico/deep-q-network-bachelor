@@ -4,6 +4,7 @@ from action import *
 import tensorflow as tf
 import os
 import json
+import sys
 
 
 ACTIVATIONS = {
@@ -56,6 +57,10 @@ class Model:
         for layer in self.layers:
             self.weights_and_biais += [layer.W, layer.b]
 
+        # create the operations
+        self._create_operations()
+
+    def _create_operations(self):
         # compute predict op
         with tf.name_scope("predict_op"):
             Z = self.X
@@ -110,6 +115,18 @@ class Model:
         with open(folder + '/' + filesname + '.modelconfig', 'w') as outfile:
             self.args['name'] = self.name
             json.dump(self.args, outfile)
+            self.args.pop('name')
+
+        # self.args['name'] = self.name
+        # tf.add_to_collection('args', self.args)
+        # self.args.pop('name')
+
+        # save weights / bias
+        for layer_id, layer in enumerate(self.layers):
+            tensor_W_name = 'layer_'+ str(layer_id) + '_W'
+            tf.add_to_collection(tensor_W_name, layer.W)
+            tensor_b_name = 'layer_'+ str(layer_id) + '_b'
+            tf.add_to_collection(tensor_b_name, layer.b)
 
         # save the graph and models
         saver = tf.train.Saver()
@@ -129,9 +146,40 @@ class Model:
             }
         )
 
+
 class TargetModel(Model):
     def __init__(self, model):
         super().__init__(model.args['input_size'], model.args['learning_rate'], model.args['layers'])
+
+
+class ImportModel(Model):
+    def __init__(self, session, folder, filesname):
+        base_path = folder + '/' + filesname
+
+        # import the graph
+        saver = tf.train.import_meta_graph( base_path + '.meta')
+        saver.restore(session, tf.train.latest_checkpoint(folder))
+
+        # create the base model object
+        try:
+            with open( base_path + '.modelconfig', 'r') as config_file:
+                args = json.load(config_file)
+                super().__init__(args['input_size'], args['learning_rate'], args['layers'])
+                self.name = args['name']
+        except (OSError, IOError) as e:
+            sys.stderr.write("ImportModel(): import file not found: " + base_path + '.modelconfig\n')
+            exit(-1)
+
+        # import the weights
+        for layer_id, layer in enumerate(self.layers):
+            tensor_W_name = 'layer_'+ str(layer_id) + '_W'
+            layer.W = tf.get_collection(tensor_W_name)[0]
+            tensor_b_name = 'layer_'+ str(layer_id) + '_b'
+            layer.b = tf.get_collection(tensor_b_name)[0]
+
+        # reset the operations
+        self.set_session(session)
+        self._create_operations()
 
 
 class Network:
