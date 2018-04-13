@@ -51,7 +51,6 @@ class Model:
             self.layers.append(HiddenLayer(self.name, [input_size, nb_neurons], str(i), ACTIVATIONS[activation]))
             input_size = nb_neurons
 
-
         # keep bias and weights to copy
         self.weights_and_biais = []
         for layer in self.layers:
@@ -119,11 +118,18 @@ class Model:
         # self.args.pop('name')
 
         # save weights / bias
-        for layer_id, layer in enumerate(self.layers):
-            tensor_W_name = self.name + '_layer_'+ str(layer_id) + '_W'
-            tf.add_to_collection(tensor_W_name, layer.W)
-            tensor_b_name = self.name + '_layer_'+ str(layer_id) + '_b'
-            tf.add_to_collection(tensor_b_name, layer.b)
+        # for layer_id, layer in enumerate(self.layers):
+        #     tensor_W_name = self.name + '_layer_'+ str(layer_id) + '_W'
+        #     tf.add_to_collection(tensor_W_name, layer.W)
+        #     print("Collection: "+tensor_W_name+": "+layer.W.eval())
+        #     tensor_b_name = self.name + '_layer_'+ str(layer_id) + '_b'
+        #     tf.add_to_collection(tensor_b_name, layer.b)
+
+        # tf.add_to_collection('predict_op', self.predict_op) # TODO not used I think
+        # tf.add_to_collection('cost', self.cost_op) # TODO not used I think
+        # tf.add_to_collection('train_op', self.train_op) # TODO not used I think
+
+        # self.debug_list_all_variables()
 
         # save the graph and models
         saver = tf.train.Saver()
@@ -131,6 +137,13 @@ class Model:
 
     def set_session(self, session):
         self.session = session
+
+    def debug_list_all_variables(self):
+        tvars = tf.trainable_variables()
+        tvars_vals = self.session.run(tvars)
+
+        for var, val in zip(tvars, tvars_vals):
+            print(var.name, val)
 
     def debug_return_cost(self, X, Y, T):
         # print("Model.debug_return_cost(): Y=%s, T=%s")
@@ -153,10 +166,6 @@ class ImportModel(Model):
     def __init__(self, session, folder, filesname, model_name):
         base_path = folder + '/' + filesname + '_' + model_name
 
-        # import the graph
-        saver = tf.train.import_meta_graph( base_path + '.meta')
-        saver.restore(session, tf.train.latest_checkpoint(folder))
-
         # create the base model object
         try:
             with open( base_path + '.modelconfig', 'r') as config_file:
@@ -166,16 +175,10 @@ class ImportModel(Model):
             sys.stderr.write("ImportModel(): import file not found: " + base_path + '.modelconfig\n')
             exit(-1)
 
-        # import the weights
-        for layer_id, layer in enumerate(self.layers):
-            tensor_W_name = self.name + '_layer_'+ str(layer_id) + '_W'
-            layer.W = tf.get_collection(tensor_W_name)[0]
-            tensor_b_name = self.name + '_layer_'+ str(layer_id) + '_b'
-            layer.b = tf.get_collection(tensor_b_name)[0]
-
-        # reset the operations
+        # restore the variables
         self.set_session(session)
-        self._create_operations()
+        saver = tf.train.Saver()
+        saver.restore(self.session, base_path)
 
 
 class Network:

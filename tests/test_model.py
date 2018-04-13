@@ -1,3 +1,4 @@
+import os
 import sys
 sys.path.append('../src')
 
@@ -7,7 +8,28 @@ from state import *
 import numpy as np
 import unittest
 
+
 class ModelTest(unittest.TestCase):
+
+    def __init__(self, args):
+        super().__init__(args)
+        self.save_folder = './tmp_test_saves'
+
+    def close_session_and_reset_default_graph(self, session):
+        tf.reset_default_graph()
+        session.close()
+
+    def print_checkpoint_variables(self, base_path):
+        from tensorflow.python import pywrap_tensorflow
+        reader = pywrap_tensorflow.NewCheckpointReader(base_path)
+        var_to_shape_map = reader.get_variable_to_shape_map()
+        print(var_to_shape_map)
+
+    def check_non_tensorflow_attributes_equality(self, model1, model2):
+        self.assertEqual(model1.learning_rate, model2.learning_rate)
+        self.assertEqual(model1.output_size, model2.output_size)
+        self.assertEqual(model1.name, model2.name)
+        self.assertTrue(model1.args == model2.args)
 
     def test_model_sizes_prediction(self):
 
@@ -54,22 +76,15 @@ class ModelTest(unittest.TestCase):
         model.train(x,y,t)
         y_after_training = model.predict(x)
         self.assertFalse(np.array_equal(y_before_training,y_after_training))
-        # print(y_before_training)
-        # print(y_after_training)
 
         # test a training that shouldnt change weights
         y_before_training = y_after_training
         t = np.array([[0, y_before_training[0][1]]])
         y = [1]
         self.assertEqual(0.0, model.debug_return_cost(x,y,t))
-        # print("Cost: ")
-        # print(model.debug_return_cost(x, y,t))
         model.train(x,y,t)
         y_after_training = model.predict(x)
-        # print(y_before_training)
-        # print(y_after_training)
         self.assertTrue(np.array_equal(y_before_training,y_after_training))
-
 
     def test_model_copy(self):
         # create a model and his target but dont copy target from model.
@@ -111,6 +126,9 @@ class ModelTest(unittest.TestCase):
 
     def test_model_export_import(self):
         """ checks if an model can create a good imported model """
+        tf.reset_default_graph()
+
+        # create the base model
         input_dim = 10
         output_dim = 2
         model = Model('my_model', input_dim, 1e-2,
@@ -124,61 +142,79 @@ class ModelTest(unittest.TestCase):
         model.set_session(session)
         session.run(init)
 
-        model.export_model('./saves', 'test_model')
+        # export the base model
+        model.export_model(self.save_folder, 'test_model')
+
+        # get the model variables to test before closing the session
+        X = np.array([[2,4,6,7,6,5,5,7,8,9]])
+        y_model = model.predict(X)  # simple prediction
+        t = np.array([[0, 1]])
+        y = [1]
+        model.train(X, y, t) # a train that should change the variables
+        y_model_after_train = model.predict(X)
+
+        # close the session and reset the graph
+        self.close_session_and_reset_default_graph(session)
 
         # import model
-        imported_model = ImportModel(session, './saves', 'test_model', 'my_model')
+        session = tf.Session()
+        imported_model = ImportModel(session, self.save_folder, 'test_model', 'my_model')
 
         # check for basic non tensorflow attributes
-        self.assertEqual(model.learning_rate, imported_model.learning_rate)
-        self.assertEqual(model.output_size, imported_model.output_size)
-        self.assertEqual(model.name, imported_model.name)
-        self.assertTrue(model.args == imported_model.args)
+        self.check_non_tensorflow_attributes_equality(model, imported_model)
 
         # check if the wegiths have been correctly restored
-        X = np.array([[2,4,6,7,6,5,5,7,8,9]])
-        y_model = model.predict(X)
         y_imported_model = imported_model.predict(X)
         self.assertTrue(np.array_equal(y_model,y_imported_model))
+        self.assertFalse(np.array_equal(y_model_after_train,y_imported_model))
 
     def test_model_export_import2(self):
         """ checks if an imported model can create a good second imported model """
-        init = tf.global_variables_initializer()
-        session = tf.Session()
-        session.run(init)
 
+        # create the base model
         input_dim = 10
-        output_dim = 2
-        model = Model('base_model', input_dim, 1e-2,
+        output_dim = 12
+        model1 = Model('model', input_dim, 1e-2,
             [[64, 'relu'],
             [32, 'relu'],
             [output_dim, 'linear']]
         )
-        model.set_session(session)
-        model.export_model('./saves', 'test_model')
 
-        # create an imported model, and then export the imported model
-        # tf.reset_default_graph()
+        init = tf.global_variables_initializer()
+        session = tf.Session()
+        model1.set_session(session)
+        session.run(init)
 
-        imported_model = ImportModel(session, './saves', 'test_model', 'imported_model')
-        imported_model.export_model('./saves', 'test_model')
+        # export the base model
+        model1.export_model(self.save_folder, 'test_model')
 
+        # get the model variables to test before closing the session
+        X = np.array([[2,4,6,7,6,5,5,7,8,9]])
+        y_model1 = model1.predict(X)  # simple prediction
 
-        # with tf.Session() as sess:
-        #     init = tf.global_variables_initializer()
-        #     sess.run(init)
-        #     # tf.initialize_all_variables().run()
-        #     imported_model = ImportModel(sess, './saves', 'test_model')
-        #     imported_model.export_model('./saves', 'test_imported_model')
+        # close the session and reset the graph
+        self.close_session_and_reset_default_graph(session)
 
+        # create the model2, remove all saves files and export it
+        session = tf.Session()
+        model2 = ImportModel(session, self.save_folder, 'test_model', 'model')
 
+        files_to_remove = [ f for f in os.listdir(self.save_folder)]
+        for f in files_to_remove:
+            os.remove(os.path.join(self.save_folder, f))
 
-        #
-        # # import a model from the imported model
-        # imported_model2 = ImportModel(session, './saves', 'test_imported_model')
-        #
-        # # check for basic non tensorflow attributes
-        # self.assertEqual(imported_model.learning_rate, imported_model2.learning_rate)
-        # self.assertEqual(imported_model.output_size, imported_model2.output_size)
-        # self.assertEqual(imported_model.name, imported_model2.name)
-        # self.assertTrue(imported_model.args == imported_model2.args)
+        model2.export_model(self.save_folder, 'import_test2')
+
+        # close the session and reset the graph
+        self.close_session_and_reset_default_graph(session)
+
+        # create the model3
+        session = tf.Session()
+        model3 = ImportModel(session, self.save_folder, 'import_test2', 'model')
+
+        # check for basic non tensorflow attributes
+        self.check_non_tensorflow_attributes_equality(model1, model3)
+
+        # check if the wegiths have been correctly restored
+        y_model3 = model3.predict(X)
+        self.assertTrue(np.array_equal(y_model1, y_model3))
