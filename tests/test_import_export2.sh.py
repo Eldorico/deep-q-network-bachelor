@@ -10,9 +10,7 @@ sys.path.append('../src')
 
 from network import *
 
-init = tf.global_variables_initializer()
-session = tf.InteractiveSession()
-session.run(init)
+session = tf.Session()
 
 imported_model = ImportModel(session, './tmp_test_saves', 'test_import_export_model', 'model1')
 

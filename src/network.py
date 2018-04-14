@@ -30,7 +30,7 @@ class HiddenLayer:
             return self.activation_function(Z)
 
 class Model:
-    def __init__(self, model_name, input_size, learning_rate, layers):
+    def __init__(self, session, model_name, input_size, learning_rate, layers):
         self.learning_rate = learning_rate
         self.args = {'model_name': model_name, 'input_size': input_size, 'learning_rate': learning_rate, 'layers': layers} # keep the args in order to create a TargetModel easily
         self.output_size = layers[-1][0]
@@ -38,7 +38,7 @@ class Model:
 
         self.predict_op = None
         self.train_op = None
-        self.session = None
+        self.session = session
 
         # set placeholders
         self.X = tf.placeholder(tf.float32, [None, input_size], name='X')
@@ -69,6 +69,15 @@ class Model:
             self.cost_op = tf.reduce_mean(tf.square(Y- self.T))
             # self.train_op = tf.train.AdamOptimizer(self.learning_rate).minimize(self.cost_op)  # TODO: why using this optimizer it changes the weights?
             self.train_op = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(self.cost_op)
+
+        # init the model variables (if we have a session. if we dont have a session, its because its an imported model so we dont want to init the variables. (session is set after in ImportModel()))
+        if self.session is not None:
+            variables_to_init = []
+            for layer in self.layers:
+                variables_to_init.append(layer.W)
+                variables_to_init.append(layer.b)
+            init = tf.variables_initializer(variables_to_init)
+            self.session.run(init)
 
     def predict(self, input_values):
         return self.session.run(self.predict_op, feed_dict={self.X: input_values})
@@ -113,9 +122,6 @@ class Model:
         saver = tf.train.Saver()
         saver.save(self.session, folder + '/' + filesname + '_' + self.name)
 
-    def set_session(self, session):
-        self.session = session
-
     def debug_list_all_variables(self):
         tvars = tf.trainable_variables()
         tvars_vals = self.session.run(tvars)
@@ -137,7 +143,7 @@ class Model:
 
 class TargetModel(Model):
     def __init__(self, model):
-        super().__init__(model.args['model_name']+'_tm', model.args['input_size'], model.args['learning_rate'], model.args['layers'])
+        super().__init__(model.session, model.args['model_name']+'_tm', model.args['input_size'], model.args['learning_rate'], model.args['layers'])
 
 
 class ImportModel(Model):
@@ -148,13 +154,13 @@ class ImportModel(Model):
         try:
             with open( base_path + '.modelconfig', 'r') as config_file:
                 args = json.load(config_file)
-                super().__init__(args['model_name'], args['input_size'], args['learning_rate'], args['layers'])
+                super().__init__(None, args['model_name'], args['input_size'], args['learning_rate'], args['layers'])
         except (OSError, IOError) as e:
             sys.stderr.write("ImportModel(): import file not found: " + base_path + '.modelconfig\n')
             exit(-1)
 
         # restore the variables
-        self.set_session(session)
+        self.session = session
         saver = tf.train.Saver()
         saver.restore(self.session, base_path)
 

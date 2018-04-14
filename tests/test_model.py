@@ -15,6 +15,11 @@ class ModelTest(unittest.TestCase):
         super().__init__(args)
         self.save_folder = './tmp_test_saves'
 
+    def remove_all_test_save_files(self):
+        files_to_remove = [ f for f in os.listdir(self.save_folder)]
+        for f in files_to_remove:
+            os.remove(os.path.join(self.save_folder, f))
+
     def close_session_and_reset_default_graph(self, session):
         tf.reset_default_graph()
         session.close()
@@ -33,18 +38,15 @@ class ModelTest(unittest.TestCase):
 
     def test_model_sizes_prediction(self):
 
+        session = tf.Session()
+
         input_dim = 10
         output_dim = 2
-        model = Model('test_model', input_dim, 1e-2,
+        model = Model(session, 'test_model', input_dim, 1e-2,
             [[64, 'relu'],
             [32, 'relu'],
             [output_dim, 'linear']]
         )
-
-        init = tf.global_variables_initializer()
-        session = tf.Session()
-        model.set_session(session)
-        session.run(init)
 
         x = np.array([[0,1,2,3,4,5,6,7,8,9]])
         y = model.predict(x)
@@ -55,18 +57,15 @@ class ModelTest(unittest.TestCase):
         self.assertEqual((3,output_dim), y.shape)
 
     def test_model_train(self):
+        session = tf.Session()
+
         input_dim = 10
         output_dim = 2
-        model = Model('test_model', input_dim, 1e-4,
+        model = Model(session, 'test_model', input_dim, 1e-4,
             [[64, 'relu'],
             [32, 'relu'],
             [output_dim, 'linear']]
         )
-
-        init = tf.global_variables_initializer()
-        session = tf.Session()
-        model.set_session(session)
-        session.run(init)
 
         # test a training that will change weights
         x = np.array([[0,1,2,3,4,5,6,7,8,9]])
@@ -87,21 +86,17 @@ class ModelTest(unittest.TestCase):
         self.assertTrue(np.array_equal(y_before_training,y_after_training))
 
     def test_model_copy(self):
+        session = tf.Session()
+
         # create a model and his target but dont copy target from model.
         input_dim = 10
         output_dim = 2
-        model = Model('test_model', input_dim, 1e-2,
+        model = Model(session, 'test_model', input_dim, 1e-2,
             [[64, 'relu'],
             [32, 'relu'],
             [output_dim, 'linear']]
         )
         target_model = TargetModel(model)
-
-        init = tf.global_variables_initializer()
-        session = tf.Session()
-        model.set_session(session)
-        target_model.set_session(session)
-        session.run(init)
 
         # Their predictions should be different
         x = np.array([[0,1,2,3,4,5,6,7,8,9]])
@@ -127,20 +122,16 @@ class ModelTest(unittest.TestCase):
     def test_model_export_import(self):
         """ checks if an model can create a good imported model """
         tf.reset_default_graph()
+        session = tf.Session()
 
         # create the base model
         input_dim = 10
         output_dim = 2
-        model = Model('my_model', input_dim, 1e-2,
+        model = Model(session, 'my_model', input_dim, 1e-2,
             [[64, 'relu'],
             [32, 'relu'],
             [output_dim, 'linear']]
         )
-
-        init = tf.global_variables_initializer()
-        session = tf.Session()
-        model.set_session(session)
-        session.run(init)
 
         # export the base model
         model.export_model(self.save_folder, 'test_model')
@@ -170,20 +161,17 @@ class ModelTest(unittest.TestCase):
 
     def test_model_export_import2(self):
         """ checks if an imported model can create a good second imported model """
+        tf.reset_default_graph()
+        session = tf.Session()
 
         # create the base model
         input_dim = 10
         output_dim = 12
-        model1 = Model('model', input_dim, 1e-2,
+        model1 = Model(session, 'model', input_dim, 1e-2,
             [[64, 'relu'],
             [32, 'relu'],
             [output_dim, 'linear']]
         )
-
-        init = tf.global_variables_initializer()
-        session = tf.Session()
-        model1.set_session(session)
-        session.run(init)
 
         # export the base model
         model1.export_model(self.save_folder, 'test_model')
@@ -199,10 +187,10 @@ class ModelTest(unittest.TestCase):
         session = tf.Session()
         model2 = ImportModel(session, self.save_folder, 'test_model', 'model')
 
-        files_to_remove = [ f for f in os.listdir(self.save_folder)]
-        for f in files_to_remove:
-            os.remove(os.path.join(self.save_folder, f))
+        # remove all save files of the tests
+        self.remove_all_test_save_files()
 
+        # export model2
         model2.export_model(self.save_folder, 'import_test2')
 
         # close the session and reset the graph
@@ -218,3 +206,55 @@ class ModelTest(unittest.TestCase):
         # check if the wegiths have been correctly restored
         y_model3 = model3.predict(X)
         self.assertTrue(np.array_equal(y_model1, y_model3))
+
+    def test_model_export_import3(self):
+        """ Tests the case where multiple models have been instanciated and exported.
+            But we only want to restore one particular model.
+        """
+        tf.reset_default_graph()
+        session = tf.Session()
+
+        # create the model1
+        input_dim = 10
+        output_dim = 12
+        model1 = Model(session, 'model1', input_dim, 1e-2,
+            [[64, 'relu'],
+            [32, 'relu'],
+            [output_dim, 'linear']]
+        )
+
+        # create the model2
+        input_dim = 12
+        output_dim = 13
+        model2 = Model(session, 'model2', input_dim, 1e-2,
+            [[64, 'relu'],
+            [32, 'relu'],
+            [output_dim, 'linear']]
+        )
+
+        # export each model
+        model1.export_model(self.save_folder, 'import_test3')
+        model2.export_model(self.save_folder, 'import_test3')
+
+        # test prediction
+        y_1 = model1.predict([[1,3,2,4,5,2,6,3,4,6]])
+        y_2 = model2.predict([[2,3,6,4,32,6,2,67,4,3,12,6]])
+
+        # reset graph and close session
+        self.close_session_and_reset_default_graph(session)
+
+        # debug
+        # self.print_checkpoint_variables(self.save_folder+'/import_test3_model1')
+        # print("ASDFASDFASDF")
+        # self.print_checkpoint_variables(self.save_folder+'/import_test3_model2')
+
+        # import only one model (model2)
+        session = tf.Session()
+        model2_bis = ImportModel(session, self.save_folder, 'import_test3', 'model2')
+
+        # check prediction of model2
+        y_2_bis = model2_bis.predict([[2,3,6,4,32,6,2,67,4,3,12,6]])
+        self.assertTrue(np.array_equal(y_2, y_2_bis))
+
+        # check if we have been here without error
+        self.assertTrue(True)

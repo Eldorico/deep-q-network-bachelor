@@ -87,7 +87,7 @@ class Agent:
     def train_networks(self):
         for network in self.networks:
             if network.is_training:
-                network.train(self.gamma, self.min_experience_size, self.batch_size, self.tensorboard)
+                network.train(self.gamma, self.min_experience_size, self.batch_size)
 
     def copy_target_networks(self):
         """ Make the network that are training do a copy of themselves.

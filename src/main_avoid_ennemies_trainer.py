@@ -13,8 +13,11 @@ world_config = {
 world = World(world_config)
 world.reset()
 
+# create the session
+session = tf.Session()
+
 # create the neural network that will learn to avoid ennemies
-avoid_ennemy_model = Model('avoid_ennemy_network', State.get_ennemy_agent_layer_shape(world), 1e-2,
+avoid_ennemy_model = Model(session, 'avoid_ennemy_network', State.get_ennemy_agent_layer_shape(world), 1e-2,
     [[64, 'relu'],
     [32, 'relu'],
     [Action.NB_POSSIBLE_ACTIONS, 'linear']]
