@@ -205,7 +205,7 @@ class Network:
         self.last_prediction_values['reward'] = reward
         self.last_prediction_values['game_over'] = game_over
 
-        self.experiences.append(self.last_prediction_values)
+        self.experiences.append(dict(self.last_prediction_values))
 
         if len(self.experiences) > max_experience_size:
             self.experiences.pop(0)
