@@ -49,7 +49,7 @@ agent_config['min_experience_size'] = 1000
 agent_config['max_experience_size'] = 5000
 agent_config['batch_size'] = 256
 agent_config['gamma'] = 0.9
-agent_config['tensorboard'] = Logger('../TensorBoard/')
+# agent_config['tensorboard'] = Logger('../TensorBoard/') TODO!! after having done convincing unittests
 
 agent = Agent(agent_config)
 
