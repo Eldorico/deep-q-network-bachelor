@@ -1,6 +1,4 @@
 
-from keras.models import Sequential
-from keras.layers import Dense, Activation
 from world import *
 from network import *
 from state import *
@@ -15,29 +13,18 @@ world_config = {
 world = World(world_config)
 world.reset()
 
-# essencial
-bus = {}
-
 # create the neural network that will learn to avoid ennemies
-avoid_ennemy_model = Model( State.get_ennemy_agent_layer_shape(world), 1e-2,
-    (64, 'relu'),
-    (32, 'relu'),
-    (Action.NB_POSSIBLE_ACTIONS, 'linear')
+avoid_ennemy_model = Model('avoid_ennemy_network', State.get_ennemy_agent_layer_shape(world), 1e-2,
+    [[64, 'relu'],
+    [32, 'relu'],
+    [Action.NB_POSSIBLE_ACTIONS, 'linear']]
 )
-# avoid_ennemy_model = Sequential([
-#     Dense(64, input_dim=State.get_ennemy_agent_layer_shape(world), activation='relu'),
-#     Dense(32, activation='relu'),
-#     Dense(Action.NB_POSSIBLE_ACTIONS, activation='linear'),
-# ])
-# avoid_ennemy_model.compile(optimizer='adam',
-#               loss='mean_squared_error')
 def avoid_ennemy_input_adapter(bus, next_state=False):
     if next_state:
         return bus['next_state'].get_ennemy_agent_layer_only()
     else:
         return bus['state'].get_ennemy_agent_layer_only()
 avoid_ennemy_network = Network(
-    'avoid ennemy network',
     avoid_ennemy_model,
     avoid_ennemy_input_adapter,
     True,
@@ -61,7 +48,7 @@ agent_config['batch_size'] = 256
 agent_config['gamma'] = 0.9
 agent_config['tensorboard'] = Logger('../TensorBoard/')
 
-agent = Agent(agent_config, bus)
+agent = Agent(agent_config)
 
 # train agent for avoiding ennemies
 agent.train(world, 5000)

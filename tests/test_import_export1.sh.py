@@ -25,6 +25,6 @@ x = np.array([[12,13,1,2,4,5,6,3,7,3]])
 print(model.predict(x))
 #model.debug_list_all_variables()
 
-model.export_model('./saves', 'test_import_export_model')
+model.export_model('./tmp_test_saves', 'test_import_export_model')
 
 

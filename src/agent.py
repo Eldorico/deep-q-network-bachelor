@@ -12,7 +12,7 @@ class Epsilon:
 
 class Agent:
 
-    def __init__(self, config, bus):
+    def __init__(self, config):
         self.networks = config['networks']
         self.output_network = config['output_network']
         self.copy_target_period = config['copy_target_period']
@@ -23,13 +23,16 @@ class Agent:
         self.epsilon = config['epsilon']
         self.tensorboard = config['tensorboard'] if 'tensorboard' in config else None
 
+        # self.session = tf.Session()
+        # init = tf.global_variables_initializer()
+
         # # TODO: j'en suis à là
         # https://github.com/keras-team/keras/issues/3358
-        if self.tensorboard is not None:
-            self.tensorboard.set_model(self.output_network.model)
-            self.tensorboard.write_model_graph()
+        # if self.tensorboard is not None:
+        #     self.tensorboard.set_model(self.output_network.model)
+        #     self.tensorboard.write_model_graph()
 
-        self.bus = bus
+        self.bus = {} # used to keep the current_state and the next_state (s1 and s2)
 
         self.nb_steps_played = 0
 
@@ -103,9 +106,9 @@ class Agent:
             score = self.play_episode(world)
             tmp_total_score += score
 
-            if self.tensorboard is not None:
-                self.tensorboard.write_summary('score', i, score)
-                self.tensorboard.write_histograms(i)
+            # if self.tensorboard is not None:
+            #     self.tensorboard.write_summary('score', i, score)
+            #     self.tensorboard.write_histograms(i)
 
             if i % avg_every_n_episodes == 0 and i != 0:
                 score_avg = tmp_total_score / avg_every_n_episodes

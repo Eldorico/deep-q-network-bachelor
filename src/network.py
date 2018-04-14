@@ -56,10 +56,6 @@ class Model:
         for layer in self.layers:
             self.weights_and_biais += [layer.W, layer.b]
 
-        # create the operations
-        self._create_operations()
-
-    def _create_operations(self):
         # compute predict op
         with tf.name_scope(self.name+"_predict_op"):
             Z = self.X
@@ -113,24 +109,6 @@ class Model:
             json.dump(self.args, outfile)
             self.args.pop('name')
 
-        # self.args['name'] = self.name
-        # tf.add_to_collection('args', self.args)
-        # self.args.pop('name')
-
-        # save weights / bias
-        # for layer_id, layer in enumerate(self.layers):
-        #     tensor_W_name = self.name + '_layer_'+ str(layer_id) + '_W'
-        #     tf.add_to_collection(tensor_W_name, layer.W)
-        #     print("Collection: "+tensor_W_name+": "+layer.W.eval())
-        #     tensor_b_name = self.name + '_layer_'+ str(layer_id) + '_b'
-        #     tf.add_to_collection(tensor_b_name, layer.b)
-
-        # tf.add_to_collection('predict_op', self.predict_op) # TODO not used I think
-        # tf.add_to_collection('cost', self.cost_op) # TODO not used I think
-        # tf.add_to_collection('train_op', self.train_op) # TODO not used I think
-
-        # self.debug_list_all_variables()
-
         # save the graph and models
         saver = tf.train.Saver()
         saver.save(self.session, folder + '/' + filesname + '_' + self.name)
@@ -159,7 +137,7 @@ class Model:
 
 class TargetModel(Model):
     def __init__(self, model):
-        super().__init__(model.args['model_name'], model.args['input_size'], model.args['learning_rate'], model.args['layers'])
+        super().__init__(model.args['model_name']+'_tm', model.args['input_size'], model.args['learning_rate'], model.args['layers'])
 
 
 class ImportModel(Model):
@@ -183,17 +161,14 @@ class ImportModel(Model):
 
 class Network:
 
-    def __init__(self, name, model, input_adapter=None, continue_exploration=False, is_training=False):
-        self.name = name
+    def __init__(self, model, input_adapter, continue_exploration=False, is_training=False):
         self.is_training = is_training
         self.model = model
-        self.model.set_name(name)
         self.input_adapter = input_adapter
         self.explore = continue_exploration
 
         if self.is_training:
-            self.target_model = keras.models.clone_model(self.model)
-            self.target_model.set_weights(self.model.get_weights())
+            self.target_model = TargetModel(self.model)
 
         self.prediction_done = False
         self.depends_on = []
@@ -203,8 +178,8 @@ class Network:
     def add_dependency(self, network):
         self.depends_on.append(network)
 
-    def predict(self, bus, epsilon):
-        choose_randomly = True if random.random() <= epsilon and self.explore else False
+    def predict(self, bus, epsilon_value):
+        choose_randomly = True if random.random() <= epsilon_value and self.explore else False
 
         if choose_randomly:
             action = random.randint(0, Action.NB_POSSIBLE_ACTIONS -1)
@@ -234,25 +209,28 @@ class Network:
         self.prediction_done = False
 
     def copy_target_network(self):
-        self.target_model.set_weights(self.model.get_weights())
+        self.target_model.copy_from(self.model)
 
-    def train(self, gamma, min_experience_size, batch_size, tensorboard=None):
+    def train(self, gamma, min_experience_size, batch_size):
         if len(self.experiences) < min_experience_size:
             return
 
         batch = random.sample(self.experiences, batch_size)
         inputs = []
+        choosen_actions = []
         targets = []
         for sample in batch:
             s1, s2, reward, game_over, action = sample['s1'], sample['s2'], sample['reward'], sample['game_over'], sample['action']
 
             inputs.append(s1[0])
+            choosen_actions.append(action)
 
             action_values_s2 = self.target_model.predict(s2)[0]
             action_value = action_values_s2[action]
-            target = self.target_model.predict(s1)
-            target[0][action] = reward if game_over else reward + gamma * action_value
-            target = [0 if i != action else value for i, value in enumerate(target[0])]
-            targets.append(target[0])
+            target = self.target_model.predict(s1)[0]
+            target[action] = reward if game_over else reward + gamma * action_value
+            target = [0 if i != action else value for i, value in enumerate(target)]
+            targets.append(target)
 
-        self.model.fit(np.array(inputs), np.array(targets), batch_size=len(inputs), epochs=1, verbose=0)
+        self.model.train(inputs, choosen_actions, targets)
+        # self.model.fit(np.array(inputs), np.array(targets), batch_size=len(inputs), epochs=1, verbose=0)
