@@ -108,6 +108,10 @@ class World(gym.Env):
         reward = 1
         current_state = State(self.game_width, self.game_height)
 
+        if action < 0 or action >= Action.NB_POSSIBLE_ACTIONS:
+             sys.stderr.write("World.step(): action not in action space: %d \n" % action)
+             exit(-1)
+
         # update new agent position
         self.agent.x +=  Action.to_dX[action] if self.agent.x + Action.to_dX[action] < self.game_width  and self.agent.x + Action.to_dX[action] >= 0 else 0
         self.agent.y +=  Action.to_dY[action] if self.agent.y + Action.to_dY[action] < self.game_height and self.agent.y + Action.to_dY[action] >= 0 else 0

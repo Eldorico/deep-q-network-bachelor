@@ -1,3 +1,14 @@
+import tensorflow as tf
+from tensorflow.core.framework import summary_pb2
+import numpy as np
+
+class Global:
+    USE_TENSORBOARD = False
+    TENSORBOARD_DIR_NAME = None
+    SESSION = None
+    WRITER = None
+    EPISODE_NUMBER = 0
+
 
 class Epsilon:
     def __init__(self, start_epsilon_value):
@@ -12,7 +23,7 @@ class Epsilon:
 
 class Agent:
 
-    def __init__(self, config, bus):
+    def __init__(self, config, session=None):
         self.networks = config['networks']
         self.output_network = config['output_network']
         self.copy_target_period = config['copy_target_period']
@@ -21,14 +32,33 @@ class Agent:
         self.batch_size = config['batch_size']
         self.gamma = config['gamma']
         self.epsilon = config['epsilon']
-        self.tensorboard = config['tensorboard'] if 'tensorboard' in config else None
+        # self.tensorboard_folder = config['tensorboard_folder'] if 'tensorboard_folder' in config else None
 
-        self.bus = bus
+        # self.session = tf.Session()
+        # init = tf.global_variables_initializer()
+
+        # # TODO: j'en suis à là
+        # https://github.com/keras-team/keras/issues/3358
+        # if self.tensorboard is not None:
+        #     self.tensorboard.set_model(self.output_network.model)
+        #     self.tensorboard.write_model_graph()
+        if Global.USE_TENSORBOARD:
+            Global.EPISODE_NUMBER = 0
+
+            self.writer = tf.summary.FileWriter(Global.TENSORBOARD_DIR_NAME)
+            self.writer.add_graph(Global.SESSION.graph)
+            Global.WRITER = self.writer
+
+            self.actions_made_placeholder = tf.placeholder(tf.int32, [None, 1])
+            self.actions_made_histogram = tf.summary.histogram('actions_distribution', self.actions_made_placeholder)
+
+        self.bus = {} # used to keep the current_state and the next_state (s1 and s2)
 
         self.nb_steps_played = 0
 
-    def play_episode(self, world):
+    def play_episode(self, world, episode_number=None):
         current_state = world.reset()
+        action_log = []
 
         while not world.game_over:
             action = self.choose_action(current_state)
@@ -44,8 +74,10 @@ class Agent:
             current_state = next_state
             self.epsilon.update_epsilon()
             self.nb_steps_played += 1
+            action_log.append(action)
 
-        return world_informations['score']
+        Global.EPISODE_NUMBER += 1
+        return {'score': world_informations['score'], 'actions_made' : action_log}
 
     def flush_last_prediction_var(self):
         """ Removes the last prediction_values of the networks and sets their
@@ -78,7 +110,7 @@ class Agent:
     def train_networks(self):
         for network in self.networks:
             if network.is_training:
-                network.train(self.gamma, self.min_experience_size, self.batch_size, self.tensorboard)
+                network.train(self.gamma, self.min_experience_size, self.batch_size)
 
     def copy_target_networks(self):
         """ Make the network that are training do a copy of themselves.
@@ -91,15 +123,33 @@ class Agent:
     def train(self, world, nb_episodes, avg_every_n_episodes=100, stop_on_score_avg=None):
         score_avg = 0
         tmp_total_score = 0
+
+        if Global.USE_TENSORBOARD:
+            log = {'actions_made' : []}
+
         for i in range(nb_episodes):
             print("episode %d" % (i+1))
 
-            score = self.play_episode(world)
-            tmp_total_score += score
+            results = self.play_episode(world, i)
+            tmp_total_score += results['score']
 
-            if self.tensorboard is not None:
-                self.tensorboard.write_summary('score', i, score)
+            # update tensorboard
+            if Global.USE_TENSORBOARD:
+                value = summary_pb2.Summary.Value(tag="score_per_episode", simple_value=results['score'])
+                summary = summary_pb2.Summary(value=[value])
+                self.writer.add_summary(summary, i)
 
+                value = summary_pb2.Summary.Value(tag="epsilon_value", simple_value=self.epsilon.value)
+                summary = summary_pb2.Summary(value=[value])
+                self.writer.add_summary(summary, i)
+
+                log['actions_made'] += results['actions_made']
+                if i % 50 == 0 and i != 0:
+                    summary = Global.SESSION.run(self.actions_made_histogram, feed_dict={self.actions_made_placeholder: np.reshape(log['actions_made'], (len(log['actions_made']), 1))})
+                    self.writer.add_summary(summary, i)
+                    log['actions_made'] = []
+
+            # check if avg score is reached
             if i % avg_every_n_episodes == 0 and i != 0:
                 score_avg = tmp_total_score / avg_every_n_episodes
                 print("score avg after %d episodes: %f" % (i, score_avg) )
@@ -108,6 +158,7 @@ class Agent:
                     print("Score avg reached. Stop learning")
                     return
 
+            # stop if nb max episodes reached
             if i == nb_episodes:
                 print("Nb max episodes reached. Stop learning")
                 return

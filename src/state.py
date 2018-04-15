@@ -57,6 +57,18 @@ class Direction:
 class State:
     AGENT = 10  # this must not overlap the Direction
 
+    ENNEMY_AGENT_STD_VALUE = {
+        Direction.N: -0.5,
+        Direction.NE: -0.4,
+        Direction.E: -0.3,
+        Direction.SE: -0.2,
+        Direction.S: -0.1,
+        Direction.SW: +0.1,
+        Direction.W: 0.2,
+        Direction.NW: 0.3,
+        AGENT:  0.4
+    }
+
     def __init__(self, world_size_x, world_size_y):
         self.world_width = world_size_x
         self.world_height = world_size_y
@@ -64,11 +76,13 @@ class State:
         self.object_positions = np.zeros(world_size_x*world_size_y)
         self.agent_state = np.ones(2)
 
+
+
     def place_ennemy(self, ennemy):
-        self.ennemy_agent_positions[self.to_1D(ennemy.x, ennemy.y)] = ennemy.direction
+        self.ennemy_agent_positions[self.to_1D(ennemy.x, ennemy.y)] = State.ENNEMY_AGENT_STD_VALUE[ennemy.direction]
 
     def place_agent(self, pos_x, pos_y):
-        self.ennemy_agent_positions[self.to_1D(pos_x, pos_y)] = State.AGENT
+        self.ennemy_agent_positions[self.to_1D(pos_x, pos_y)] = State.ENNEMY_AGENT_STD_VALUE[State.AGENT]
 
     def to_1D(self, x, y):
         result = int(y * self.world_width + x)
