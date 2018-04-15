@@ -71,6 +71,7 @@ class NetworkTest(unittest.TestCase):
         self.assertTrue('game_over' in network.last_prediction_values)
         self.assertEqual(network.last_prediction_values['game_over'], False)
 
+
         self.assertTrue(len(network.experiences) == 1)
         self.assertEqual(network.experiences[0]['reward'], 123)
         self.assertEqual(network.experiences[0]['game_over'], False)
@@ -83,3 +84,50 @@ class NetworkTest(unittest.TestCase):
         self.assertEqual(network.experiences[0]['game_over'], False)
         self.assertEqual(network.experiences[1]['reward'], 789)
         self.assertEqual(network.experiences[1]['game_over'], True)
+        self.assertFalse(np.array_equal(network.experiences[0]['s1'], network.experiences[0]['s2']))
+        self.assertFalse(np.array_equal(network.experiences[1]['s1'], network.experiences[1]['s2']))
+
+    def test_predict_and_add_experience(self):
+        session, world, network = self.create_session_and_world_and_simple_network()
+        current_state = world.reset()
+        self.assertIsNone(network.last_prediction_values)
+
+        bus = {'state': current_state}
+        network.predict(bus, -1)
+        self.assertIsNotNone(network.last_prediction_values)
+        self.assertEqual(len(network.last_prediction_values), 2)
+        self.assertIn('action', network.last_prediction_values)
+        self.assertTrue(network.last_prediction_values['action'] >= 0 and network.last_prediction_values['action'] < Action.NB_POSSIBLE_ACTIONS)
+        self.assertIn('s1', network.last_prediction_values)
+
+        action = network.last_prediction_values['action']
+        next_state, reward, game_over, _ = world.step(action)
+        bus = {'next_state': next_state}
+        network.add_experience(bus, reward, game_over, 2)
+        network.flush_last_prediction_var()
+        self.assertEqual(len(network.experiences), 1)
+        self.assertEqual(len(network.experiences[0]), 5)
+        self.assertIsNone(network.last_prediction_values)
+
+        current_state = next_state
+        bus = {'state': current_state}
+        network.predict(bus, -1)
+        self.assertIsNotNone(network.last_prediction_values)
+        self.assertEqual(len(network.last_prediction_values), 2)
+        self.assertIn('action', network.last_prediction_values)
+        self.assertTrue(network.last_prediction_values['action'] >= 0 and network.last_prediction_values['action'] < Action.NB_POSSIBLE_ACTIONS)
+        self.assertIn('s1', network.last_prediction_values)
+
+        action = network.last_prediction_values['action']
+        next_state, reward, game_over, _ = world.step(action)
+        bus = {'next_state': next_state}
+        network.add_experience(bus, reward, game_over, 2)
+        network.flush_last_prediction_var()
+        self.assertEqual(len(network.experiences), 2)
+        self.assertEqual(len(network.experiences[0]), 5)
+        self.assertEqual(len(network.experiences[1]), 5)
+        self.assertIsNone(network.last_prediction_values)
+
+        self.assertTrue(np.array_equal(network.experiences[0]['s2'], network.experiences[1]['s1']))
+        self.assertFalse(np.array_equal(network.experiences[0]['s1'], network.experiences[0]['s2']))
+        self.assertFalse(np.array_equal(network.experiences[1]['s1'], network.experiences[1]['s2']))

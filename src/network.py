@@ -1,10 +1,12 @@
 import numpy as np
 import random
-from action import *
 import tensorflow as tf
 import os
 import json
 import sys
+
+from action import *
+from agent import *
 
 
 ACTIVATIONS = {
@@ -70,6 +72,9 @@ class Model:
             # self.train_op = tf.train.AdamOptimizer(self.learning_rate).minimize(self.cost_op)  # TODO: why using this optimizer it changes the weights?
             self.train_op = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(self.cost_op)
 
+            if Global.USE_TENSORBOARD:
+                self.cost_scalar = tf.summary.scalar("cost", self.cost_op)
+
         # init the model variables (if we have a session. if we dont have a session, its because its an imported model so we dont want to init the variables. (session is set after in ImportModel()))
         if self.session is not None:
             variables_to_init = []
@@ -78,6 +83,10 @@ class Model:
                 variables_to_init.append(layer.b)
             init = tf.variables_initializer(variables_to_init)
             self.session.run(init)
+
+        # init tensorboard variables
+        if Global.USE_TENSORBOARD:
+            self.last_cost_summary_episode = -1
 
     def predict(self, input_values):
         return self.session.run(self.predict_op, feed_dict={self.X: input_values})
@@ -89,14 +98,23 @@ class Model:
         :param: T ([float]): the targets with ONLY the value to update. ex: [0,0,13.24, 0 0]
                 the value to update corresponds to the choosen action. The size of T as to be [None, output_dim]
         """
-        self.session.run(
-            self.train_op,
-            feed_dict = {
-                self.X : X,
-                self.Y : Y,
-                self.T : T
-            }
-        )
+        if Global.USE_TENSORBOARD and self.last_cost_summary_episode != Global.EPISODE_NUMBER:
+            _, cost_summary = self.session.run([self.train_op, self.cost_scalar], feed_dict={self.X:X, self.Y:Y, self.T:T})
+            Global.WRITER.add_summary(cost_summary, Global.EPISODE_NUMBER)
+            self.last_cost_summary_episode = Global.EPISODE_NUMBER
+            # print("Predict = ")
+            # print(train_result)
+            # print("Cost = ")
+            # print(cost_summary)
+        else:
+            self.session.run(
+                self.train_op,
+                feed_dict = {
+                    self.X : X,
+                    self.Y : Y,
+                    self.T : T
+                }
+            )
 
     def copy_from(self, other):
         updates_to_run = []
@@ -188,7 +206,7 @@ class Network:
         choose_randomly = True if random.random() <= epsilon_value and self.explore else False
 
         if choose_randomly:
-            action = random.randint(0, Action.NB_POSSIBLE_ACTIONS -1)
+            action = Action.random_action()
         else:
             input_value = self.input_adapter(bus)
             prediction = self.model.predict(input_value)[0]
@@ -239,4 +257,3 @@ class Network:
             targets.append(target)
 
         self.model.train(inputs, choosen_actions, targets)
-        # self.model.fit(np.array(inputs), np.array(targets), batch_size=len(inputs), epochs=1, verbose=0)

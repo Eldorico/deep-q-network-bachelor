@@ -1,3 +1,5 @@
+import random
+
 
 class Action:
     DO_NOTHING = 0
@@ -14,6 +16,10 @@ class Action:
     DROP = 11
 
     NB_POSSIBLE_ACTIONS = 12
+
+    @staticmethod
+    def random_action():
+        return random.randint(0,Action.NB_POSSIBLE_ACTIONS-1)
 
     to_dX = {
         DO_NOTHING : 0,

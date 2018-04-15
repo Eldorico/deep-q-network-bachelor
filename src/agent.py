@@ -6,6 +6,8 @@ class Global:
     USE_TENSORBOARD = False
     TENSORBOARD_DIR_NAME = None
     SESSION = None
+    WRITER = None
+    EPISODE_NUMBER = 0
 
 
 class Epsilon:
@@ -41,8 +43,11 @@ class Agent:
         #     self.tensorboard.set_model(self.output_network.model)
         #     self.tensorboard.write_model_graph()
         if Global.USE_TENSORBOARD:
+            Global.EPISODE_NUMBER = 0
+
             self.writer = tf.summary.FileWriter(Global.TENSORBOARD_DIR_NAME)
             self.writer.add_graph(Global.SESSION.graph)
+            Global.WRITER = self.writer
 
             self.actions_made_placeholder = tf.placeholder(tf.int32, [None, 1])
             self.actions_made_histogram = tf.summary.histogram('actions_distribution', self.actions_made_placeholder)
@@ -71,6 +76,7 @@ class Agent:
             self.nb_steps_played += 1
             action_log.append(action)
 
+        Global.EPISODE_NUMBER += 1
         return {'score': world_informations['score'], 'actions_made' : action_log}
 
     def flush_last_prediction_var(self):
