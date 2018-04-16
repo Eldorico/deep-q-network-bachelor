@@ -32,16 +32,11 @@ class Agent:
         self.batch_size = config['batch_size']
         self.gamma = config['gamma']
         self.epsilon = config['epsilon']
-        # self.tensorboard_folder = config['tensorboard_folder'] if 'tensorboard_folder' in config else None
 
-        # self.session = tf.Session()
-        # init = tf.global_variables_initializer()
+        self.save_folder = config['save_folder'] if 'save_folder' in config else None
+        self.save_prefix_names = config['save_prefix_names'] if 'save_prefix_names' in config else None
+        self.exit = False
 
-        # # TODO: j'en suis à là
-        # https://github.com/keras-team/keras/issues/3358
-        # if self.tensorboard is not None:
-        #     self.tensorboard.set_model(self.output_network.model)
-        #     self.tensorboard.write_model_graph()
         if Global.USE_TENSORBOARD:
             Global.EPISODE_NUMBER = 0
 
@@ -55,6 +50,21 @@ class Agent:
         self.bus = {} # used to keep the current_state and the next_state (s1 and s2)
 
         self.nb_steps_played = 0
+
+    def send_exit_signal(self):
+        self.exit = True
+
+    def _save(self):
+        if self.save_folder is not None:
+            print("Saving networks models as %s ..." % (self.save_folder+'/'+self.save_prefix_names))
+            for network in self.networks:
+                network.model.export_model(self.save_folder, self.save_prefix_names)
+            print("Saving done.")
+
+    def _save_and_exit(self):
+        self._save()
+        print('Exiting now')
+        exit(0)
 
     def play_episode(self, world, episode_number=None):
         current_state = world.reset()
@@ -156,9 +166,12 @@ class Agent:
                 tmp_total_score = 0
                 if stop_on_score_avg is not None and score_avg >= stop_on_score_avg:
                     print("Score avg reached. Stop learning")
-                    return
+                    self.exit = True
 
-            # stop if nb max episodes reached
-            if i == nb_episodes:
-                print("Nb max episodes reached. Stop learning")
-                return
+            # exit
+            if self.exit:
+                self._save_and_exit()
+
+        print("Nb max episodes reached. Stop learning")
+        if self.save_folder is not None:
+            self._save()

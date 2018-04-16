@@ -126,7 +126,7 @@ class Model:
             updates_to_run.append(value_to_update)
         self.session.run(updates_to_run)
 
-    def export_model(self, folder, filesname):
+    def export_model(self, folder, filesname=''):
         if not os.path.exists(folder):
             os.makedirs(folder)
 
