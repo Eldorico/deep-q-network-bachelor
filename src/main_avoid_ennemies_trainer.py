@@ -15,24 +15,31 @@ world_config = {
 world = World(world_config)
 world.reset()
 
+# DANGER ZONE: MODIFY ONLY THIS IF YOU ARE CREATING THE CURRENT AGENT!!!!! ELSE: leave it like this in order to import the same agent
+SAVE_FOLDER = '../tmp_saves/avoid_ennemy_trainer/my_test_folder'
+Global.FIRST_TIME_CREATING_AGENT = True
+
+# make sure the agent is created for the first time
+# TODO: ...
+
 # create the session
 session = tf.Session()
 
 # use tensorboard
 Global.USE_TENSORBOARD = True
-Global.TENSORBOARD_DIR_NAME = '../TensorBoard/test01'
+Global.SAVE_FOLDER = SAVE_FOLDER
 Global.SESSION = session
 
-SAVE_FOLDER = '../Saves/avoid_ennemy_trainer'
-PREFIX_FILES_NAME =  'test1'
-
 # create the neural network that will learn to avoid ennemies
-# avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-2,
-#     [[64, 'relu'],
-#     [32, 'relu'],
-#     [Action.NB_POSSIBLE_ACTIONS, 'linear']]
-# )
-avoid_ennemy_model = ImportModel(session, SAVE_FOLDER, PREFIX_FILES_NAME, 'avoid_ennemy')
+AVOID_ENENEMY_NETWORK_NAME = 'avoid_ennemy'
+if FIRST_TIME_CREATING_AGENT:
+    avoid_ennemy_model = Model(session, AVOID_ENENEMY_NETWORK_NAME, State.get_ennemy_agent_layer_shape(world), 1e-2,
+        [[64, 'relu'],
+        [32, 'relu'],
+        [Action.NB_POSSIBLE_ACTIONS, 'linear']]
+    )
+else:
+    avoid_ennemy_model = ImportModel(session, SAVE_FOLDER, '', AVOID_ENENEMY_NETWORK_NAME)
 def avoid_ennemy_input_adapter(bus, next_state=False):
     if next_state:
         return bus['next_state'].get_ennemy_agent_layer_only()
@@ -66,14 +73,5 @@ agent_config['save_prefix_names'] = PREFIX_FILES_NAME
 
 agent = Agent(agent_config)
 
-# create the sig Int handler
-import signal
-import sys
-def signal_handler(signal, frame):
-        print('You pressed Ctrl+C!')
-        print('Sending signal to agent...')
-        agent.send_exit_signal()
-signal.signal(signal.SIGINT, signal_handler)
-
 # train agent for avoiding ennemies
-agent.train(world, 10000)
+agent.train(world, 15000)

@@ -2,13 +2,22 @@ import tensorflow as tf
 from tensorflow.core.framework import summary_pb2
 import numpy as np
 
+# create the sig Int handler
+import signal
+import sys
+def signal_handler(signal, frame):
+        print('You pressed Ctrl+C!')
+        print('Sending signal to agent...')
+        agent.send_exit_signal()
+signal.signal(signal.SIGINT, signal_handler)
+
 class Global:
     USE_TENSORBOARD = False
     TENSORBOARD_DIR_NAME = None
     SESSION = None
     WRITER = None
     EPISODE_NUMBER = 0
-
+    FIRST_TIME_CREATING_AGENT = False
 
 class Epsilon:
     def __init__(self, start_epsilon_value):
