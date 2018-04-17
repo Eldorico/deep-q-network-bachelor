@@ -1,0 +1,4 @@
+- random position de l'agent ET ennemis: pour éviter de corrpomre l'apprentissage de "avoid_ennemies"
+- 3 layers dans state: 
+  - permet d'avoir un input fixe pour un nombre d'ennemis variables
+  - permet de pouvoir superposer de la nourriture et un ennemi
