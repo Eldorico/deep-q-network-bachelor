@@ -1,6 +1,4 @@
 import tensorflow as tf
-import time
-import datetime
 
 from world import *
 from network import *
@@ -23,8 +21,6 @@ session = tf.Session()
 # use tensorboard
 Global.USE_TENSORBOARD = True
 Global.SAVE_FOLDER = '../tmp_saves/avoid_ennemy_trainer/my_test_folder'
-Global.TB_FOLDER = Global.SAVE_FOLDER + '/tensorboard_'+ datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d_%H:%M:%S')
-print(Global.TB_FOLDER)
 Global.SESSION = session
 
 # create the neural network that will learn to avoid ennemies

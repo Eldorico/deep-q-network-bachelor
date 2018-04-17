@@ -1,14 +1,19 @@
 import tensorflow as tf
 from tensorflow.core.framework import summary_pb2
 import numpy as np
+import time
+import datetime
 
 class Global:
     USE_TENSORBOARD = False
     SAVE_FOLDER = None
-    TB_FOLDER = None
     SESSION = None
     WRITER = None
     EPISODE_NUMBER = 0
+
+    @staticmethod
+    def get_TB_folder():
+        return Global.SAVE_FOLDER + '/tensorboard_'+ datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d_%H:%M:%S')
 
 class Epsilon:
     def __init__(self, start_epsilon_value):
@@ -37,7 +42,7 @@ class Agent:
         if Global.USE_TENSORBOARD:
             Global.EPISODE_NUMBER = 0
 
-            self.writer = tf.summary.FileWriter(Global.SAVE_FOLDER)
+            self.writer = tf.summary.FileWriter(Global.get_TB_folder())
             self.writer.add_graph(Global.SESSION.graph)
             Global.WRITER = self.writer
 
