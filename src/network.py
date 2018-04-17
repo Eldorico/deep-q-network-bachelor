@@ -126,19 +126,19 @@ class Model:
             updates_to_run.append(value_to_update)
         self.session.run(updates_to_run)
 
-    def export_model(self, folder, filesname=''):
+    def export_model(self, folder):
         if not os.path.exists(folder):
             os.makedirs(folder)
 
         # save the config model file
-        with open(folder + '/' + filesname + '_' + self.name + '.modelconfig', 'w') as outfile:
+        with open(folder + '/' + self.name + '.modelconfig', 'w') as outfile:
             self.args['name'] = self.name
             json.dump(self.args, outfile)
             self.args.pop('name')
 
         # save the graph and models
         saver = tf.train.Saver()
-        saver.save(self.session, folder + '/' + filesname + '_' + self.name)
+        saver.save(self.session, folder + '/' + self.name)
 
     def debug_list_all_variables(self):
         tvars = tf.trainable_variables()
@@ -165,8 +165,8 @@ class TargetModel(Model):
 
 
 class ImportModel(Model):
-    def __init__(self, session, folder, filesname, model_name):
-        base_path = folder + '/' + filesname + '_' + model_name
+    def __init__(self, session, folder, model_name):
+        base_path = folder + '/' + model_name
 
         # create the base model object
         try:

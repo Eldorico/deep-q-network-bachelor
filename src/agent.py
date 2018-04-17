@@ -1,14 +1,21 @@
 import tensorflow as tf
 from tensorflow.core.framework import summary_pb2
 import numpy as np
+import time
+import datetime
+import __main__
+import shutil
 
 class Global:
     USE_TENSORBOARD = False
-    TENSORBOARD_DIR_NAME = None
+    SAVE_FOLDER = None
     SESSION = None
     WRITER = None
     EPISODE_NUMBER = 0
 
+    @staticmethod
+    def get_TB_folder():
+        return Global.SAVE_FOLDER + '/TB_'+ datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d_%H-%M-%S')
 
 class Epsilon:
     def __init__(self, start_epsilon_value):
@@ -19,7 +26,6 @@ class Epsilon:
 
     def update_epsilon(self):
         self.epsilon_function(self)
-
 
 class Agent:
 
@@ -33,14 +39,13 @@ class Agent:
         self.gamma = config['gamma']
         self.epsilon = config['epsilon']
 
-        self.save_folder = config['save_folder'] if 'save_folder' in config else None
-        self.save_prefix_names = config['save_prefix_names'] if 'save_prefix_names' in config else None
         self.exit = False
 
         if Global.USE_TENSORBOARD:
             Global.EPISODE_NUMBER = 0
 
-            self.writer = tf.summary.FileWriter(Global.TENSORBOARD_DIR_NAME)
+            # TODO: remove the self.writer ?
+            self.writer = tf.summary.FileWriter(Global.get_TB_folder())
             self.writer.add_graph(Global.SESSION.graph)
             Global.WRITER = self.writer
 
@@ -55,10 +60,12 @@ class Agent:
         self.exit = True
 
     def _save(self):
-        if self.save_folder is not None:
-            print("Saving networks models as %s ..." % (self.save_folder+'/'+self.save_prefix_names))
+        if Global.SAVE_FOLDER is not None:
+            print("Saving mainfile in save folder...")
+            shutil.copyfile(__main__.__file__, Global.SAVE_FOLDER + '/' + 'main_file.py')
+            print("Saving networks models as %s ..." % (Global.SAVE_FOLDER + '/') )
             for network in self.networks:
-                network.model.export_model(self.save_folder, self.save_prefix_names)
+                network.model.export_model(Global.SAVE_FOLDER)
             print("Saving done.")
 
     def _save_and_exit(self):
@@ -173,5 +180,5 @@ class Agent:
                 self._save_and_exit()
 
         print("Nb max episodes reached. Stop learning")
-        if self.save_folder is not None:
+        if Global.SAVE_FOLDER is not None:
             self._save()
