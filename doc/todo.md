@@ -1,23 +1,20 @@
 ### TODO
 
-- When an agent saves, print an output file with:  
-  - all the hyperparameters 
-  - the tensorboard output folder
-  - the networks parameters (args)
-
-  We can simply output the hyperparameters and the networks parameters (args) in the tensorflow text part?
-
 - create a network trained to go somewhere we want, in order to reuse this network to: 
   - go fetch some food
   - go fetch some points
 
 - update the word so we can choose a custom reward function (in order to train whatever network we want to train)
 
-- ###### it would be a good practice to save EVERYTHING (agent's models save and tensorboard output) in only one folder. So we could have all our results / weights / hyperparameters in one single folder. And add the folder save in every output. (like episode i)
-
 - ###### test the training function of the model and the network
 
-- ###### test if one tensorboard has multilple sessions files, if we can choose which file to use (and not visualise only the most recent updated)
+- ###### test if a trained agent doest really can be imported on a second run. Check the action distribution histogram for that
+
+- ###### implement an output_adapter in order to decrease the output layer size for the avoid_ennemy_network
+
+- ###### check another model for the avoid_ennemy_network (just to test the theory that a network cant't manage a problem because it's to small when the loss function behave unpredictably after some time)
+
+- ###### do a agent's save after N episodes instead of just saving at the end to avoid some unpredictable errors that lead to a crash before having saved something. (at the moment, the agent just saves when exiting 😕)  WHATCH OUT FOR THE EXPECTION TRHOWNED WHEN  THE GRAPH IS TOO BIG! (prevent that!)
 
 
 
@@ -56,4 +53,19 @@
   ```
 
   ​
+
+
+### DONE
+
+- it would be a good practice to save EVERYTHING (agent's models save and tensorboard output) in only one folder. So we could have all our results / weights / hyperparameters in one single folder. And add the folder save in every output. (like episode i) **DONE**
+
+- When an agent saves, print an output file with:  
+
+  - all the hyperparameters 
+  - the tensorboard output folder
+  - the networks parameters (args)
+
+  We can simply output the hyperparameters and the networks parameters (args) in the tensorflow text part? **DONE**
+
+- test if one tensorboard has multilple sessions files, if we can choose which file to use (and not visualise only the most recent updated) **IT DOESNT WORK**
 
