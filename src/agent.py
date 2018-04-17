@@ -2,22 +2,13 @@ import tensorflow as tf
 from tensorflow.core.framework import summary_pb2
 import numpy as np
 
-# create the sig Int handler
-import signal
-import sys
-def signal_handler(signal, frame):
-        print('You pressed Ctrl+C!')
-        print('Sending signal to agent...')
-        agent.send_exit_signal()
-signal.signal(signal.SIGINT, signal_handler)
-
 class Global:
     USE_TENSORBOARD = False
-    TENSORBOARD_DIR_NAME = None
+    SAVE_FOLDER = None
+    TB_FOLDER = None
     SESSION = None
     WRITER = None
     EPISODE_NUMBER = 0
-    FIRST_TIME_CREATING_AGENT = False
 
 class Epsilon:
     def __init__(self, start_epsilon_value):
@@ -28,7 +19,6 @@ class Epsilon:
 
     def update_epsilon(self):
         self.epsilon_function(self)
-
 
 class Agent:
 
@@ -42,14 +32,12 @@ class Agent:
         self.gamma = config['gamma']
         self.epsilon = config['epsilon']
 
-        self.save_folder = config['save_folder'] if 'save_folder' in config else None
-        self.save_prefix_names = config['save_prefix_names'] if 'save_prefix_names' in config else None
         self.exit = False
 
         if Global.USE_TENSORBOARD:
             Global.EPISODE_NUMBER = 0
 
-            self.writer = tf.summary.FileWriter(Global.TENSORBOARD_DIR_NAME)
+            self.writer = tf.summary.FileWriter(Global.SAVE_FOLDER)
             self.writer.add_graph(Global.SESSION.graph)
             Global.WRITER = self.writer
 
@@ -64,10 +52,10 @@ class Agent:
         self.exit = True
 
     def _save(self):
-        if self.save_folder is not None:
-            print("Saving networks models as %s ..." % (self.save_folder+'/'+self.save_prefix_names))
+        if Global.SAVE_FOLDER is not None:
+            print("Saving networks models as %s ..." % (Global.SAVE_FOLDER+'/'))
             for network in self.networks:
-                network.model.export_model(self.save_folder, self.save_prefix_names)
+                network.model.export_model(Global.SAVE_FOLDER)
             print("Saving done.")
 
     def _save_and_exit(self):
@@ -182,5 +170,5 @@ class Agent:
                 self._save_and_exit()
 
         print("Nb max episodes reached. Stop learning")
-        if self.save_folder is not None:
+        if Global.SAVE_FOLDER is not None:
             self._save()
