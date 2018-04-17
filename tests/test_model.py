@@ -134,7 +134,7 @@ class ModelTest(unittest.TestCase):
         )
 
         # export the base model
-        model.export_model(self.save_folder, 'test_model')
+        model.export_model(self.save_folder)
 
         # get the model variables to test before closing the session
         X = np.array([[2,4,6,7,6,5,5,7,8,9]])
@@ -149,7 +149,7 @@ class ModelTest(unittest.TestCase):
 
         # import model
         session = tf.Session()
-        imported_model = ImportModel(session, self.save_folder, 'test_model', 'my_model')
+        imported_model = ImportModel(session, self.save_folder, 'my_model')
 
         # check for basic non tensorflow attributes
         self.check_non_tensorflow_attributes_equality(model, imported_model)
@@ -174,7 +174,7 @@ class ModelTest(unittest.TestCase):
         )
 
         # export the base model
-        model1.export_model(self.save_folder, 'test_model')
+        model1.export_model(self.save_folder)
 
         # get the model variables to test before closing the session
         X = np.array([[2,4,6,7,6,5,5,7,8,9]])
@@ -185,20 +185,20 @@ class ModelTest(unittest.TestCase):
 
         # create the model2, remove all saves files and export it
         session = tf.Session()
-        model2 = ImportModel(session, self.save_folder, 'test_model', 'model')
+        model2 = ImportModel(session, self.save_folder, 'model')
 
         # remove all save files of the tests
         self.remove_all_test_save_files()
 
         # export model2
-        model2.export_model(self.save_folder, 'import_test2')
+        model2.export_model(self.save_folder)
 
         # close the session and reset the graph
         self.close_session_and_reset_default_graph(session)
 
         # create the model3
         session = tf.Session()
-        model3 = ImportModel(session, self.save_folder, 'import_test2', 'model')
+        model3 = ImportModel(session, self.save_folder, 'model')
 
         # check for basic non tensorflow attributes
         self.check_non_tensorflow_attributes_equality(model1, model3)
@@ -233,8 +233,8 @@ class ModelTest(unittest.TestCase):
         )
 
         # export each model
-        model1.export_model(self.save_folder, 'import_test3')
-        model2.export_model(self.save_folder, 'import_test3')
+        model1.export_model(self.save_folder)
+        model2.export_model(self.save_folder)
 
         # test prediction
         y_1 = model1.predict([[1,3,2,4,5,2,6,3,4,6]])
@@ -250,7 +250,7 @@ class ModelTest(unittest.TestCase):
 
         # import only one model (model2)
         session = tf.Session()
-        model2_bis = ImportModel(session, self.save_folder, 'import_test3', 'model2')
+        model2_bis = ImportModel(session, self.save_folder, 'model2')
 
         # check prediction of model2
         y_2_bis = model2_bis.predict([[2,3,6,4,32,6,2,67,4,3,12,6]])

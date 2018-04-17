@@ -6,8 +6,6 @@ from state import *
 from action import *
 from agent import *
 
-
-
 # create the world
 world_config = {
     'ennemies' : True
@@ -20,19 +18,16 @@ session = tf.Session()
 
 # use tensorboard
 Global.USE_TENSORBOARD = True
-Global.TENSORBOARD_DIR_NAME = '../TensorBoard/test01'
+Global.SAVE_FOLDER = '../tmp_saves/avoid_ennemy_trainer/my_test_folder'
 Global.SESSION = session
 
-SAVE_FOLDER = '../Saves/avoid_ennemy_trainer'
-PREFIX_FILES_NAME =  'test1'
-
 # create the neural network that will learn to avoid ennemies
-# avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-2,
-#     [[64, 'relu'],
-#     [32, 'relu'],
-#     [Action.NB_POSSIBLE_ACTIONS, 'linear']]
-# )
-avoid_ennemy_model = ImportModel(session, SAVE_FOLDER, PREFIX_FILES_NAME, 'avoid_ennemy')
+avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-2,
+        [[64, 'relu'],
+        [32, 'relu'],
+        [Action.NB_POSSIBLE_ACTIONS, 'linear']]
+)
+# avoid_ennemy_model = ImportModel(session, Global.SAVE_FOLDER, 'avoid_ennemy')
 def avoid_ennemy_input_adapter(bus, next_state=False):
     if next_state:
         return bus['next_state'].get_ennemy_agent_layer_only()
@@ -61,9 +56,6 @@ agent_config['max_experience_size'] = 5000
 agent_config['batch_size'] = 256
 agent_config['gamma'] = 0.9
 
-agent_config['save_folder'] = SAVE_FOLDER
-agent_config['save_prefix_names'] = PREFIX_FILES_NAME
-
 agent = Agent(agent_config)
 
 # create the sig Int handler
@@ -76,4 +68,4 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 # train agent for avoiding ennemies
-agent.train(world, 10000)
+agent.train(world, 15000)
