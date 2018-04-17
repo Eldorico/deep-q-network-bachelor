@@ -3,6 +3,8 @@ from tensorflow.core.framework import summary_pb2
 import numpy as np
 import time
 import datetime
+import __main__
+import shutil
 
 class Global:
     USE_TENSORBOARD = False
@@ -13,7 +15,7 @@ class Global:
 
     @staticmethod
     def get_TB_folder():
-        return Global.SAVE_FOLDER + '/tensorboard_'+ datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d_%H:%M:%S')
+        return Global.SAVE_FOLDER + '/TB_'+ datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d_%H-%M-%S')
 
 class Epsilon:
     def __init__(self, start_epsilon_value):
@@ -42,6 +44,7 @@ class Agent:
         if Global.USE_TENSORBOARD:
             Global.EPISODE_NUMBER = 0
 
+            # TODO: remove the self.writer ?
             self.writer = tf.summary.FileWriter(Global.get_TB_folder())
             self.writer.add_graph(Global.SESSION.graph)
             Global.WRITER = self.writer
@@ -58,7 +61,9 @@ class Agent:
 
     def _save(self):
         if Global.SAVE_FOLDER is not None:
-            print("Saving networks models as %s ..." % (Global.SAVE_FOLDER+'/'))
+            print("Saving mainfile in save folder...")
+            shutil.copyfile(__main__.__file__, Global.SAVE_FOLDER + '/' + 'main_file.py')
+            print("Saving networks models as %s ..." % (Global.SAVE_FOLDER + '/') )
             for network in self.networks:
                 network.model.export_model(Global.SAVE_FOLDER)
             print("Saving done.")

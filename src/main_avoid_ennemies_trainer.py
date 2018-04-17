@@ -6,8 +6,6 @@ from state import *
 from action import *
 from agent import *
 
-
-
 # create the world
 world_config = {
     'ennemies' : True
@@ -24,12 +22,12 @@ Global.SAVE_FOLDER = '../tmp_saves/avoid_ennemy_trainer/my_test_folder'
 Global.SESSION = session
 
 # create the neural network that will learn to avoid ennemies
-# avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-2,
-#         [[64, 'relu'],
-#         [32, 'relu'],
-#         [Action.NB_POSSIBLE_ACTIONS, 'linear']]
-# )
-avoid_ennemy_model = ImportModel(session, Global.SAVE_FOLDER, 'avoid_ennemy')
+avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-2,
+        [[64, 'relu'],
+        [32, 'relu'],
+        [Action.NB_POSSIBLE_ACTIONS, 'linear']]
+)
+# avoid_ennemy_model = ImportModel(session, Global.SAVE_FOLDER, 'avoid_ennemy')
 def avoid_ennemy_input_adapter(bus, next_state=False):
     if next_state:
         return bus['next_state'].get_ennemy_agent_layer_only()
