@@ -16,6 +16,8 @@
 
 - ###### do a agent's save after N episodes instead of just saving at the end to avoid some unpredictable errors that lead to a crash before having saved something. (at the moment, the agent just saves when exiting 😕)  WHATCH OUT FOR THE EXPECTION TRHOWNED WHEN  THE GRAPH IS TOO BIG! (prevent that!)
 
+- ###### investigate the strange change of weights distribution after an export/import. 
+
 
 
 

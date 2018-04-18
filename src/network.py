@@ -26,6 +26,10 @@ class HiddenLayer:
         self.size = size
         self.model_name = model_name
 
+        if Global.USE_TENSORBOARD:
+            self.W_histogram = tf.summary.histogram('hist_' + model_name+"_W_"+self.id, self.W)
+            self.b_histogram = tf.summary.histogram('hist_' + model_name+"_b_"+self.id, self.b)
+
     def forward(self, X):
         with tf.name_scope(self.model_name +"_layer_"+self.id):
             Z = tf.matmul(X, self.W) + self.b
@@ -139,6 +143,13 @@ class Model:
         # save the graph and models
         saver = tf.train.Saver()
         saver.save(self.session, folder + '/' + self.name)
+
+    def write_weights_tb_histograms(self):
+        for layer in self.layers:
+            W_summary = Global.SESSION.run(layer.W_histogram)
+            Global.WRITER.add_summary(W_summary, Global.EPISODE_NUMBER)
+            b_summary = Global.SESSION.run(layer.b_histogram)
+            Global.WRITER.add_summary(b_summary, Global.EPISODE_NUMBER)
 
     def debug_list_all_variables(self):
         tvars = tf.trainable_variables()
