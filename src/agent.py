@@ -145,7 +145,7 @@ class Agent:
             log = {'actions_made' : []}
 
         for i in range(nb_episodes):
-            print("episode %d" % (i+1))
+            print("episode %d" % i)
 
             results = self.play_episode(world, i)
             tmp_total_score += results['score']
@@ -168,6 +168,7 @@ class Agent:
 
                     for network in self.networks:
                         network.model.write_weights_tb_histograms()
+                        print("weights histograms printed")
 
 
 

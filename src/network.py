@@ -268,3 +268,4 @@ class Network:
             targets.append(target)
 
         self.model.train(inputs, choosen_actions, targets)
+        print("Network trained")
