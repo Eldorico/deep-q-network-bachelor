@@ -85,6 +85,40 @@ class ModelTest(unittest.TestCase):
         y_after_training = model.predict(x)
         self.assertTrue(np.array_equal(y_before_training,y_after_training))
 
+        session.close()
+
+    def test_model_train2(self):
+        session = tf.Session()
+
+        input_dim = 10
+        output_dim = 4
+        model = Model(session, 'test_model', input_dim, 1e-2,
+            [[64, 'relu'],
+            [32, 'relu'],
+            [output_dim, 'linear']]
+        )
+        x = np.array([[0,1,2,3,4,5,6,7,8,9]])
+        y_before_training = model.predict(x)[0]
+        choosen_action = np.argmax(y_before_training)
+        value_to_correct = y_before_training[choosen_action]
+        target = list(y_before_training)
+        target[choosen_action] = value_to_correct - 1
+
+        model.train(x, np.array([choosen_action]), np.array([target]))
+        y_after_training = model.predict(x)[0]
+        self.assertGreater(y_before_training[choosen_action], y_after_training[choosen_action])
+
+        y_before_training = y_after_training
+        choosen_action = np.argmax(y_before_training)
+        value_to_correct = y_before_training[choosen_action]
+        target = list(y_before_training)
+        target[choosen_action] = value_to_correct + 1
+
+        model.train(x, np.array([choosen_action]), np.array([target]))
+        y_after_training = model.predict(x)[0]
+        self.assertGreater(y_after_training[choosen_action], y_before_training[choosen_action])
+
+
     def test_model_copy(self):
         session = tf.Session()
 
@@ -154,7 +188,7 @@ class ModelTest(unittest.TestCase):
         # check for basic non tensorflow attributes
         self.check_non_tensorflow_attributes_equality(model, imported_model)
 
-        # check if the wegiths have been correctly restored
+        # check if the weigths have been correctly restored
         y_imported_model = imported_model.predict(X)
         self.assertTrue(np.array_equal(y_model,y_imported_model))
         self.assertFalse(np.array_equal(y_model_after_train,y_imported_model))

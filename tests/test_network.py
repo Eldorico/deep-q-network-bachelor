@@ -71,7 +71,6 @@ class NetworkTest(unittest.TestCase):
         self.assertTrue('game_over' in network.last_prediction_values)
         self.assertEqual(network.last_prediction_values['game_over'], False)
 
-
         self.assertTrue(len(network.experiences) == 1)
         self.assertEqual(network.experiences[0]['reward'], 123)
         self.assertEqual(network.experiences[0]['game_over'], False)
