@@ -58,9 +58,21 @@ agent_config['save_prefix_names'] = PREFIX_FILES_NAME
 
 
 
+### 18/04/2018
+
+The agent seems to overfit because it is training too many times PER episodes! Fixed this by removing the batch used to train from the experience 
+
+*(commit eef753f  or eef753f29a08a954a404877764a190adf8b8f9ad)*
+
 ### 20/04/2018
 
 Maybe the problem could be that the target network is copying before any training has been done? 
+
+### 23/04/2018
+
+- Is the agent training enough? Should plot the evolution of the Q values
+- the agent has his position?? 
+- is the ratio positive / negative reward too low? 
 
 
 
@@ -142,3 +154,60 @@ Saving done.
 **this raises another problem and a possible anwer to the action distribution problem: ** the agent is training to much on the same experiences (since they are only removed one by one once the experience buffer is full). I should try remove every experience used by the agent to train. It would maybe correct the agent distribution problem defined on the chapter "01_first_interresting_save : 15/04/2018"
 
 So the question is: should I remove every experience "consumed"? Or should I wait a lot between every training? I want to try to remove every experience "consumed", but I fear it wouldn't change the homogeneity of the training set. I have to thing about-it
+
+
+
+### 23/04/2018 18h21
+
+Ok. It think the problem was that the agent wasnt saving histograms at the begining neither at the very end. The histograms seems look better; the slightly differences in the shape of the histograms should come by the scale of the plot. I'm "closing" this case for the moment. 
+
+on export: 
+
+![](02_weights_distribution_stranges_on_import/on_export1_new.png)
+
+on import: 
+
+![](02_weights_distribution_stranges_on_import/on_import1_new.png)
+
+
+
+on export: 
+
+![](02_weights_distribution_stranges_on_import/on_export2_new.png)
+
+on import: 
+
+![](02_weights_distribution_stranges_on_import/on_import2_new.png)
+
+
+
+on export: 
+
+![](02_weights_distribution_stranges_on_import/on_export3_new.png)
+
+on import: 
+
+![](02_weights_distribution_stranges_on_import/on_import3_new.png)
+
+
+
+on export: 
+
+![](02_weights_distribution_stranges_on_import/on_export4_new.png)
+
+on import: 
+
+![](02_weights_distribution_stranges_on_import/on_import4_new.png)
+
+
+
+on export: 
+
+![](02_weights_distribution_stranges_on_import/on_export5_new.png)
+
+on import: 
+
+![](02_weights_distribution_stranges_on_import/on_import5_new.png)
+
+###### When we use less saves, the shapes look better
+

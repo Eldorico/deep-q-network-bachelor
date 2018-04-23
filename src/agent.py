@@ -61,6 +61,9 @@ class Agent:
 
     def _save(self):
         if Global.SAVE_FOLDER is not None:
+            for network in self.networks:
+                network.model.write_weights_tb_histograms()
+                print("weights histograms printed")
             print("Saving mainfile in save folder...")
             shutil.copyfile(__main__.__file__, Global.SAVE_FOLDER + '/' + 'main_file.py')
             print("Saving networks models as %s ..." % (Global.SAVE_FOLDER + '/') )
@@ -161,7 +164,7 @@ class Agent:
                 self.writer.add_summary(summary, i)
 
                 log['actions_made'] += results['actions_made']
-                if i % 50 == 0:  # TODO: reput 50 instead of 10!
+                if i % 10 == 0:  # TODO: reput 50 instead of 10!
                     summary = Global.SESSION.run(self.actions_made_histogram, feed_dict={self.actions_made_placeholder: np.reshape(log['actions_made'], (len(log['actions_made']), 1))})
                     self.writer.add_summary(summary, i)
                     log['actions_made'] = []

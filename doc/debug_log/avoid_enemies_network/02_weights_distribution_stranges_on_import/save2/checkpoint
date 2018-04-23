@@ -1,0 +1,2 @@
+model_checkpoint_path: "avoid_ennemy"
+all_model_checkpoint_paths: "avoid_ennemy"
