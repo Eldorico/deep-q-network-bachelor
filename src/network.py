@@ -250,7 +250,7 @@ class Network:
         if len(self.experiences) < min_experience_size:
             return
 
-        batch = random.sample(self.experiences, batch_size)
+        batch =  [self.experiences.pop(random.randrange(len(self.experiences))) for _ in range(batch_size) ] # random.sample(self.experiences, batch_size)
         inputs = []
         choosen_actions = []
         targets = []

@@ -161,7 +161,7 @@ class Agent:
                 self.writer.add_summary(summary, i)
 
                 log['actions_made'] += results['actions_made']
-                if i % 10 == 0:  # TODO: reput 50 instead of 10!
+                if i % 50 == 0:  # TODO: reput 50 instead of 10!
                     summary = Global.SESSION.run(self.actions_made_histogram, feed_dict={self.actions_made_placeholder: np.reshape(log['actions_made'], (len(log['actions_made']), 1))})
                     self.writer.add_summary(summary, i)
                     log['actions_made'] = []
@@ -169,10 +169,6 @@ class Agent:
                     for network in self.networks:
                         network.model.write_weights_tb_histograms()
                         print("weights histograms printed")
-
-
-
-
 
             # check if avg score is reached
             if i % avg_every_n_episodes == 0 and i != 0:

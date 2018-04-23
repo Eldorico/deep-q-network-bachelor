@@ -1,4 +1,4 @@
-### 01_first_interresting_save : 15/04/2018
+# 01_first_interresting_save : 15/04/2018
 
 #### 15/04/2018 21h00
 
@@ -58,7 +58,13 @@ agent_config['save_prefix_names'] = PREFIX_FILES_NAME
 
 
 
-### 02_weights_distribution_strange_on_import (18/04/2018)
+### 20/04/2018
+
+Maybe the problem could be that the target network is copying before any training has been done? 
+
+
+
+# 02_weights_distribution_strange_on_import (18/04/2018)
 
 It seems that the weight distributions are slightly different after an export / import. Here are the weights distribution printed every 10 episodes. (We train a new agent for 50 episodes, then save it. ) Then, we import the same agent and retrain it for 50 episodes. 
 
