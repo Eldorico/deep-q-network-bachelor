@@ -20,7 +20,7 @@
 
   - ##### correct this assuring the agent is writing its weights at the very end of its training!
 
-- ##### remove the experience consumed by the agent in order to correct the action distribution problem BUT think about of the case this wouldn't change the homogeneity of the training set!
+- ##### Add some tensorflow debugs on the experience set: the ratio $\frac{experience\_poped}{experience\_pool}$ has to be small. (And how many experience has been removed without training)
 
 
 

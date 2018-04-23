@@ -23,8 +23,9 @@ Global.SESSION = session
 
 # create the neural network that will learn to avoid ennemies
 avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-2,
-        [[64, 'relu'],
-        [32, 'relu'],
+        [[4800, 'relu'],
+        [1200, 'relu'],
+        [600, 'relu'],
         [Action.NB_POSSIBLE_ACTIONS, 'linear']]
 )
 # avoid_ennemy_model = ImportModel(session, Global.SAVE_FOLDER, 'avoid_ennemy')

@@ -72,3 +72,6 @@ class AgentTest(unittest.TestCase):
         self.assertFalse(np.array_equal(agent.networks[0].experiences[1]['s2'],agent.networks[0].experiences[2]['s2']))
         self.assertFalse(np.array_equal(agent.networks[0].experiences[0]['s1'],agent.networks[0].experiences[2]['s1']))
         self.assertFalse(np.array_equal(agent.networks[0].experiences[0]['s2'],agent.networks[0].experiences[2]['s2']))
+
+    #def test_training_is_good(self):
+        
