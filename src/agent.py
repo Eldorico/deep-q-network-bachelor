@@ -13,6 +13,7 @@ class Global:
     WRITER = None
     EPISODE_NUMBER = -1
     PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 0
+    PRINT_REWARD_EVERY_N_EPISODES = 0
     PRINT_EPISODE_NB_EVERY_N_EPISODES = 1
     PRINT_SCORE_AVG_EVERY_N_EPISODES = 1
     SAY_WHEN_AGENT_TRAINED = True
@@ -86,6 +87,9 @@ class Agent:
         while not world.game_over:
             action = self.choose_action(current_state)
             next_state, reward, game_over, world_informations = world.step(action)
+
+            if Global.PRINT_REWARD_EVERY_N_EPISODES > 0 and Global.EPISODE_NUMBER % Global.PRINT_REWARD_EVERY_N_EPISODES == 0:
+                print("Reward: %f" % reward)
 
             if self.nb_steps_played % self.copy_target_period == 0:
                 self.copy_target_networks()

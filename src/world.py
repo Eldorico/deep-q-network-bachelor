@@ -51,7 +51,7 @@ class PursuingEnnemy(Ennemy):
 
 CONFIG = {
     'ennemies' : True,
-    'show_min_distance' : False
+    'print_reward' : False
 }
 
 class World(gym.Env):
@@ -90,7 +90,6 @@ class World(gym.Env):
         """
         :param: action: an array of -1, 0 or 1. [left_right, up_down].[1,-1] == right down.
         """
-        reward = 1
         current_state = State(self.game_width, self.game_height)
 
         if action < 0 or action >= Action.NB_POSSIBLE_ACTIONS:
@@ -107,6 +106,27 @@ class World(gym.Env):
 
         self.score += 1
 
+        # set the reward
+        if self.game_over:
+            reward = -10
+        else:
+            max_distance = 10
+            security_distance = 5
+            smallest_distance_ennemy_collision_course = float('Inf')
+            for ennemy in self.ennemies:
+                if Direction.is_in_collision_course(ennemy, self.agent, security_distance):
+                    distance = Direction.distance(ennemy, self.agent)
+                    if distance < smallest_distance_ennemy_collision_course:
+                        smallest_distance_ennemy_collision_course = distance
+            if smallest_distance_ennemy_collision_course >= max_distance:
+                reward = 1
+            else:
+                reward = (smallest_distance_ennemy_collision_course/max_distance) ** 0.4
+
+        if self.config['print_reward']:
+            print("reward: %f - distance: %f" % (reward, smallest_distance_ennemy_collision_course) )
+        # reward = 1
+
         # do the rest... TODO
         return current_state, reward, self.game_over, {'score': self.score}
         # return np.array(self.state), reward, done, {}
@@ -118,7 +138,7 @@ class World(gym.Env):
             current_state.place_ennemy(ennemy)
 
             # check if game is finished
-            if Direction.distance(self.agent, ennemy) <= 1:
+            if Direction.distance(self.agent, ennemy) <= 2:
                 self.game_over = True
 
     def reset(self):
@@ -157,8 +177,6 @@ class World(gym.Env):
                     if Direction.distance(self.agent, ennemy) < 3:
                         agent_too_close_from_ennemies = True
                         break
-
-
 
     def render(self, mode='human', close=False):
         def add_entity_to_renderer(entity):
@@ -212,6 +230,7 @@ if __name__ == "__main__":
     screen = pygame.display.set_mode([50,50]) # needed to capture when the keyboard is pressed (the focus has to be on this window)
 
     # CONFIG['ennemies'] = False
+    CONFIG['print_reward'] = True
     world = World()
     world = gym.wrappers.Monitor(world, 'video_output/', force=True) # force=True to overwrite the videos
     world.reset()
@@ -238,7 +257,7 @@ if __name__ == "__main__":
     time.sleep(5) # to have time to place the windows and start to play
     while not game_over:
         time.sleep(0.02)
-        # time.sleep(0.04)
+        # time.sleep(0.5)
         state, game_over, debug = move_agent(world)
         world.render()
 

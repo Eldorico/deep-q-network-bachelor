@@ -80,15 +80,21 @@ class Direction:
                 return Direction.E
             elif target.x < me.x:
                 return Direction.W
+            else:
+                return Direction.NO_DIRECTION
 
     @staticmethod
     def is_in_direction(ennemy, target):
         """ if the ennemy on a (more or less) direction towards the agent
         """
+        save_x, save_y = ennemy.x, ennemy.y
+
         distance_before_ennemy_move = Direction.distance(ennemy, target)
         ennemy.x += Direction.dx[ennemy.direction]
         ennemy.y += Direction.dy[ennemy.direction]
         distance_after_ennemy_move = Direction.distance(ennemy, target)
+
+        ennemy.x, ennemy.y = save_x, save_y
 
         if distance_after_ennemy_move <= distance_before_ennemy_move:
             return True

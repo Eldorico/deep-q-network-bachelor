@@ -8,7 +8,8 @@ from agent import *
 
 # create the world
 world_config = {
-    'ennemies' : True
+    'ennemies' : True,
+    'print_reward' : False
 }
 world = World(world_config)
 world.reset()
@@ -18,12 +19,14 @@ session = tf.Session()
 
 # use tensorboard
 Global.USE_TENSORBOARD = True
-Global.SAVE_FOLDER = '../tmp_saves/avoid_ennemy_toy_trainer/gradient_descent_1e-4'
+Global.SAVE_FOLDER = '../tmp_saves/avoid_ennemy_toy_trainer/new_reward'
 Global.SESSION = session
 
 # debug
 Global.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 1000
-Global.PRINT_EPISODE_NB_EVERY_N_EPISODES = 1000
+Global.PRINT_REWARD_EVERY_N_EPISODES = 1000
+Global.PRINT_EPISODE_NB_EVERY_N_EPISODES = 0
+Global.PRINT_SCORE_AVG_EVERY_N_EPISODES = 0
 Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
 Global.SAY_WHEN_AGENT_TRAINED = False
 
