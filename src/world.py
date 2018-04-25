@@ -44,31 +44,14 @@ class PursuingEnnemy(Ennemy):
         agent = world.agent
 
         # update direction
-        if agent.y > self.y:
-            if agent.x > self.x:
-                self.direction = Direction.NE
-            elif agent.x < self.x:
-                self.direction = Direction.NW
-            else:
-                self.direction = Direction.N
-        elif agent.y < self.y:
-            if agent.x > self.x:
-                self.direction = Direction.SE
-            elif agent.x < self.x:
-                self.direction = Direction.SW
-            else:
-                self.direction = Direction.S
-        else:
-            if agent.x > self.x:
-                self.direction = Direction.E
-            elif agent.x < self.x:
-                self.direction = Direction.W
+        self.direction = Direction.get_direction_to(self, agent)
 
         self.x += 0.5 * Direction.dx[self.direction]
         self.y += 0.5 * Direction.dy[self.direction]
 
 CONFIG = {
     'ennemies' : True,
+    'show_min_distance' : False
 }
 
 class World(gym.Env):
@@ -135,12 +118,8 @@ class World(gym.Env):
             current_state.place_ennemy(ennemy)
 
             # check if game is finished
-            if self.distance(self.agent, ennemy) <= 1:
+            if Direction.distance(self.agent, ennemy) <= 1:
                 self.game_over = True
-
-
-    def distance(self, entity1, entity2):
-       return ( (entity1.x-entity2.x)**2 + (entity1.y-entity2.y)**2 ) ** 0.5
 
     def reset(self):
         # init agent's position
@@ -149,7 +128,6 @@ class World(gym.Env):
         # self.agent.x = 30
         # self.agent.y = 0
         self.game_over = False
-        self.score = 0
 
         if self.config['ennemies']:
             self.ennemies = [PursuingEnnemy(self.rand_pos())]
@@ -160,6 +138,7 @@ class World(gym.Env):
         self.choose_random_but_safe_start_location_for_agent()
 
         current_state, _, _, _ = self.step(Action.DO_NOTHING)
+        self.score = 0
         return current_state
 
         # return np.array(self.state)
@@ -175,7 +154,7 @@ class World(gym.Env):
             agent_too_close_from_ennemies = False
             if self.config['ennemies']:
                 for ennemy in self.ennemies:
-                    if self.distance(self.agent, ennemy) < 3:
+                    if Direction.distance(self.agent, ennemy) < 3:
                         agent_too_close_from_ennemies = True
                         break
 
