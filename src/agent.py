@@ -12,6 +12,12 @@ class Global:
     SESSION = None
     WRITER = None
     EPISODE_NUMBER = -1
+    PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 0
+    PRINT_EPISODE_NB_EVERY_N_EPISODES = 1
+    PRINT_SCORE_AVG_EVERY_N_EPISODES = 1
+    SAY_WHEN_AGENT_TRAINED = True
+    SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
+
 
     @staticmethod
     def get_TB_folder():
@@ -61,9 +67,6 @@ class Agent:
 
     def _save(self):
         if Global.SAVE_FOLDER is not None:
-            for network in self.networks:
-                network.model.write_weights_tb_histograms()
-                print("weights histograms printed")
             print("Saving mainfile in save folder...")
             shutil.copyfile(__main__.__file__, Global.SAVE_FOLDER + '/' + 'main_file.py')
             print("Saving networks models as %s ..." % (Global.SAVE_FOLDER + '/') )
@@ -140,7 +143,7 @@ class Agent:
             if network.is_training:
                 network.copy_target_network()
 
-    def train(self, world, nb_episodes, avg_every_n_episodes=100, stop_on_score_avg=None):
+    def train(self, world, nb_episodes, stop_on_score_avg=None):
         score_avg = 0
         tmp_total_score = 0
 
@@ -148,7 +151,8 @@ class Agent:
             log = {'actions_made' : []}
 
         for i in range(nb_episodes):
-            print("episode %d" % i)
+            if Global.PRINT_EPISODE_NB_EVERY_N_EPISODES > 0 and i != 0 and i % Global.PRINT_EPISODE_NB_EVERY_N_EPISODES == 0:
+                print("episode %d" % (i))
 
             results = self.play_episode(world, i)
             tmp_total_score += results['score']
@@ -164,18 +168,19 @@ class Agent:
                 self.writer.add_summary(summary, i)
 
                 log['actions_made'] += results['actions_made']
-                if i % 10 == 0:  # TODO: reput 50 instead of 10!
+                if i % 50 == 0:  # TODO: reput 50 instead of 10!
                     summary = Global.SESSION.run(self.actions_made_histogram, feed_dict={self.actions_made_placeholder: np.reshape(log['actions_made'], (len(log['actions_made']), 1))})
                     self.writer.add_summary(summary, i)
                     log['actions_made'] = []
 
                     for network in self.networks:
                         network.model.write_weights_tb_histograms()
-                        print("weights histograms printed")
+                        if Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED:
+                            print("weights histograms printed")
 
             # check if avg score is reached
-            if i % avg_every_n_episodes == 0 and i != 0:
-                score_avg = tmp_total_score / avg_every_n_episodes
+            if Global.PRINT_SCORE_AVG_EVERY_N_EPISODES > 0 and i % Global.PRINT_SCORE_AVG_EVERY_N_EPISODES == 0 and i != 0:
+                score_avg = tmp_total_score / Global.PRINT_SCORE_AVG_EVERY_N_EPISODES
                 print("score avg after %d episodes: %f" % (i, score_avg) )
                 tmp_total_score = 0
                 if stop_on_score_avg is not None and score_avg >= stop_on_score_avg:

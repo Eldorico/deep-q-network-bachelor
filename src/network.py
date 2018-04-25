@@ -93,7 +93,16 @@ class Model:
             self.last_cost_summary_episode = -1
 
     def predict(self, input_values):
-        return self.session.run(self.predict_op, feed_dict={self.X: input_values})
+        predicted_values = self.session.run(self.predict_op, feed_dict={self.X: input_values})
+
+        if Global.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES > 0 and Global.EPISODE_NUMBER % Global.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES == 0:
+            max_index = np.argmax(predicted_values[0])
+            max_value = predicted_values[0][max_index]
+            min_index = np.argmin(predicted_values[0])
+            min_value = predicted_values[0][min_index]
+            print("predicted values: max: %d -> %f, min: %d -> %f" % (max_index, max_value, min_index, min_value))
+
+        return predicted_values
 
     def train(self, X, Y, T):
         """
@@ -268,4 +277,5 @@ class Network:
             targets.append(target)
 
         self.model.train(inputs, choosen_actions, targets)
-        print("Network trained")
+        if Global.SAY_WHEN_AGENT_TRAINED:
+            print("Network trained")
