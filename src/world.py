@@ -88,8 +88,10 @@ class World(gym.Env):
         self.game_over = True
         self.score = 0
 
-        self.game_width =  60
-        self.game_height = 40
+        # self.game_width =  60
+        # self.game_height = 40
+        self.game_width =  10
+        self.game_height = 10
 
         self.agent = GameEntity()
         self.ennemies = None
@@ -150,8 +152,8 @@ class World(gym.Env):
         self.score = 0
 
         if self.config['ennemies']:
-            # self.ennemies = [Ennemy(25, 25), Ennemy(50,12), Ennemy(55,35), PursuingEnnemy(3,39)]
-            self.ennemies = [Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), PursuingEnnemy(self.rand_pos())]
+            self.ennemies = [PursuingEnnemy(self.rand_pos())]
+            # self.ennemies = [Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), PursuingEnnemy(self.rand_pos())]
 
         # do the rest TODO
 
@@ -171,10 +173,11 @@ class World(gym.Env):
             self.agent.x = random.randint(0, self.game_width)
             self.agent.y = random.randint(0, self.game_height)
             agent_too_close_from_ennemies = False
-            for ennemy in self.ennemies:
-                if self.distance(self.agent, ennemy) < 3:
-                    agent_too_close_from_ennemies = True
-                    break
+            if self.config['ennemies']:
+                for ennemy in self.ennemies:
+                    if self.distance(self.agent, ennemy) < 3:
+                        agent_too_close_from_ennemies = True
+                        break
 
 
 
@@ -193,8 +196,10 @@ class World(gym.Env):
             entity.transform.set_translation(entity.x*scale_x+radius, entity.y*scale_y+radius)
 
         # start
-        screen_width = 600
-        screen_height = 400
+        # screen_width = 600
+        # screen_height = 400
+        screen_width = 100
+        screen_height = 100
         radius = 10
         scale_x = (screen_width - 1 * radius) / self.game_width
         scale_y = (screen_height - 1 * radius) / self.game_height
