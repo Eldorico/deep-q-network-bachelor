@@ -28,22 +28,22 @@ class WorldTest(unittest.TestCase):
 
         next_state, reward, game_over, world_informations = world.step(Action.random_action())
 
-        self.assertTrue(world.score == 1)
+        self.assertEqual(world.score, 1)
         self.assertTrue(all([value >= -1 and value <1 for value in next_state.ennemy_agent_positions]))
 
     def test_agent_has_its_position_on_correct_input(self):
         world, start_state = self.create_default_test_world()
 
         nb_agent_position_count = 0
-        for slot in start_state.get_ennemy_agent_layer_only():
-            if slot == State.ENNEMY_AGENT_STD_VALUE['AGENT']:
+        for slot in start_state.get_ennemy_agent_layer_only()[0]:
+            if slot == State.ENNEMY_AGENT_STD_VALUE[State.AGENT]:
                 nb_agent_position_count += 1
         self.assertEqual(1, nb_agent_position_count)
 
         next_state, reward, game_over, world_informations = world.step(Action.random_action())
 
         nb_agent_position_count = 0
-        for slot in next_state.get_ennemy_agent_layer_only():
-            if slot == State.ENNEMY_AGENT_STD_VALUE['AGENT']:
+        for slot in next_state.get_ennemy_agent_layer_only()[0]:
+            if slot == State.ENNEMY_AGENT_STD_VALUE[State.AGENT]:
                 nb_agent_position_count += 1
         self.assertEqual(1, nb_agent_position_count)
