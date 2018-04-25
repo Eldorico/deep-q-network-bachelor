@@ -9,3 +9,12 @@ https://github.com/openai/gym/tree/master/gym/envs#how-to-create-new-environment
 ### Create a video with python
 
 http://www.xavierdupre.fr/blog/2016-03-30_nojs.html
+
+
+
+#### How to choose the layers configuration? 
+
+https://stats.stackexchange.com/questions/181/how-to-choose-the-number-of-hidden-layers-and-nodes-in-a-feedforward-neural-netw
+
+
+

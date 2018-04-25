@@ -6,21 +6,19 @@
 
 - update the word so we can choose a custom reward function (in order to train whatever network we want to train)
 
-- ###### test the training function of the model and the network
-
-- ###### test if a trained agent doest really can be imported on a second run. Check the action distribution histogram for that
-
-- ###### implement an output_adapter in order to decrease the output layer size for the avoid_ennemy_network
+- implement an output_adapter in order to decrease the output layer size for the avoid_ennemy_network
 
 - ###### check another model for the avoid_ennemy_network (just to test the theory that a network cant't manage a problem because it's to small when the loss function behave unpredictably after some time)
 
-- ###### do a agent's save after N episodes instead of just saving at the end to avoid some unpredictable errors that lead to a crash before having saved something. (at the moment, the agent just saves when exiting 😕)  WHATCH OUT FOR THE EXPECTION TRHOWNED WHEN  THE GRAPH IS TOO BIG! (prevent that!)
+- do a agent's save after N episodes instead of just saving at the end to avoid some unpredictable errors that lead to a crash before having saved something. (at the moment, the agent just saves when exiting 😕)  WHATCH OUT FOR THE EXPECTION TRHOWNED WHEN  THE GRAPH IS TOO BIG! (prevent that!)
 
-- ##### investigate the strange change of weights distribution after an export/import.
+- Add some tensorflow debugs on the experience set: the ratio $\frac{experience\_poped}{experience\_pool}$ has to be small. (And how many experience has been removed without training)
 
-  - ##### correct this assuring the agent is writing its weights at the very end of its training!
+- ##### investigate the training of the agent. It seems to promote the single action taken every step
 
-- ##### Add some tensorflow debugs on the experience set: the ratio $\frac{experience\_poped}{experience\_pool}$ has to be small. (And how many experience has been removed without training)
+- #### put the world observations with values between 0 and 1 and not between -0.5 and +0.5!
+
+- ##### make an new branch in order to have only files / commits < 100mo and continue working on it... 
 
 
 
@@ -76,4 +74,12 @@
   We can simply output the hyperparameters and the networks parameters (args) in the tensorflow text part? **DONE**
 
 - test if one tensorboard has multilple sessions files, if we can choose which file to use (and not visualise only the most recent updated) **IT DOESNT WORK**
+
+- investigate the strange change of weights distribution after an export/import.
+
+  - correct this assuring the agent is writing its weights at the very end of its training! $\rightarrow $ considered close on  commit*( eef753f  or eef753f29a08a954a404877764a190adf8b8f9ad)*  
+
+- test if a trained agent doest really can be imported on a second run. Check the action distribution histogram for that  $\rightarrow $ considered close on  commit*( eef753f  or eef753f29a08a954a404877764a190adf8b8f9ad)*  
+
+- test the training function of the model and the network
 
