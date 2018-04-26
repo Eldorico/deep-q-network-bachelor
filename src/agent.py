@@ -61,6 +61,11 @@ class Agent:
             self.actions_made_placeholder = tf.placeholder(tf.int32, [None, 1])
             self.actions_made_histogram = tf.summary.histogram('actions_distribution', self.actions_made_placeholder)
 
+        # save the main file before someone change it by error
+        if Global.SAVE_FOLDER is not None:
+            print("Saving mainfile in save folder...")
+            shutil.copyfile(__main__.__file__, Global.SAVE_FOLDER + '/' + 'main_file.py')
+
         self.bus = {} # used to keep the current_state and the next_state (s1 and s2)
 
         self.nb_steps_played = 0
@@ -70,8 +75,6 @@ class Agent:
 
     def _save(self):
         if Global.SAVE_FOLDER is not None:
-            print("Saving mainfile in save folder...")
-            shutil.copyfile(__main__.__file__, Global.SAVE_FOLDER + '/' + 'main_file.py')
             print("Saving networks models as %s ..." % (Global.SAVE_FOLDER + '/') )
             for network in self.networks:
                 network.model.export_model(Global.SAVE_FOLDER)
