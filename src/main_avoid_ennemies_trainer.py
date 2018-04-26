@@ -7,9 +7,26 @@ from action import *
 from agent import *
 
 # create the world
+def reward_function(world):
+    if world.game_over:
+        return -10
+    else:
+        max_distance = 10
+        security_distance = 5
+        smallest_distance_ennemy_collision_course = float('Inf')
+        for ennemy in world.ennemies:
+            if Direction.is_in_collision_course(ennemy, world.agent, security_distance):
+                distance = Direction.distance(ennemy, world.agent)
+                if distance < smallest_distance_ennemy_collision_course:
+                    smallest_distance_ennemy_collision_course = distance
+        if smallest_distance_ennemy_collision_course >= max_distance:
+            return 1
+        else:
+            return (smallest_distance_ennemy_collision_course/max_distance) ** 0.4
 world_config = {
     'ennemies' : True,
-    'print_reward' : False
+    'print_reward' : False,
+    'reward_function': reward_function
 }
 world = World(world_config)
 world.reset()

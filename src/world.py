@@ -71,6 +71,7 @@ class World(gym.Env):
         self.game_over = True
         self.score = 0
         self.total_reward = 0
+        self.reward_function = configuration['reward_function']
 
         # self.game_width =  60
         # self.game_height = 40
@@ -110,21 +111,7 @@ class World(gym.Env):
         self.score += 1
 
         # set the reward
-        if self.game_over:
-            reward = -10
-        else:
-            max_distance = 10
-            security_distance = 5
-            smallest_distance_ennemy_collision_course = float('Inf')
-            for ennemy in self.ennemies:
-                if Direction.is_in_collision_course(ennemy, self.agent, security_distance):
-                    distance = Direction.distance(ennemy, self.agent)
-                    if distance < smallest_distance_ennemy_collision_course:
-                        smallest_distance_ennemy_collision_course = distance
-            if smallest_distance_ennemy_collision_course >= max_distance:
-                reward = 1
-            else:
-                reward = (smallest_distance_ennemy_collision_course/max_distance) ** 0.4
+        reward = self.reward_function(self)
         self.total_reward += reward
         world_debug_info['total_reward'] = self.total_reward
 
