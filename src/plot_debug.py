@@ -4,10 +4,10 @@ import numpy as np
 max_distance = 10
 
 def reward_function(distance):
-    if distance <=1:
+    if distance <=2:
         return 0.01 * distance
     else:
-        return ((distance-1)/max_distance) ** 0.4
+        return ((distance-2)/max_distance) ** 0.4
 
 X = np.linspace(0, max_distance)
 Y = [reward_function(x) for x in X]

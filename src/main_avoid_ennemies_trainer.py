@@ -21,10 +21,10 @@ def reward_function(world):
                     smallest_distance_ennemy_collision_course = distance
         if smallest_distance_ennemy_collision_course >= max_distance:
             return 1
-        elif smallest_distance_ennemy_collision_course <=1:
+        elif smallest_distance_ennemy_collision_course <=2:
             return 0.01 * smallest_distance_ennemy_collision_course
         else:
-            return ((smallest_distance_ennemy_collision_course -1) /max_distance) ** 0.4
+            return ((smallest_distance_ennemy_collision_course -2) /max_distance) ** 0.4
 world_config = {
     'ennemies' : True,
     'print_reward' : False,
@@ -50,11 +50,11 @@ Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
 Global.SAY_WHEN_AGENT_TRAINED = False
 
 # create the neural network that will learn to avoid ennemies
-# avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-2,
-#         [[64, 'tanh'],
-#         [Action.NB_POSSIBLE_ACTIONS, 'linear']]
-# )
-avoid_ennemy_model = ImportModel(session, Global.SAVE_FOLDER, 'avoid_ennemy')
+avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-2,
+        [[64, 'relu'],
+        [Action.NB_POSSIBLE_ACTIONS, 'linear']]
+)
+# avoid_ennemy_model = ImportModel(session, Global.SAVE_FOLDER, 'avoid_ennemy')
 def avoid_ennemy_input_adapter(bus, next_state=False):
     if next_state:
         return bus['next_state'].get_ennemy_agent_layer_only()
