@@ -6,6 +6,8 @@ import datetime
 import __main__
 import shutil
 
+from state import *
+
 class Global:
     USE_TENSORBOARD = False
     SAVE_FOLDER = None
@@ -86,10 +88,18 @@ class Agent:
 
         while not world.game_over:
             action = self.choose_action(current_state)
-            next_state, reward, game_over, world_informations = world.step(action)
+            next_state, reward, game_over, world_debug = world.step(action)
 
             if Global.PRINT_REWARD_EVERY_N_EPISODES > 0 and Global.EPISODE_NUMBER % Global.PRINT_REWARD_EVERY_N_EPISODES == 0:
-                print("Reward: %f" % reward)
+                print("Ennemy.x=%d, Ennemy.y=%d, Ennemy.direction=%s, agent.x=%d, agent.y=%d, action=%d Reward: %f" % ( world_debug['ennemies_position'][0][0],
+                                                                                                                        world_debug['ennemies_position'][0][1],
+                                                                                                                        Direction.toStr[world_debug['ennemies_position'][0][2]],
+                                                                                                                        world_debug['agent_x'],
+                                                                                                                        world_debug['agent_y'],
+                                                                                                                        action,
+                                                                                                                        reward))
+                # debug
+                # print("Debug: current ennemy.x=%d, ennemy.y=%d, direction=%d" %(world.ennemies[0].x, world.ennemies[0].y, world.ennemies[0].direction))
 
             if self.nb_steps_played % self.copy_target_period == 0:
                 self.copy_target_networks()
@@ -104,7 +114,7 @@ class Agent:
             action_log.append(action)
 
         Global.EPISODE_NUMBER += 1
-        return {'score': world_informations['score'], 'actions_made' : action_log}
+        return {'score': world_debug['score'], 'actions_made' : action_log}
 
     def flush_last_prediction_var(self):
         """ Removes the last prediction_values of the networks and sets their

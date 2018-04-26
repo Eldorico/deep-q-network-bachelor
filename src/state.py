@@ -11,6 +11,18 @@ class Direction:
     W = 7
     NW = 8
 
+    toStr = {
+        N : 'N',
+        NE : 'NE',
+        E : 'E',
+        SE : 'SE',
+        S : 'S',
+        SW : 'SW',
+        W : 'W',
+        NW : 'NW'
+    }
+
+
     dx = {
         N: 0,
         NE: 1,

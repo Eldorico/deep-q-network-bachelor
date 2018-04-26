@@ -19,19 +19,19 @@ session = tf.Session()
 
 # use tensorboard
 Global.USE_TENSORBOARD = True
-Global.SAVE_FOLDER = '../tmp_saves/avoid_ennemy_toy_trainer/new_reward'
+Global.SAVE_FOLDER = '../tmp_saves/avoid_ennemy_toy_trainer/debug_reward'
 Global.SESSION = session
 
 # debug
-Global.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 1000
-Global.PRINT_REWARD_EVERY_N_EPISODES = 1000
-Global.PRINT_EPISODE_NB_EVERY_N_EPISODES = 0
-Global.PRINT_SCORE_AVG_EVERY_N_EPISODES = 0
+Global.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 10000
+Global.PRINT_REWARD_EVERY_N_EPISODES = 10000
+Global.PRINT_EPISODE_NB_EVERY_N_EPISODES = 2500
+Global.PRINT_SCORE_AVG_EVERY_N_EPISODES = 5000
 Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
 Global.SAY_WHEN_AGENT_TRAINED = False
 
 # create the neural network that will learn to avoid ennemies
-avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-4,
+avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-2,
         [[64, 'relu'],
         [Action.NB_POSSIBLE_ACTIONS, 'linear']]
 )

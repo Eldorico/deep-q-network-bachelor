@@ -90,6 +90,8 @@ class World(gym.Env):
         """
         :param: action: an array of -1, 0 or 1. [left_right, up_down].[1,-1] == right down.
         """
+        world_debug_info = {'agent_x': self.agent.x, 'agent_y': self.agent.y, 'ennemies_position': [(e.x, e.y, e.direction) for e in self.ennemies]}
+
         current_state = State(self.game_width, self.game_height)
 
         if action < 0 or action >= Action.NB_POSSIBLE_ACTIONS:
@@ -128,7 +130,8 @@ class World(gym.Env):
         # reward = 1
 
         # do the rest... TODO
-        return current_state, reward, self.game_over, {'score': self.score}
+        world_debug_info['score'] = self.score
+        return current_state, reward, self.game_over, world_debug_info
         # return np.array(self.state), reward, done, {}
 
     def _manage_enemies(self, current_state):
