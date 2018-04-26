@@ -114,7 +114,7 @@ class Agent:
             action_log.append(action)
 
         Global.EPISODE_NUMBER += 1
-        return {'score': world_debug['score'], 'actions_made' : action_log}
+        return {'score': world_debug['score'], 'total_reward': world_debug['total_reward'] , 'actions_made' : action_log}
 
     def flush_last_prediction_var(self):
         """ Removes the last prediction_values of the networks and sets their
@@ -178,6 +178,10 @@ class Agent:
                 self.writer.add_summary(summary, i)
 
                 value = summary_pb2.Summary.Value(tag="epsilon_value", simple_value=self.epsilon.value)
+                summary = summary_pb2.Summary(value=[value])
+                self.writer.add_summary(summary, i)
+
+                value = summary_pb2.Summary.Value(tag="total reward per episode", simple_value=results['total_reward'])
                 summary = summary_pb2.Summary(value=[value])
                 self.writer.add_summary(summary, i)
 

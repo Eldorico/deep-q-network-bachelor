@@ -70,6 +70,7 @@ class World(gym.Env):
         self.state = None
         self.game_over = True
         self.score = 0
+        self.total_reward = 0
 
         # self.game_width =  60
         # self.game_height = 40
@@ -124,6 +125,8 @@ class World(gym.Env):
                 reward = 1
             else:
                 reward = (smallest_distance_ennemy_collision_course/max_distance) ** 0.4
+        self.total_reward += reward
+        world_debug_info['total_reward'] = self.total_reward
 
         if self.config['print_reward']:
             print("reward: %f - distance: %f" % (reward, smallest_distance_ennemy_collision_course) )
@@ -162,6 +165,7 @@ class World(gym.Env):
 
         current_state, _, _, _ = self.step(Action.DO_NOTHING)
         self.score = 0
+        self.total_reward = 0
         return current_state
 
         # return np.array(self.state)
