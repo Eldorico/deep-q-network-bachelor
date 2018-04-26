@@ -151,8 +151,8 @@ class State:
     def __init__(self, world_size_x, world_size_y):
         self.world_width = world_size_x
         self.world_height = world_size_y
-        self.ennemy_agent_positions = np.zeros(world_size_x*world_size_y)
-        self.object_positions = np.zeros(world_size_x*world_size_y)
+        self.ennemy_agent_positions = np.ones(world_size_x*world_size_y)
+        self.object_positions = np.ones(world_size_x*world_size_y)
         self.agent_state = np.ones(2)
 
     def place_ennemy(self, ennemy):
