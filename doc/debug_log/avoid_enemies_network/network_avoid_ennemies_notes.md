@@ -335,3 +335,11 @@ else:
 
 **I now have to export the reward function in order to define it on the main so I could have the reward function used on the saves files**
 
+
+
+### 26/04/2018
+
+The action distribution is changing, but the weights arent changing much. I tried another activation function but still doesnt work. 
+
+I think it is because I'm using an input with too much 0. I shouldn't have some 0 in my input. 
+

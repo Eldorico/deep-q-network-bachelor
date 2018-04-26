@@ -9,7 +9,7 @@ from agent import *
 # create the world
 def reward_function(world):
     if world.game_over:
-        return -10
+        return - 5
     else:
         max_distance = 10
         security_distance = 5
@@ -21,8 +21,10 @@ def reward_function(world):
                     smallest_distance_ennemy_collision_course = distance
         if smallest_distance_ennemy_collision_course >= max_distance:
             return 1
+        elif smallest_distance_ennemy_collision_course <=1:
+            return 0.01 * smallest_distance_ennemy_collision_course
         else:
-            return (smallest_distance_ennemy_collision_course/max_distance) ** 0.4
+            return ((smallest_distance_ennemy_collision_course -1) /max_distance) ** 0.4
 world_config = {
     'ennemies' : True,
     'print_reward' : False,
@@ -36,7 +38,7 @@ session = tf.Session()
 
 # use tensorboard
 Global.USE_TENSORBOARD = True
-Global.SAVE_FOLDER = '../tmp_saves/avoid_ennemy_toy_trainer/debug_reward'
+Global.SAVE_FOLDER = '../tmp_saves/avoid_ennemy_toy_trainer/reward_test_5'
 Global.SESSION = session
 
 # debug
@@ -49,7 +51,7 @@ Global.SAY_WHEN_AGENT_TRAINED = False
 
 # create the neural network that will learn to avoid ennemies
 avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-2,
-        [[64, 'relu'],
+        [[64, 'tanh'],
         [Action.NB_POSSIBLE_ACTIONS, 'linear']]
 )
 # avoid_ennemy_model = ImportModel(session, Global.SAVE_FOLDER, 'avoid_ennemy')
