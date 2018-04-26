@@ -339,7 +339,47 @@ else:
 
 ### 26/04/2018
 
+##### reward_test_5
+
 The action distribution is changing, but the weights arent changing much. I tried another activation function but still doesnt work. 
 
-I think it is because I'm using an input with too much 0. I shouldn't have some 0 in my input. 
+I think it is because I'm using an input with too much 0. I shouldn't have some 0 in my input. I changed the input and the weights became to change. But the action distribution became likewise (unique). But its value isnt upgrading but downgrading. So it should not stay like this very much:. But still... the problem isnt changing. 
+
+```
+Ennemy.x=5, Ennemy.y=9, Ennemy.direction=E, agent.x=9, agent.y=9, action=2 Reward: 0.525
+predicted values: max: 2 -> -0.314418, min: 6 -> -1.045425
+Ennemy.x=6, Ennemy.y=9, Ennemy.direction=E, agent.x=9, agent.y=9, action=2 Reward: 0.468
+predicted values: max: 2 -> -0.314418, min: 6 -> -1.045425
+Ennemy.x=6, Ennemy.y=9, Ennemy.direction=E, agent.x=9, agent.y=9, action=2 Reward: -5.00
+score avg after 120000 episodes: 7.770000
+...
+Ennemy.x=7, Ennemy.y=4, Ennemy.direction=NE, agent.x=9, agent.y=9, action=2 Reward: 0.67
+predicted values: max: 2 -> -0.285924, min: 6 -> -1.347364
+Ennemy.x=7, Ennemy.y=4, Ennemy.direction=NE, agent.x=9, agent.y=9, action=2 Reward: 0.62
+predicted values: max: 2 -> -0.283944, min: 6 -> -1.345910
+...
+predicted values: max: 2 -> -0.311123, min: 6 -> -1.526520
+Ennemy.x=2, Ennemy.y=5, Ennemy.direction=SE, agent.x=3, agent.y=3, action=2 Reward: -5.000000
+score avg after 200000 episodes: 7.744600
+```
+
+![actions_distribution](01_first_interresting_save/after_replaces_inputs0_to_1/reward_test_5/actions_distribution.png)
+
+![W](01_first_interresting_save/after_replaces_inputs0_to_1/reward_test_5/W.png)
+
+
+
+![W1](01_first_interresting_save/after_replaces_inputs0_to_1/reward_test_5/W1.png)
+
+
+
+![cost](01_first_interresting_save/after_replaces_inputs0_to_1/reward_test_5/cost.png)
+
+
+
+
+
+
+
+**maybe the problem is the number of useless outputs? ** 
 
