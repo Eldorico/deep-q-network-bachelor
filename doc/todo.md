@@ -4,9 +4,7 @@
   - go fetch some food
   - go fetch some points
 
-- update the word so we can choose a custom reward function (in order to train whatever network we want to train)
-
-- implement an output_adapter in order to decrease the output layer size for the avoid_ennemy_network
+- #### implement an output_adapter in order to decrease the output layer size for the avoid_ennemy_network
 
 - ###### check another model for the avoid_ennemy_network (just to test the theory that a network cant't manage a problem because it's to small when the loss function behave unpredictably after some time)
 
@@ -14,11 +12,11 @@
 
 - Add some tensorflow debugs on the experience set: the ratio $\frac{experience\_poped}{experience\_pool}$ has to be small. (And how many experience has been removed without training)
 
-- ##### investigate the training of the agent. It seems to promote the single action taken every step
+- ###### put the world observations with values between 0 and 1 and not between -0.5 and +0.5!
 
-- #### put the world observations with values between 0 and 1 and not between -0.5 and +0.5!
+- ##### test with putting the empty spaces of an observation to zero instead to 1 
 
-- ##### make an new branch in order to have only files / commits < 100mo and continue working on it... 
+- ##### change the input model? Just to see if it changes drastically the learning 
 
 
 
@@ -82,4 +80,10 @@
 - test if a trained agent doest really can be imported on a second run. Check the action distribution histogram for that  $\rightarrow $ considered close on  commit*( eef753f  or eef753f29a08a954a404877764a190adf8b8f9ad)*  
 
 - test the training function of the model and the network
+
+- make an new branch in order to have only files / commits < 100mo and continue working on it...
+
+- investigate the training of the agent. It seems to promote the single action taken every step
+
+- update the word so we can choose a custom reward function (in order to train whatever network we want to train)
 
