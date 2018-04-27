@@ -49,10 +49,6 @@ class PursuingEnnemy(Ennemy):
         self.x += 0.5 * Direction.dx[self.direction]
         self.y += 0.5 * Direction.dy[self.direction]
 
-CONFIG = {
-    'ennemies' : True,
-    'print_reward' : False
-}
 
 class World(gym.Env):
     metadata = {
@@ -60,7 +56,7 @@ class World(gym.Env):
         'video.frames_per_second' : 50
     }
 
-    def __init__(self, configuration=CONFIG):
+    def __init__(self, configuration):
         # self.action_space = spaces.Discrete(2)
         # self.observation_space = spaces.Box(-high, high)
         self.config = configuration
@@ -79,7 +75,7 @@ class World(gym.Env):
         self.game_height = 10
 
         self.agent = GameEntity()
-        self.ennemies = None
+        self.ennemies = []
 
 
         # self.steps_beyond_done = None
@@ -92,7 +88,9 @@ class World(gym.Env):
         """
         :param: action: an array of -1, 0 or 1. [left_right, up_down].[1,-1] == right down.
         """
-        world_debug_info = {'agent_x': self.agent.x, 'agent_y': self.agent.y, 'ennemies_position': [(e.x, e.y, e.direction) for e in self.ennemies]}
+        world_debug_info = {'agent_x': self.agent.x, 'agent_y': self.agent.y}
+        if self.config['ennemies']:
+            world_debug_info['ennemies_position'] = [(e.x, e.y, e.direction) for e in self.ennemies]
 
         current_state = State(self.game_width, self.game_height)
 
@@ -223,9 +221,15 @@ if __name__ == "__main__":
     pygame.init()
     screen = pygame.display.set_mode([50,50]) # needed to capture when the keyboard is pressed (the focus has to be on this window)
 
-    # CONFIG['ennemies'] = False
-    CONFIG['print_reward'] = True
-    world = World()
+    def default_reward(world):
+        return 1
+    CONFIG = {
+        'ennemies' : True,
+        'print_reward' : False,
+        'reward_function': default_reward
+
+    }
+    world = World(CONFIG)
     world = gym.wrappers.Monitor(world, 'video_output/', force=True) # force=True to overwrite the videos
     world.reset()
     game_over = False
