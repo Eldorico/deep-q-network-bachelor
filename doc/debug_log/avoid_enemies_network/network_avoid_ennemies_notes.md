@@ -383,3 +383,6 @@ score avg after 200000 episodes: 7.744600
 
 **maybe the problem is the number of useless outputs? ** 
 
+**I see that when the action distribution is dropping to just one action, it seems that the values of other actions  are also changing... why?**
+
+**I should also start testing with a learning rate of 1e-4**
