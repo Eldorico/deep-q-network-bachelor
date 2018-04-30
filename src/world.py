@@ -57,8 +57,13 @@ class World(gym.Env):
     }
 
     def __init__(self, configuration):
-        # self.action_space = spaces.Discrete(2)
-        # self.observation_space = spaces.Box(-high, high)
+        if  'reward_function' not in configuration:
+            def r_function(world):
+                return 1
+            configuration['reward_function'] = r_function
+        if 'print_reward' not in configuration:
+            configuration['print_reward'] = False
+
         self.config = configuration
 
         self.seed()
