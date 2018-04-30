@@ -16,10 +16,15 @@ class Action:
     DROP = 11
 
     NB_POSSIBLE_ACTIONS = 12
+    NB_POSSIBLE_MOVE_ACTION = 9
 
     @staticmethod
     def random_action():
         return random.randint(0,Action.NB_POSSIBLE_ACTIONS-1)
+
+    # @staticmethod
+    # def random_move():
+    #     return random.randint(0,Action.NB_POSSIBLE_MOVE_ACTION-1)
 
     to_dX = {
         DO_NOTHING : 0,

@@ -11,20 +11,19 @@ def reward_function(world):
     if world.game_over:
         return - 5
     else:
-        max_distance = 10
-        security_distance = 5
-        smallest_distance_ennemy_collision_course = float('Inf')
+        safe_distance = 6
+        min_distance = float('inf')
         for ennemy in world.ennemies:
-            if Direction.is_in_collision_course(ennemy, world.agent, security_distance):
-                distance = Direction.distance(ennemy, world.agent)
-                if distance < smallest_distance_ennemy_collision_course:
-                    smallest_distance_ennemy_collision_course = distance
-        if smallest_distance_ennemy_collision_course >= max_distance:
+            distance = Direction.distance(ennemy, world.agent)
+            if distance < min_distance:
+                min_distance = distance
+
+        if min_distance >= safe_distance:
             return 1
-        elif smallest_distance_ennemy_collision_course <=2:
-            return 0.01 * smallest_distance_ennemy_collision_course
+        elif min_distance <= 1:
+            return -1
         else:
-            return ((smallest_distance_ennemy_collision_course -2) /max_distance) ** 0.4
+            return math.log(min_distance+0.01) -1
 world_config = {
     'ennemies' : True,
     'print_reward' : False,
@@ -38,7 +37,7 @@ session = tf.Session()
 
 # use tensorboard
 Global.USE_TENSORBOARD = True
-Global.SAVE_FOLDER = '../tmp_saves/avoid_ennemy_toy_trainer/reward_test_5'
+Global.SAVE_FOLDER = '../tmp_saves/avoid_ennemy_toy_trainer/input_test_1'
 Global.SESSION = session
 
 # debug
@@ -51,8 +50,8 @@ Global.SAY_WHEN_AGENT_TRAINED = False
 
 # create the neural network that will learn to avoid ennemies
 avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-2,
-        [[64, 'relu'],
-        [Action.NB_POSSIBLE_ACTIONS, 'linear']]
+        [[State.get_ennemy_agent_layer_shape(world), 'relu'],
+        [Action.NB_POSSIBLE_MOVE_ACTION, 'linear']]
 )
 # avoid_ennemy_model = ImportModel(session, Global.SAVE_FOLDER, 'avoid_ennemy')
 def avoid_ennemy_input_adapter(bus, next_state=False):

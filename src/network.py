@@ -226,7 +226,7 @@ class Network:
         choose_randomly = True if random.random() <= epsilon_value and self.explore else False
 
         if choose_randomly:
-            action = Action.random_action()
+            action = random.randint(0,self.model.layers[-1].size[1]-1)
         else:
             input_value = self.input_adapter(bus)
             prediction = self.model.predict(input_value)[0]
