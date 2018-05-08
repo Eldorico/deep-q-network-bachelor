@@ -4,9 +4,9 @@
   - go fetch some food
   - go fetch some points
 
-- #### implement an output_adapter in order to decrease the output layer size for the avoid_ennemy_network
+- implement an output_adapter in order to decrease the output layer size for the avoid_ennemy_network
 
-- ###### check another model for the avoid_ennemy_network (just to test the theory that a network cant't manage a problem because it's to small when the loss function behave unpredictably after some time)
+- *check another model for the avoid_ennemy_network (just to test the theory that a network cant't manage a problem because it's to small when the loss function behave unpredictably after some time)*
 
 - do a agent's save after N episodes instead of just saving at the end to avoid some unpredictable errors that lead to a crash before having saved something. (at the moment, the agent just saves when exiting 😕)  WHATCH OUT FOR THE EXPECTION TRHOWNED WHEN  THE GRAPH IS TOO BIG! (prevent that!)
 
@@ -14,9 +14,13 @@
 
 - ###### put the world observations with values between 0 and 1 and not between -0.5 and +0.5!
 
-- ##### test with putting the empty spaces of an observation to zero instead to 1 
+- #####  **check why the agent has 20 on average when it could end in a infinite loop because it could act without being caught**
 
-- ##### change the input model? Just to see if it changes drastically the learning 
+- ##### **see if the learning can be improved by increasing the batch size *(and increasing the target_copy frequency accordinly)*** 
+
+- change the reward in order to manage the corners. *(to facilitate the learning)*
+
+- ​
 
 
 
@@ -86,4 +90,8 @@
 - investigate the training of the agent. It seems to promote the single action taken every step
 
 - update the word so we can choose a custom reward function (in order to train whatever network we want to train)
+
+- test with putting the empty spaces of an observation to zero instead to 1
+
+- change the input model? Just to see if it changes drastically the learning
 
