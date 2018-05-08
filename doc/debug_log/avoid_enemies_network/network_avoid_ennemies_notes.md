@@ -386,3 +386,132 @@ score avg after 200000 episodes: 7.744600
 **I see that when the action distribution is dropping to just one action, it seems that the values of other actions  are also changing... why?**
 
 **I should also start testing with a learning rate of 1e-4**
+
+
+
+#### 07/05/2018
+
+After a week of tests, I could have at best an avg score of 20 when I ran for about 5 million episodes.  I used theses values: 
+
+```python
+def reward_function(world):
+    if world.game_over:
+        return - 5
+    else:
+        safe_distance = 6
+        min_distance = float('inf')
+        for ennemy in world.ennemies:
+            distance = Direction.distance(ennemy, world.agent)
+            if distance < min_distance:
+                min_distance = distance
+
+        if min_distance >= safe_distance:
+            return 1
+        elif min_distance <= 1:
+            return -1
+        else:
+            return math.log(min_distance+0.01) -1
+# create the neural network that will learn to avoid ennemies
+avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-2,
+        [[40, 'relu'],
+         [40, 'relu'],
+        [Action.NB_POSSIBLE_MOVE_ACTION, 'linear']]
+)
+# avoid_ennemy_model = ImportModel(session, Global.SAVE_FOLDER, 'avoid_ennemy')
+def avoid_ennemy_input_adapter(bus, next_state=False):
+    if next_state:
+        return bus['next_state'].get_ennemy_agent_layer_only()
+    else:
+        return bus['state'].get_ennemy_agent_layer_only()
+avoid_ennemy_network = Network(
+    avoid_ennemy_model,
+    avoid_ennemy_input_adapter,
+    True,
+    True
+)
+
+# create agent and his hyperparameters (config)
+epsilon = Epsilon(0.1)
+def update_epsilon(epsilon):
+    epsilon.value = epsilon.value
+epsilon.set_epsilon_function(update_epsilon)
+
+agent_config = {}
+agent_config['epsilon'] = epsilon
+agent_config['networks'] = [avoid_ennemy_network]
+agent_config['output_network'] = avoid_ennemy_network
+agent_config['copy_target_period'] = 10000
+agent_config['min_experience_size'] = 50000
+agent_config['max_experience_size'] = 400000
+agent_config['batch_size'] = 32
+agent_config['gamma'] = 0.5
+```
+
+![best_scalars](01_first_interresting_save/best_results_end_of_april/best_scalars.png)
+
+![](01_first_interresting_save/best_results_end_of_april/best_histograms.png)
+
+The other best save could nearly do the same in 20M episodes. 
+
+```python
+def reward_function(world):
+    if world.game_over:
+        return - 5
+    else:
+        safe_distance = 6
+        min_distance = float('inf')
+        for ennemy in world.ennemies:
+            distance = Direction.distance(ennemy, world.agent)
+            if distance < min_distance:
+                min_distance = distance
+
+        if min_distance >= safe_distance:
+            return 1
+        elif min_distance <= 1:
+            return -1
+        else:
+            return math.log(min_distance+0.01) -1
+# avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-3,
+#         [[40, 'relu'],
+#          [40, 'relu'],
+#         [Action.NB_POSSIBLE_MOVE_ACTION, 'linear']]
+# )
+avoid_ennemy_model = ImportModel(session, Global.SAVE_FOLDER, 'avoid_ennemy')
+def avoid_ennemy_input_adapter(bus, next_state=False):
+    if next_state:
+        return bus['next_state'].get_ennemy_agent_layer_only()
+    else:
+        return bus['state'].get_ennemy_agent_layer_only()
+avoid_ennemy_network = Network(
+    avoid_ennemy_model,
+    avoid_ennemy_input_adapter,
+    True,
+    True
+)
+
+# create agent and his hyperparameters (config)
+epsilon = Epsilon(0.1)
+def update_epsilon(epsilon):
+    epsilon.value = epsilon.value
+epsilon.set_epsilon_function(update_epsilon)
+
+agent_config = {}
+agent_config['epsilon'] = epsilon
+agent_config['networks'] = [avoid_ennemy_network]
+agent_config['output_network'] = avoid_ennemy_network
+agent_config['copy_target_period'] = 10000
+agent_config['min_experience_size'] = 50000
+agent_config['max_experience_size'] = 400000
+agent_config['batch_size'] = 32
+agent_config['gamma'] = 0.5
+```
+
+![](01_first_interresting_save/best_results_end_of_april/other_scalars.png)
+
+![](01_first_interresting_save/best_results_end_of_april/other_histograms.png)
+
+The main change was the copy_target_period, experiences size and batch size values. I think I was copying the target network too fast. 
+
+- My debug's tensorflow is not scaled for 15M episodes. I should change it to choose the frequency with adding possibility allowing me to choose the frequency.  EDIT: it seems that tensorboard is able to plot 5M points. It just takes some time to plot it all! This is good to know. However, I should should still change the frequency in order to alleviate the tensorboard files. (so I could put it on github)
+- **another thing: The toy world is hard. I can't do a big score. (I get crushed so many times! ) I have to change the toy world in order to make it easyier for me and the agent!**
+- **I shoud make the batch size bigger. So I have to adapt the copy_target_period in consequence. I hope it will make the learning faster**
