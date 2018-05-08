@@ -562,7 +562,7 @@ agent_config['gamma'] = 0.5
 
 ![](01_first_interresting_save/best_results_end_of_april/reproduced_histograms.png)
 
-### 08/05/2018 - 2
+### 08/05/2018 : 2
 
 I wrote a script in order to see what the agent learned. The script let me see the agent in action and it turns out that the agent could learn something!  \o/
 

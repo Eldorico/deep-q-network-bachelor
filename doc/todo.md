@@ -14,8 +14,6 @@
 
 - ###### put the world observations with values between 0 and 1 and not between -0.5 and +0.5!
 
-- #####  **check why the agent has 20 on average when it could end in a infinite loop because it could act without being caught**
-
 - ##### **see if the learning can be improved by increasing the batch size *(and increasing the target_copy frequency accordinly)*** 
 
 - change the reward in order to manage the corners. *(to facilitate the learning)*
@@ -94,4 +92,6 @@
 - test with putting the empty spaces of an observation to zero instead to 1
 
 - change the input model? Just to see if it changes drastically the learning
+
+-  check why the agent has 20 on average when it could end in a infinite loop because it could act without being caught *(it was because of the epsilon value staying on 0.1 that made the agent have a 20 avg score)*
 
