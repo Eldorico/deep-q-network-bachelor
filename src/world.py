@@ -151,6 +151,12 @@ class World(gym.Env):
         # self.agent.y = 0
         self.game_over = False
 
+        # reset the window renderer
+        if self.config['render']:
+            if self.viewer is not None:
+                self.viewer.close()
+            self.viewer = None
+
         if self.config['ennemies']:
             self.ennemies = [PursuingEnnemy(self.rand_pos())]
             # self.ennemies = [Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), PursuingEnnemy(self.rand_pos())]
@@ -162,6 +168,7 @@ class World(gym.Env):
         current_state, _, _, _ = self.step(Action.DO_NOTHING)
         self.score = 0
         self.total_reward = 0
+
         return current_state
 
         # return np.array(self.state)

@@ -37,6 +37,7 @@ session = tf.Session()
 
 # use tensorboard
 Global.USE_TENSORBOARD = True
+Global.SAVE_MAIN_FILE = True
 Global.SAVE_FOLDER = '../tmp_saves/avoid_ennemy_toy_trainer/minimal_input_2nd_test_0'
 Global.SESSION = session
 

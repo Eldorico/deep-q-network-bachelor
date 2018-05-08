@@ -31,8 +31,6 @@ world_config = {
     'render' : True
 }
 world = World(world_config)
-world.reset()
-
 
 # create the session
 session = tf.Session()
@@ -82,4 +80,6 @@ signal.signal(signal.SIGINT, signal_handler)
 
 # see the agent result
 for i in range(10):
-    agent.play_episode(world)
+    print("episode %d" % i)
+    results = agent.play_episode(world, 100)
+    print("score = %d" % results['score'])

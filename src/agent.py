@@ -10,6 +10,7 @@ from state import *
 
 class Global:
     USE_TENSORBOARD = False
+    SAVE_MAIN_FILE = False
     SAVE_FOLDER = None
     SESSION = None
     WRITER = None
@@ -63,7 +64,7 @@ class Agent:
             self.actions_made_histogram = tf.summary.histogram('actions_distribution', self.actions_made_placeholder)
 
         # save the main file before someone change it by error
-        if Global.SAVE_FOLDER is not None:
+        if Global.SAVE_FOLDER is not None and Global.SAVE_MAIN_FILE:
             print("Saving mainfile in save folder...")
             shutil.copyfile(__main__.__file__, Global.SAVE_FOLDER + '/' + 'main_file.py')
 
@@ -86,11 +87,14 @@ class Agent:
         print('Exiting now')
         exit(0)
 
-    def play_episode(self, world, episode_number=None):
+    def play_episode(self, world, max_episode_steps=None):
         current_state = world.reset()
         action_log = []
 
-        while not world.game_over:
+        episode_nb_steps = 0
+
+        episode_done = False
+        while not episode_done:
             action = self.choose_action(current_state)
             next_state, reward, game_over, world_debug = world.step(action)
 
@@ -112,9 +116,13 @@ class Agent:
             self.flush_last_prediction_var()
             self.train_networks()
 
+            if game_over or (max_episode_steps is not None and max_episode_steps <= episode_nb_steps):
+                episode_done = True
+
             current_state = next_state
             self.epsilon.update_epsilon()
             self.nb_steps_played += 1
+            episode_nb_steps += 1
             action_log.append(action)
 
         Global.EPISODE_NUMBER += 1
