@@ -562,3 +562,21 @@ agent_config['gamma'] = 0.5
 
 ![](01_first_interresting_save/best_results_end_of_april/reproduced_histograms.png)
 
+### 08/05/2018 - 2
+
+I wrote a script in order to see what the agent learned. The script let me see the agent in action and it turns out that the agent could learn something!  \o/
+
+![](01_first_interresting_save/best_results_end_of_april/best_result.gif)
+
+It gives me some idea on the reward I should use when the agent is cornered. Maybe I can improve the learning in that specific situation? 
+
+To create the gif: 
+
+https://askubuntu.com/questions/107726/how-to-create-animated-gif-images-of-a-screencast/107735#107735
+
+```bash
+recordmydesktop --width 200 --height 200 -o ~/Bureau/test.ogv
+mplayer -ao null ~/Bureau/test.ogv  -vo jpeg:outdir=~/Bureau/images
+convert ~/Bureau/images/* test.gif
+```
+
