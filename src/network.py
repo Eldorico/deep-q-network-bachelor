@@ -111,7 +111,7 @@ class Model:
         :param: T ([float]): the targets with ONLY the value to update. ex: [0,0,13.24, 0 0]
                 the value to update corresponds to the choosen action. The size of T as to be [None, output_dim]
         """
-        if Global.USE_TENSORBOARD and self.last_cost_summary_episode != Global.EPISODE_NUMBER:
+        if Global.USE_TENSORBOARD and Global.EPISODE_NUMBER % Global.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES == 0:
             _, cost_summary = self.session.run([self.train_op, self.cost_scalar], feed_dict={self.X:X, self.Y:Y, self.T:T})
             Global.WRITER.add_summary(cost_summary, Global.EPISODE_NUMBER)
             self.last_cost_summary_episode = Global.EPISODE_NUMBER

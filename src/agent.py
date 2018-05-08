@@ -20,6 +20,7 @@ class Global:
     PRINT_SCORE_AVG_EVERY_N_EPISODES = 1
     SAY_WHEN_AGENT_TRAINED = True
     SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
+    OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 100
 
 
     @staticmethod
@@ -175,7 +176,7 @@ class Agent:
             tmp_total_score += results['score']
 
             # update tensorboard
-            if Global.USE_TENSORBOARD:
+            if Global.USE_TENSORBOARD and Global.EPISODE_NUMBER % Global.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES == 0:
                 value = summary_pb2.Summary.Value(tag="score_per_episode", simple_value=results['score'])
                 summary = summary_pb2.Summary(value=[value])
                 self.writer.add_summary(summary, i)
@@ -189,15 +190,15 @@ class Agent:
                 self.writer.add_summary(summary, i)
 
                 log['actions_made'] += results['actions_made']
-                if i % 50 == 0:  # TODO: reput 50 instead of 10!
-                    summary = Global.SESSION.run(self.actions_made_histogram, feed_dict={self.actions_made_placeholder: np.reshape(log['actions_made'], (len(log['actions_made']), 1))})
-                    self.writer.add_summary(summary, i)
-                    log['actions_made'] = []
+                # if i % 50 == 0:  # TODO: reput 50 instead of 10!
+                summary = Global.SESSION.run(self.actions_made_histogram, feed_dict={self.actions_made_placeholder: np.reshape(log['actions_made'], (len(log['actions_made']), 1))})
+                self.writer.add_summary(summary, i)
+                log['actions_made'] = []
 
-                    for network in self.networks:
-                        network.model.write_weights_tb_histograms()
-                        if Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED:
-                            print("weights histograms printed")
+                for network in self.networks:
+                    network.model.write_weights_tb_histograms()
+                    if Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED:
+                        print("weights histograms printed")
 
             # check if avg score is reached
             if Global.PRINT_SCORE_AVG_EVERY_N_EPISODES > 0 and i % Global.PRINT_SCORE_AVG_EVERY_N_EPISODES == 0 and i != 0:
