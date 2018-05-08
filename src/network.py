@@ -225,6 +225,10 @@ class Network:
     def predict(self, bus, epsilon_value):
         choose_randomly = True if random.random() <= epsilon_value and self.explore else False
 
+        # debug
+        if choose_randomly:
+            print("episode %d: choosed randomly. epsilon_value = %f" % (Global.EPISODE_NUMBER, epsilon_value))
+
         if choose_randomly:
             action = random.randint(0,self.model.layers[-1].size[1]-1)
         else:

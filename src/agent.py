@@ -19,7 +19,7 @@ class Global:
     PRINT_REWARD_EVERY_N_EPISODES = 0
     PRINT_EPISODE_NB_EVERY_N_EPISODES = 1
     PRINT_SCORE_AVG_EVERY_N_EPISODES = 1
-    SAY_WHEN_AGENT_TRAINED = True
+    SAY_WHEN_AGENT_TRAINED = False
     SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
     OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 100
 
@@ -67,6 +67,7 @@ class Agent:
         if Global.SAVE_FOLDER is not None and Global.SAVE_MAIN_FILE:
             print("Saving mainfile in save folder...")
             shutil.copyfile(__main__.__file__, Global.SAVE_FOLDER + '/' + 'main_file.py')
+            print("Done")
 
         self.bus = {} # used to keep the current_state and the next_state (s1 and s2)
 
@@ -97,6 +98,10 @@ class Agent:
         while not episode_done:
             action = self.choose_action(current_state)
             next_state, reward, game_over, world_debug = world.step(action)
+
+            # debug
+            # if world_debug['score'] >= 50:
+            #     print("episode %d: score = %d" % (Global.EPISODE_NUMBER, world_debug['score']))
 
             if Global.PRINT_REWARD_EVERY_N_EPISODES > 0 and Global.EPISODE_NUMBER % Global.PRINT_REWARD_EVERY_N_EPISODES == 0:
                 print("Ennemy.x=%d, Ennemy.y=%d, Ennemy.direction=%s, agent.x=%d, agent.y=%d, action=%d Reward: %f" % ( world_debug['ennemies_position'][0][0],
@@ -169,7 +174,9 @@ class Agent:
             if network.is_training:
                 network.copy_target_network()
 
-    def train(self, world, nb_episodes, stop_on_score_avg=None):
+    def train(self, world, nb_episodes, max_score_per_episode=500, stop_on_score_avg=None):
+        print("Started training...")
+
         score_avg = 0
         tmp_total_score = 0
 
@@ -180,8 +187,12 @@ class Agent:
             if Global.PRINT_EPISODE_NB_EVERY_N_EPISODES > 0 and i != 0 and i % Global.PRINT_EPISODE_NB_EVERY_N_EPISODES == 0:
                 print("episode %d" % (i))
 
-            results = self.play_episode(world, i)
+            results = self.play_episode(world, max_score_per_episode)
             tmp_total_score += results['score']
+
+            # debug
+            # if results['score'] >= 20:
+            #     print("agent.train(): score greater than 20: episode = %d, score = %d" % (i, results['score']))
 
             # update tensorboard
             if Global.USE_TENSORBOARD and Global.EPISODE_NUMBER % Global.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES == 0:
