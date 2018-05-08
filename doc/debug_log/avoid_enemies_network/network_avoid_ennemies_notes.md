@@ -512,6 +512,53 @@ agent_config['gamma'] = 0.5
 
 The main change was the copy_target_period, experiences size and batch size values. I think I was copying the target network too fast. 
 
-- My debug's tensorflow is not scaled for 15M episodes. I should change it to choose the frequency with adding possibility allowing me to choose the frequency.  EDIT: it seems that tensorboard is able to plot 5M points. It just takes some time to plot it all! This is good to know. However, I should should still change the frequency in order to alleviate the tensorboard files. (so I could put it on github)
+- My debug's tensorflow is not scaled for 15M episodes. I should change it to choose the frequency with adding possibility allowing me to choose the frequency.  *EDIT: it seems that tensorboard is able to plot 5M points. It just takes some time to plot it all! This is good to know. However, I should should still change the frequency in order to alleviate the tensorboard files. (so I could put it on github)*
 - **another thing: The toy world is hard. I can't do a big score. (I get crushed so many times! ) I have to change the toy world in order to make it easyier for me and the agent!**
 - **I shoud make the batch size bigger. So I have to adapt the copy_target_period in consequence. I hope it will make the learning faster**
+
+
+
+### 08/05/2018
+
+I could reproduce the test of the last week and having a best avg score of 20 with these params: 
+
+```python
+# create the world
+def reward_function(world):
+    if world.game_over:
+        return - 5
+    else:
+        safe_distance = 7
+        min_distance = float('inf')
+        for ennemy in world.ennemies:
+            distance = Direction.distance(ennemy, world.agent)
+            if distance < min_distance:
+                min_distance = distance
+
+        if min_distance >= safe_distance:
+            return 1
+        elif min_distance <= 1:
+            return -1
+        else:
+            return math.log(min_distance+0.01) -1
+          
+epsilon = Epsilon(0.1)
+def update_epsilon(epsilon):
+    epsilon.value = epsilon.value
+epsilon.set_epsilon_function(update_epsilon)
+
+agent_config = {}
+agent_config['epsilon'] = epsilon
+agent_config['networks'] = [avoid_ennemy_network]
+agent_config['output_network'] = avoid_ennemy_network
+agent_config['copy_target_period'] = 10000
+agent_config['min_experience_size'] = 50000
+agent_config['max_experience_size'] = 400000
+agent_config['batch_size'] = 32
+agent_config['gamma'] = 0.5
+```
+
+![](01_first_interresting_save/best_results_end_of_april/reproduced_scalar.png)
+
+![](01_first_interresting_save/best_results_end_of_april/reproduced_histograms.png)
+
