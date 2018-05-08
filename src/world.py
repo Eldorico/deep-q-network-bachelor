@@ -63,6 +63,8 @@ class World(gym.Env):
             configuration['reward_function'] = r_function
         if 'print_reward' not in configuration:
             configuration['print_reward'] = False
+        if 'render' not in configuration:
+            configuration['render'] = False
 
         self.config = configuration
 
@@ -121,6 +123,10 @@ class World(gym.Env):
         if self.config['print_reward']:
             print("reward: %f - distance: %f" % (reward, smallest_distance_ennemy_collision_course) )
         # reward = 1
+
+        # render if we have to render the game (show the world in a window)
+        if self.config['render']:
+            self.render()
 
         # do the rest... TODO
         world_debug_info['score'] = self.score
@@ -231,14 +237,13 @@ if __name__ == "__main__":
     CONFIG = {
         'ennemies' : True,
         'print_reward' : False,
-        'reward_function': default_reward
-
+        'reward_function': default_reward,
+        'render' : True
     }
     world = World(CONFIG)
     world = gym.wrappers.Monitor(world, 'video_output/', force=True) # force=True to overwrite the videos
     world.reset()
     game_over = False
-    world.render()
 
     def move_agent(world):
         x = 0
@@ -259,9 +264,8 @@ if __name__ == "__main__":
 
     time.sleep(5) # to have time to place the windows and start to play
     while not game_over:
-        time.sleep(0.02)
-        # time.sleep(0.5)
+        # time.sleep(0.02)
+        time.sleep(0.5)
         state, game_over, debug = move_agent(world)
-        world.render()
 
     print("Score: %d" % debug['score'])
