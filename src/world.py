@@ -158,7 +158,8 @@ class World(gym.Env):
 
         # do the rest TODO
 
-        self.choose_random_but_safe_start_location_for_agent()
+        # self.choose_random_but_safe_start_location_for_agent()
+        self.choose_location_near_pursuing_ennemy()
 
         current_state, _, _, _ = self.step(Action.DO_NOTHING)
         self.score = 0
@@ -182,6 +183,24 @@ class World(gym.Env):
                     if Direction.distance(self.agent, ennemy) < 3:
                         agent_too_close_from_ennemies = True
                         break
+
+    def choose_location_near_pursuing_ennemy(self):
+        pursuing_ennemy = list(filter(lambda x: isinstance(x, PursuingEnnemy), self.ennemies))[0]
+        RANGE_LOCATION = 5
+        MIN_DISTANCE = 5
+        while True:
+            self.agent.x = pursuing_ennemy.x + random.randint(-RANGE_LOCATION, RANGE_LOCATION)
+            self.agent.y = pursuing_ennemy.y + random.randint(-RANGE_LOCATION, RANGE_LOCATION)
+            if self.location_is_in_the_world(self.agent.x, self.agent.y) \
+            and all([Direction.distance(self.agent, ennemy) >= MIN_DISTANCE for ennemy in self.ennemies]): 
+                return
+
+    def location_is_in_the_world(self, location_x, location_y):
+        if location_x < 0 or location_x >= self.game_width:
+            return False
+        elif location_y < 0 or location_y >= self.game_height:
+            return False
+        return True
 
     def render(self, mode='human', close=False):
         def add_entity_to_renderer(entity):
