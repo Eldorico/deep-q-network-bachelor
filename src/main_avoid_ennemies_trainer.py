@@ -38,12 +38,12 @@ session = tf.Session()
 # use tensorboard
 Global.USE_TENSORBOARD = True
 Global.SAVE_MAIN_FILE = True
-Global.SAVE_FOLDER = '../tmp_saves/avoid_ennemy_toy_trainer/minimal_input_2nd_test_0'
+Global.SAVE_FOLDER = '../tmp_saves/avoid_ennemy_trainer/new_tests_series_1'
 Global.SESSION = session
 
 # debug
-Global.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 10000
-Global.PRINT_REWARD_EVERY_N_EPISODES = 10000
+# Global.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 10000
+# Global.PRINT_REWARD_EVERY_N_EPISODES = 10000
 Global.PRINT_EPISODE_NB_EVERY_N_EPISODES = 2500
 Global.PRINT_SCORE_AVG_EVERY_N_EPISODES = 5000
 Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False

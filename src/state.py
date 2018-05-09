@@ -149,16 +149,16 @@ class State:
         AGENT:  0.4
     }
 
-    def __init__(self, world_size_x, world_size_y):
-        self.world_width = world_size_x
-        self.world_height = world_size_y
-        self.ennemy_agent_positions = np.zeros(4)
+    def __init__(self, world):
+        self.world_width = world.game_width
+        self.world_height = world.game_height
+        self.ennemy_agent_positions = np.zeros(State.get_ennemy_agent_layer_shape(world))
         # self.object_positions = np.zeros(world_size_x*world_size_y)
         self.agent_state = np.zeros(2)
 
-    def place_ennemy(self, ennemy):
-        self.ennemy_agent_positions[2] = ennemy.x / self.world_width
-        self.ennemy_agent_positions[3] = ennemy.y / self.world_height
+    def place_ennemy(self, ennemy, i):
+        self.ennemy_agent_positions[i*2+2] = ennemy.x / self.world_width
+        self.ennemy_agent_positions[i*2+3] = ennemy.y / self.world_height
 
     def place_agent(self, pos_x, pos_y):
         self.ennemy_agent_positions[0] = pos_x / self.world_width

@@ -76,10 +76,10 @@ class World(gym.Env):
         self.total_reward = 0
         self.reward_function = configuration['reward_function']
 
-        # self.game_width =  60
-        # self.game_height = 40
-        self.game_width =  10
-        self.game_height = 10
+        self.game_width =  60
+        self.game_height = 40
+        # self.game_width =  10
+        # self.game_height = 10
 
         self.agent = GameEntity()
         self.ennemies = []
@@ -99,7 +99,7 @@ class World(gym.Env):
         if self.config['ennemies']:
             world_debug_info['ennemies_position'] = [(e.x, e.y, e.direction) for e in self.ennemies]
 
-        current_state = State(self.game_width, self.game_height)
+        current_state = State(self)
 
         if action < 0 or action >= Action.NB_POSSIBLE_ACTIONS:
              sys.stderr.write("World.step(): action not in action space: %d \n" % action)
@@ -135,20 +135,15 @@ class World(gym.Env):
 
     def _manage_enemies(self, current_state):
         # update ennemies position
-        for ennemy in self.ennemies:
+        for i, ennemy in enumerate(self.ennemies):
             ennemy.move(self)
-            current_state.place_ennemy(ennemy)
+            current_state.place_ennemy(ennemy, i)
 
             # check if game is finished
             if Direction.distance(self.agent, ennemy) <= 2:
                 self.game_over = True
 
     def reset(self):
-        # init agent's position
-        # self.agent.x = random.randint(0, self.game_width)
-        # self.agent.y = random.randint(0, self.game_height)
-        # self.agent.x = 30
-        # self.agent.y = 0
         self.game_over = False
 
         # reset the window renderer
@@ -158,8 +153,8 @@ class World(gym.Env):
             self.viewer = None
 
         if self.config['ennemies']:
-            self.ennemies = [PursuingEnnemy(self.rand_pos())]
-            # self.ennemies = [Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), PursuingEnnemy(self.rand_pos())]
+            # self.ennemies = [PursuingEnnemy(self.rand_pos())]
+            self.ennemies = [Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), PursuingEnnemy(self.rand_pos())]
 
         # do the rest TODO
 
@@ -203,10 +198,10 @@ class World(gym.Env):
             entity.transform.set_translation(entity.x*scale_x+radius, entity.y*scale_y+radius)
 
         # start
-        # screen_width = 600
-        # screen_height = 400
-        screen_width = 100
-        screen_height = 100
+        screen_width = 600
+        screen_height = 400
+        # screen_width = 100
+        # screen_height = 100
         radius = 10
         scale_x = (screen_width - 1 * radius) / self.game_width
         scale_y = (screen_height - 1 * radius) / self.game_height
@@ -271,8 +266,8 @@ if __name__ == "__main__":
 
     time.sleep(5) # to have time to place the windows and start to play
     while not game_over:
-        # time.sleep(0.02)
-        time.sleep(0.5)
+        time.sleep(0.02)
+        # time.sleep(0.5)
         state, game_over, debug = move_agent(world)
 
     print("Score: %d" % debug['score'])
