@@ -192,8 +192,10 @@ class World(gym.Env):
             self.agent.x = pursuing_ennemy.x + random.randint(-RANGE_LOCATION, RANGE_LOCATION)
             self.agent.y = pursuing_ennemy.y + random.randint(-RANGE_LOCATION, RANGE_LOCATION)
             if self.location_is_in_the_world(self.agent.x, self.agent.y) \
-            and all([Direction.distance(self.agent, ennemy) >= MIN_DISTANCE for ennemy in self.ennemies]): 
+            and all([Direction.distance(self.agent, ennemy) >= MIN_DISTANCE for ennemy in self.ennemies]):
                 return
+            pursuing_ennemy.x = self.rand_pos()[0]
+            pursuing_ennemy.y = self.rand_pos()[1]
 
     def location_is_in_the_world(self, location_x, location_y):
         if location_x < 0 or location_x >= self.game_width:
