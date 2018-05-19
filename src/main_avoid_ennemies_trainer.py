@@ -38,7 +38,7 @@ session = tf.Session()
 # use tensorboard
 Global.USE_TENSORBOARD = True
 Global.SAVE_MAIN_FILE = True
-Global.SAVE_FOLDER = '../tmp_saves/avoid_ennemy_trainer/new_tests_series_1'
+Global.SAVE_FOLDER = '../tmp_saves/tests_chronos'
 Global.SESSION = session
 
 # debug
@@ -49,6 +49,8 @@ Global.PRINT_SCORE_AVG_EVERY_N_EPISODES = 5000
 Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
 Global.SAY_WHEN_AGENT_TRAINED = False
 Global.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 5000
+Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES = 1000
+Global.PLOT_TIMES_DURATION_ON_N_EPISODES = 100000
 
 # create the neural network that will learn to avoid ennemies
 avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-2,

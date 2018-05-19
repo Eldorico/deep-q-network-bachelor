@@ -580,3 +580,23 @@ mplayer -ao null ~/Bureau/test.ogv  -vo jpeg:outdir=~/Bureau/images
 convert ~/Bureau/images/* test.gif
 ```
 
+### 19/05/2018
+
+I'm sill waiting for the agents to finish the training on a "real" environnement. I added a tool to know the proportion of time used by the traning phase vs non traning phase. It turns out that the training phase takes like 60% of the time. 
+
+```python
+avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-2,
+        [[40, 'relu'],
+         [40, 'relu'],
+        [Action.NB_POSSIBLE_MOVE_ACTION, 'linear']]
+)
+agent_config['copy_target_period'] = 10000
+agent_config['min_experience_size'] = 50000
+agent_config['max_experience_size'] = 400000
+agent_config['batch_size'] = 32
+agent_config['gamma'] = 0.5
+```
+
+![](01_first_interresting_save/time_learning_non_learning/times_1.png))
+
+I will try with another ratio. 

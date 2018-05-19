@@ -5,6 +5,7 @@ import time
 import datetime
 import __main__
 import shutil
+from chronometer import *
 
 from state import *
 
@@ -22,6 +23,8 @@ class Global:
     SAY_WHEN_AGENT_TRAINED = False
     SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
     OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 100
+    PLOT_TIMES_DURATION_ON_N_EPISODES = 0
+    RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES = 0
 
 
     @staticmethod
@@ -162,9 +165,19 @@ class Agent:
                 network.add_experience(self.bus, reward, game_over, self.max_experience_size)
 
     def train_networks(self):
+        if Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES is not 0:
+            chrono = Chronometer()
+            chrono.pause_chrono(Chronometer.NON_TRAINING_CHRONO)
+            chrono.resume_chrono(Chronometer.TRAINING_CHRONO)
+
         for network in self.networks:
             if network.is_training:
                 network.train(self.gamma, self.min_experience_size, self.batch_size)
+
+        if Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES is not 0:
+            chrono = Chronometer()
+            chrono.pause_chrono(Chronometer.TRAINING_CHRONO)
+            chrono.resume_chrono(Chronometer.NON_TRAINING_CHRONO)
 
     def copy_target_networks(self):
         """ Make the network that are training do a copy of themselves.
@@ -183,9 +196,23 @@ class Agent:
         if Global.USE_TENSORBOARD:
             log = {'actions_made' : []}
 
+        if Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES is not 0:
+            chrono = Chronometer()
+            chrono.resume_chrono(Chronometer.NON_TRAINING_CHRONO)
+
         for i in range(nb_episodes):
             if Global.PRINT_EPISODE_NB_EVERY_N_EPISODES > 0 and i != 0 and i % Global.PRINT_EPISODE_NB_EVERY_N_EPISODES == 0:
                 print("episode %d" % (i))
+
+            if Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES is not 0 and i % Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES == 0:
+                chrono.pause_chrono(Chronometer.NON_TRAINING_CHRONO)
+                chrono.checkpoint_chrono(Chronometer.TRAINING_CHRONO, Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES)
+                chrono.checkpoint_chrono(Chronometer.NON_TRAINING_CHRONO, Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES)
+                chrono.resume_chrono(Chronometer.NON_TRAINING_CHRONO)
+            if Global.PLOT_TIMES_DURATION_ON_N_EPISODES is not 0 and Global.PLOT_TIMES_DURATION_ON_N_EPISODES == i:
+                print("about to plot")
+                chrono.plot_chrono_deltas()
+                print("plotted")
 
             results = self.play_episode(world, max_score_per_episode)
             tmp_total_score += results['score']
