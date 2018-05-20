@@ -10,6 +10,7 @@ class Direction:
     SW = 6
     W = 7
     NW = 8
+    NO_DIRECTION = -1
 
     toStr = {
         N : 'N',
@@ -19,7 +20,8 @@ class Direction:
         S : 'S',
         SW : 'SW',
         W : 'W',
-        NW : 'NW'
+        NW : 'NW',
+        NO_DIRECTION: '-'
     }
 
 
@@ -31,7 +33,8 @@ class Direction:
         S: 0,
         SW: -1,
         W: -1,
-        NW: -1
+        NW: -1,
+        NO_DIRECTION: 0
     }
 
     dy = {
@@ -42,7 +45,8 @@ class Direction:
         S: -1,
         SW: -1,
         W: 0,
-        NW: 1
+        NW: 1,
+        NO_DIRECTION: 0
     }
 
     inverse_x_direction = {
@@ -53,7 +57,8 @@ class Direction:
         S: S,
         SW: SE,
         W: E,
-        NW: NE
+        NW: NE,
+        NO_DIRECTION: 0
     }
 
     inverse_y_direction = {
@@ -64,7 +69,8 @@ class Direction:
         S: N,
         SW: NW,
         W: W,
-        NW: SW
+        NW: SW,
+        NO_DIRECTION: 0
     }
 
     @staticmethod
