@@ -99,10 +99,25 @@ class Agent:
 
         self.bus['last_states'] = [current_state for i in range(4)]
 
+        #debug
+        # debug = 0
+
         episode_done = False
         while not episode_done:
+
+            # debug
+            # print("\nStep %d:" % debug)
+
             action = self.choose_action(current_state)
             next_state, reward, game_over, world_debug = world.step(action)
+
+            # debug
+            # debug += 1
+            # if debug >= 10:
+            #     exit()
+            # else:
+            #     print("bus['last_states'] = ")
+            #     print(self.bus['last_states'])
 
             # debug
             # if world_debug['score'] >= 50:
@@ -149,6 +164,10 @@ class Agent:
     def choose_action(self, state):
         self.bus['state'] = state
 
+        # debug
+        # print("choose_action(): bus['state'] = %s" % self.bus['state'])
+        # print(self.bus['state'].get_ennemy_agent_layer_only())
+
         nb_networks_that_predicted = 0
         while nb_networks_that_predicted != len(self.networks):
             for network in self.networks:
@@ -164,6 +183,12 @@ class Agent:
         self.bus['next_state'] = next_state
         self.bus['last_states'].pop(0)
         self.bus['last_states'].append(next_state)
+
+        #debug
+        # print("add_experience (agent): bus['next_state'] = %s" % self.bus['next_state'])
+        # print(self.bus['next_state'])
+        # print("bus['last_states'] = ")
+        # print(self.bus['last_states'])
 
         for network in self.networks:
             if network.is_training:

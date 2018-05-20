@@ -38,7 +38,7 @@ session = tf.Session()
 # use tensorboard
 Global.USE_TENSORBOARD = True
 Global.SAVE_MAIN_FILE = True
-Global.SAVE_FOLDER = '../tmp_saves/tests_mille_serie4'
+Global.SAVE_FOLDER = '../tmp_saves/test_multiple_inputs'
 Global.SESSION = session
 
 # debug
@@ -100,4 +100,4 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 # train agent for avoiding ennemies
-agent.train(world, 1000000)
+agent.train(world, 5000000)
