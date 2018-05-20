@@ -9,9 +9,9 @@ from agent import *
 # create the world
 def reward_function(world):
     if world.game_over:
-        return - 5
+        return - 1
     else:
-        safe_distance = 7
+        safe_distance = 11
         min_distance = float('inf')
         for ennemy in world.ennemies:
             distance = Direction.distance(ennemy, world.agent)
@@ -19,7 +19,7 @@ def reward_function(world):
                 min_distance = distance
 
         if min_distance >= safe_distance:
-            return 1
+            return math.log(safe_distance+0.01) -1
         elif min_distance <= 1:
             return -1
         else:
@@ -38,7 +38,7 @@ session = tf.Session()
 # use tensorboard
 Global.USE_TENSORBOARD = True
 Global.SAVE_MAIN_FILE = True
-Global.SAVE_FOLDER = '../tmp_saves/tests_chronos/test_mille'
+Global.SAVE_FOLDER = '../tmp_saves/tests_mille_serie4'
 Global.SESSION = session
 
 # debug
@@ -83,7 +83,7 @@ agent_config['copy_target_period'] = 10000*100
 agent_config['min_experience_size'] = 50000*100
 agent_config['max_experience_size'] = 400000*100
 agent_config['batch_size'] = 32*100
-agent_config['gamma'] = 0.5
+agent_config['gamma'] = 0.9
 
 agent = Agent(agent_config)
 
