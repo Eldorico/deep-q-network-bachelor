@@ -51,7 +51,7 @@ Global.SAY_WHEN_AGENT_TRAINED = False
 Global.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 5000
 
 # create the neural network that will learn to avoid ennemies
-avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-2,
+avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world)*3, 1e-2,
         [[40, 'relu'],
          [40, 'relu'],
         [Action.NB_POSSIBLE_MOVE_ACTION, 'linear']]
@@ -59,9 +59,12 @@ avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer
 # avoid_ennemy_model = ImportModel(session, Global.SAVE_FOLDER, 'avoid_ennemy')
 def avoid_ennemy_input_adapter(bus, next_state=False):
     if next_state:
-        return bus['next_state'].get_ennemy_agent_layer_only()
+        input_states = [state.get_ennemy_agent_layer_only() for state in bus['last_states'][1:]]
+        input_states = [np.array(input_states).flatten()]
     else:
-        return bus['state'].get_ennemy_agent_layer_only()
+        input_states = [state.get_ennemy_agent_layer_only() for state in bus['last_states'][0:3]]
+        input_states = [np.array(input_states).flatten()]
+    return input_states
 avoid_ennemy_network = Network(
     avoid_ennemy_model,
     avoid_ennemy_input_adapter,

@@ -97,6 +97,8 @@ class Agent:
 
         episode_nb_steps = 0
 
+        self.bus['last_states'] = [current_state for i in range(4)]
+
         episode_done = False
         while not episode_done:
             action = self.choose_action(current_state)
@@ -160,6 +162,9 @@ class Agent:
         """ add experiences to the networks that are training
         """
         self.bus['next_state'] = next_state
+        self.bus['last_states'].pop(0)
+        self.bus['last_states'].append(next_state)
+
         for network in self.networks:
             if network.is_training:
                 network.add_experience(self.bus, reward, game_over, self.max_experience_size)
