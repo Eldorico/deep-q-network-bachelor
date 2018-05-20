@@ -38,7 +38,7 @@ session = tf.Session()
 # use tensorboard
 Global.USE_TENSORBOARD = True
 Global.SAVE_MAIN_FILE = True
-Global.SAVE_FOLDER = '../tmp_saves/tests_chronos'
+Global.SAVE_FOLDER = '../tmp_saves/tests_chronos/test_mille'
 Global.SESSION = session
 
 # debug
@@ -47,10 +47,10 @@ Global.SESSION = session
 Global.PRINT_EPISODE_NB_EVERY_N_EPISODES = 2500
 Global.PRINT_SCORE_AVG_EVERY_N_EPISODES = 5000
 Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
-Global.SAY_WHEN_AGENT_TRAINED = False
+Global.SAY_WHEN_AGENT_TRAINED = True
 Global.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 5000
-Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES = 1000
-Global.PLOT_TIMES_DURATION_ON_N_EPISODES = 100000
+Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES = 1000*100
+Global.PLOT_TIMES_DURATION_ON_N_EPISODES = 500000
 
 # create the neural network that will learn to avoid ennemies
 avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-2,
@@ -81,10 +81,10 @@ agent_config = {}
 agent_config['epsilon'] = epsilon
 agent_config['networks'] = [avoid_ennemy_network]
 agent_config['output_network'] = avoid_ennemy_network
-agent_config['copy_target_period'] = 10000
-agent_config['min_experience_size'] = 50000
-agent_config['max_experience_size'] = 400000
-agent_config['batch_size'] = 32
+agent_config['copy_target_period'] = 10000*100
+agent_config['min_experience_size'] = 50000*100
+agent_config['max_experience_size'] = 400000*100
+agent_config['batch_size'] = 32*100
 agent_config['gamma'] = 0.5
 
 agent = Agent(agent_config)
@@ -99,4 +99,4 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 # train agent for avoiding ennemies
-agent.train(world, 5000000)
+agent.train(world, 1000000)

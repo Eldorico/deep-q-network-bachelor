@@ -599,4 +599,25 @@ agent_config['gamma'] = 0.5
 
 ![](01_first_interresting_save/time_learning_non_learning/times_1.png))
 
-I will try with another ratio. 
+With another ratio, I have this: 
+
+```python
+avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-2,
+        [[40, 'relu'],
+         [40, 'relu'],
+        [Action.NB_POSSIBLE_MOVE_ACTION, 'linear']]
+)
+agent_config['copy_target_period'] = 10000*100
+agent_config['min_experience_size'] = 50000*100
+agent_config['max_experience_size'] = 400000*100
+agent_config['batch_size'] = 32*100
+agent_config['gamma'] = 0.5
+```
+
+![](01_first_interresting_save/time_learning_non_learning/times_2.png)
+
+It made 500'000 episodes in 9 hours with 4 Go of memory. Does it mean that it could make 5M episodes in 90 hours? For the moment, the 32 batch size is making ~312 hours, with 8 Go of memory.  The memory seems to be the biggest problem with a big batch size. 
+
+I should try the PPO agorithm which seems promising. 
+
+Another thing I could try is do the learning only at the end of an episode. 
