@@ -36,7 +36,7 @@ world = World(world_config)
 session = tf.Session()
 
 # use tensorboard
-Global.SAVE_FOLDER = '../saves/test_github_3'
+Global.SAVE_FOLDER = '../tmp_saves/avoid_ennemy_trainer/series_2'
 Global.SESSION = session
 
 # create the neural network that will learn to avoid ennemies
@@ -52,7 +52,7 @@ avoid_ennemy_network = Network(
 )
 
 # create agent and his hyperparameters (config)
-epsilon = Epsilon(0.1)
+epsilon = Epsilon(0)
 def update_epsilon(epsilon):
     epsilon.value = epsilon.value
 epsilon.set_epsilon_function(update_epsilon)
@@ -81,5 +81,5 @@ signal.signal(signal.SIGINT, signal_handler)
 # see the agent result
 for i in range(10):
     print("episode %d" % i)
-    results = agent.play_episode(world, 100)
+    results = agent.play_episode(world, 500)
     print("score = %d" % results['score'])

@@ -47,10 +47,8 @@ Global.SESSION = session
 Global.PRINT_EPISODE_NB_EVERY_N_EPISODES = 2500
 Global.PRINT_SCORE_AVG_EVERY_N_EPISODES = 5000
 Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
-Global.SAY_WHEN_AGENT_TRAINED = True
+Global.SAY_WHEN_AGENT_TRAINED = False
 Global.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 5000
-Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES = 1000*100
-Global.PLOT_TIMES_DURATION_ON_N_EPISODES = 500000
 
 # create the neural network that will learn to avoid ennemies
 avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-2,

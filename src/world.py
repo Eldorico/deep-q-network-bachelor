@@ -127,6 +127,7 @@ class World(gym.Env):
         # render if we have to render the game (show the world in a window)
         if self.config['render']:
             self.render()
+            time.sleep(0.02)
 
         # do the rest... TODO
         world_debug_info['score'] = self.score
