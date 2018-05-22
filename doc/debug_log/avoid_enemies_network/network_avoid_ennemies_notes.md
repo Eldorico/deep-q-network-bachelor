@@ -576,8 +576,8 @@ https://askubuntu.com/questions/107726/how-to-create-animated-gif-images-of-a-sc
 
 ```bash
 recordmydesktop --width 200 --height 200 -o ~/Bureau/test.ogv
-mplayer -ao null ~/Bureau/test.ogv  -vo jpeg:outdir=~/Bureau/images
-convert ~/Bureau/images/* test.gif
+mplayer -ao null ~/Bureau/test.ogv  -vo jpeg:outdir=~/Bureau/test_gif
+convert ~/Bureau/test_gif/* test.gif
 ```
 
 ### 19/05/2018
@@ -621,3 +621,68 @@ It made 500'000 episodes in 9 hours with 4 Go of memory. Does it mean that it co
 I should try the PPO agorithm which seems promising. 
 
 Another thing I could try is do the learning only at the end of an episode. 
+
+
+
+### 22/05/2018
+
+Here is the result of the series_2: 
+
+```python
+def reward_function(world):
+    if world.game_over:
+        return - 5
+    else:
+        safe_distance = 7
+        min_distance = float('inf')
+        for ennemy in world.ennemies:
+            distance = Direction.distance(ennemy, world.agent)
+            if distance < min_distance:
+                min_distance = distance
+
+        if min_distance >= safe_distance:
+            return 1
+        elif min_distance <= 1:
+            return -1
+        else:
+            return math.log(min_distance+0.01) -1
+world_config = {
+    'ennemies' : True,
+    'print_reward' : False,
+    'reward_function': reward_function
+}
+
+avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-2,
+        [[40, 'relu'],
+         [40, 'relu'],
+        [Action.NB_POSSIBLE_MOVE_ACTION, 'linear']]
+)
+
+agent_config = {}
+agent_config['epsilon'] = epsilon
+agent_config['networks'] = [avoid_ennemy_network]
+agent_config['output_network'] = avoid_ennemy_network
+agent_config['copy_target_period'] = 10000
+agent_config['min_experience_size'] = 50000
+agent_config['max_experience_size'] = 400000
+agent_config['batch_size'] = 32
+agent_config['gamma'] = 0.5
+```
+
+![](01_first_interresting_save/series_2.gif)
+
+![](01_first_interresting_save/series_2_reward_function.png)
+
+I'm trying to reuse this agent and continue the learning with: 
+
+- a reward function with a safe_distance of 11 instead of 7
+- a $\gamma$ of 0.7
+- an $\epsilon$ of 0.05 instead of 0.1
+
+
+
+Maybe I should also try another model with: 
+
+- a softmax or tanh activation function for the last layer instead of a linear function! (it could avoid results being to big to correct). 
+- keeping only the 50 best experiences? 
+
