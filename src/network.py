@@ -13,7 +13,8 @@ ACTIVATIONS = {
     'tanh' : tf.nn.tanh,
     'relu' : tf.nn.relu,
     'elu'  : tf.nn.elu,
-    'linear' : lambda x: x
+    'linear' : lambda x: x,
+    'softmax' : tf.nn.softmax
 }
 
 
@@ -240,12 +241,17 @@ class Network:
         self.prediction_done = True
 
         # debug
-        # return prediction
+        # print("network.predict(): last_predictions_values_s1 = \n%s" % str(self.last_prediction_values['s1']))
+
 
     def add_experience(self, bus, reward, game_over, max_experience_size):
         self.last_prediction_values['s2'] = self.input_adapter(bus, True)
         self.last_prediction_values['reward'] = reward
         self.last_prediction_values['game_over'] = game_over
+
+        # debug
+        # print("network.add_experience(): last_predictions_values_s1 = \n%s" % str(self.last_prediction_values['s1']))
+        # print("network.add_experience(): last_predictions_values_s2 = \n%s" % str(self.last_prediction_values['s2']))
 
         self.experiences.append(dict(self.last_prediction_values))
 

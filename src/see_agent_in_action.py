@@ -36,7 +36,7 @@ world = World(world_config)
 session = tf.Session()
 
 # use tensorboard
-Global.SAVE_FOLDER = '../tmp_saves/avoid_ennemy_trainer/series_1'
+Global.SAVE_FOLDER = '../tmp_saves/series_2'
 # Global.SAVE_FOLDER = '../saves/series_2'
 Global.SESSION = session
 
