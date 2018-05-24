@@ -20,6 +20,7 @@ class Global:
     PRINT_REWARD_EVERY_N_EPISODES = 0
     PRINT_EPISODE_NB_EVERY_N_EPISODES = 1
     PRINT_SCORE_AVG_EVERY_N_EPISODES = 1
+    SAY_WHEN_TARGET_NETWORK_COPIED = False
     SAY_WHEN_AGENT_TRAINED = False
     SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
     OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 100
@@ -119,6 +120,9 @@ class Agent:
 
             if self.nb_steps_played % self.copy_target_period == 0:
                 self.copy_target_networks()
+
+                if Global.SAY_WHEN_TARGET_NETWORK_COPIED:
+                    print("Target Networks copied")
 
             self.add_experience(next_state, reward, game_over)
             self.flush_last_prediction_var()

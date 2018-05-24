@@ -38,7 +38,7 @@ session = tf.Session()
 # use tensorboard
 Global.USE_TENSORBOARD = True
 Global.SAVE_MAIN_FILE = True
-Global.SAVE_FOLDER = '../tmp_saves/tests_mille_serie4'
+Global.SAVE_FOLDER = '../tmp_saves/tests_mille_serie3'
 Global.SESSION = session
 
 # debug
@@ -79,11 +79,11 @@ agent_config = {}
 agent_config['epsilon'] = epsilon
 agent_config['networks'] = [avoid_ennemy_network]
 agent_config['output_network'] = avoid_ennemy_network
-agent_config['copy_target_period'] = 10000*100
+agent_config['copy_target_period'] = 10000
 agent_config['min_experience_size'] = 50000*100
 agent_config['max_experience_size'] = 400000*100
 agent_config['batch_size'] = 32*100
-agent_config['gamma'] = 0.9
+agent_config['gamma'] = 0.5
 
 agent = Agent(agent_config)
 
@@ -97,4 +97,4 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 # train agent for avoiding ennemies
-agent.train(world, 1000000)
+agent.train(world, 5000000)
