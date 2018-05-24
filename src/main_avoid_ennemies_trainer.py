@@ -38,7 +38,7 @@ session = tf.Session()
 # use tensorboard
 Global.USE_TENSORBOARD = True
 Global.SAVE_MAIN_FILE = True
-Global.SAVE_FOLDER = '../tmp_saves/tests_mille_serie3'
+Global.SAVE_FOLDER = '../tmp_saves/tests_keep_last_interresting_steps_in_experience'
 Global.SESSION = session
 
 # debug
@@ -83,7 +83,8 @@ agent_config['copy_target_period'] = 10000
 agent_config['min_experience_size'] = 50000*100
 agent_config['max_experience_size'] = 400000*100
 agent_config['batch_size'] = 32*100
-agent_config['gamma'] = 0.5
+agent_config['gamma'] = 0.7
+agent_config['train_with_last_n_steps_of_each_episodes'] = 50
 
 agent = Agent(agent_config)
 

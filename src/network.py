@@ -242,14 +242,23 @@ class Network:
         # debug
         # return prediction
 
-    def add_experience(self, bus, reward, game_over, max_experience_size):
+    def add_experience(self, bus, reward, game_over, max_experience_size, add_only_n_last_steps=None):
         self.last_prediction_values['s2'] = self.input_adapter(bus, True)
         self.last_prediction_values['reward'] = reward
         self.last_prediction_values['game_over'] = game_over
 
-        self.experiences.append(dict(self.last_prediction_values))
+        if add_only_n_last_steps is not None:
+            if not hasattr(self, 'tmp_experiences'):
+                self.tmp_experiences = []
+            self.tmp_experiences.append(dict(self.last_prediction_values))
+            if game_over:
+                # print("Game over: added %d experiences to experience." % len(self.tmp_experiences[-add_only_n_last_steps:]))
+                self.experiences += self.tmp_experiences[-add_only_n_last_steps:]
+                self.tmp_experiences = []
+        else:
+            self.experiences.append(dict(self.last_prediction_values))
 
-        if len(self.experiences) > max_experience_size:
+        while len(self.experiences) > max_experience_size:
             self.experiences.pop(0)
 
     def flush_last_prediction_var(self):
