@@ -1,0 +1,2 @@
+series 2, the following after 5M, with: 
+changed reward, changed gamma, changed epsilon

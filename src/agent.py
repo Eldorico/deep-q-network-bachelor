@@ -53,7 +53,7 @@ class Agent:
         self.batch_size = config['batch_size']
         self.gamma = config['gamma']
         self.epsilon = config['epsilon']
-        self.train_with_last_n_steps_of_each_episodes = config['train_with_last_n_steps_of_each_episodes'] if config['train_with_last_n_steps_of_each_episodes'] is not None else None
+        self.train_with_last_n_steps_of_each_episodes = config['train_with_last_n_steps_of_each_episodes'] if 'train_with_last_n_steps_of_each_episodes' in config else None
 
         self.exit = False
 

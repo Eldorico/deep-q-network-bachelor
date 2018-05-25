@@ -36,9 +36,11 @@ world = World(world_config)
 session = tf.Session()
 
 # use tensorboard
-Global.SAVE_FOLDER = '../tmp_saves/series_2'
-# Global.SAVE_FOLDER = '../saves/series_2'
+# Global.SAVE_FOLDER = '../tmp_saves/series_2'
+Global.SAVE_FOLDER = '../saves/series_2_2'
 Global.SESSION = session
+
+print("loading save from folder %s" % Global.SAVE_FOLDER)
 
 # create the neural network that will learn to avoid ennemies
 avoid_ennemy_model = ImportModel(session, Global.SAVE_FOLDER, 'avoid_ennemy')
