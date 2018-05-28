@@ -786,7 +786,10 @@ episode 267500
 episode 270000
 score avg after 270000 episodes: 22.083400
 Target network copied after having trained 998400 steps
-
 ```
 
 It seems obvious that the learning would work. I shouldn't change the copy target period when making the batch bigger. 
+
+### 27/05/2018
+
+Still, the learning process seems to have broke when using bigger batches. Maybe its because that when using smaller batches, we train more often, so we ajust weights quicklier. (if we have bad weights and we wait 1000 steps to ajust then, we will overfit the NN with the 1000 bad steps. )
