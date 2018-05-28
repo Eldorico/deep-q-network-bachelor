@@ -686,3 +686,110 @@ Maybe I should also try another model with:
 - a softmax or tanh activation function for the last layer instead of a linear function! (it could avoid results being to big to correct). 
 - keeping only the 50 best experiences? 
 
+
+
+
+### 24/05/2018
+
+Using bigger batches seems having broke the learning process. Maybe I broke the target copy ratio? 
+
+Using the rates that contributed to a good learning process: 
+
+```python
+# create agent and his hyperparameters (config)
+epsilon = Epsilon(0.1)
+def update_epsilon(epsilon):
+    epsilon.value = epsilon.value
+epsilon.set_epsilon_function(update_epsilon)
+
+agent_config = {}
+agent_config['epsilon'] = epsilon
+agent_config['networks'] = [avoid_ennemy_network]
+agent_config['output_network'] = avoid_ennemy_network
+agent_config['copy_target_period'] = 10000
+agent_config['min_experience_size'] = 50000
+agent_config['max_experience_size'] = 400000
+agent_config['batch_size'] = 32 
+agent_config['gamma'] = 0.9
+```
+
+I have this: 
+
+```
+Started training...
+Target network copied after having trained 0 steps
+Target network copied after having trained 0 steps
+Target network copied after having trained 0 steps
+Target network copied after having trained 0 steps
+Target network copied after having trained 0 steps
+Target network copied after having trained 32 steps
+Target network copied after having trained 9984 steps
+Target network copied after having trained 10016 steps
+episode 2500
+Target network copied after having trained 9984 steps
+Target network copied after having trained 10016 steps
+Target network copied after having trained 9984 steps
+Target network copied after having trained 10016 steps
+Target network copied after having trained 9984 steps
+Target network copied after having trained 10016 steps
+Target network copied after having trained 9984 steps
+Target network copied after having trained 10016 steps
+```
+
+Using this: 
+
+```python
+# create agent and his hyperparameters (config)
+epsilon = Epsilon(0.1)
+def update_epsilon(epsilon):
+    epsilon.value = epsilon.value
+epsilon.set_epsilon_function(update_epsilon)
+
+agent_config = {}
+agent_config['epsilon'] = epsilon
+agent_config['networks'] = [avoid_ennemy_network]
+agent_config['output_network'] = avoid_ennemy_network
+agent_config['copy_target_period'] = 10000 *100
+agent_config['min_experience_size'] = 50000 *100
+agent_config['max_experience_size'] = 400000 *100
+agent_config['batch_size'] = 32 *100
+agent_config['gamma'] = 0.9
+```
+
+I have: 
+
+```
+episode 175000
+score avg after 175000 episodes: 21.813400
+episode 177500
+episode 180000
+score avg after 180000 episodes: 21.860000
+Target network copied after having trained 0 steps
+...
+episode 215000
+score avg after 215000 episodes: 21.673000
+episode 217500
+episode 220000
+score avg after 220000 episodes: 22.312400
+episode 222500
+episode 225000
+score avg after 225000 episodes: 21.811000
+Target network copied after having trained 3200 steps
+...
+score avg after 265000 episodes: 21.465200
+episode 267500
+episode 270000
+score avg after 270000 episodes: 22.083400
+Target network copied after having trained 998400 steps
+...
+episode 267500
+episode 270000
+score avg after 270000 episodes: 22.083400
+Target network copied after having trained 998400 steps
+```
+
+It seems obvious that the learning would work. I shouldn't change the copy target period when making the batch bigger. 
+
+### 27/05/2018
+
+Still, the learning process seems to have broke when using bigger batches. Maybe its because that when using smaller batches, we train more often, so we ajust weights quicklier. (if we have bad weights and we wait 1000 steps to ajust then, we will overfit the NN with the 1000 bad steps. )

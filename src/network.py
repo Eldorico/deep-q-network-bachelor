@@ -269,6 +269,9 @@ class Network:
 
     def copy_target_network(self):
         self.target_model.copy_from(self.model)
+        if Global.PRINT_TARGET_COPY_RATIO:
+            print("Target network copied after having trained %d steps" % Global._NB_TRAINED_STEPS)
+            Global._NB_TRAINED_STEPS = 0
 
     def train(self, gamma, min_experience_size, batch_size):
         if len(self.experiences) < min_experience_size:
@@ -294,3 +297,5 @@ class Network:
         self.model.train(inputs, choosen_actions, targets)
         if Global.SAY_WHEN_AGENT_TRAINED:
             print("Network trained")
+        if Global.PRINT_TARGET_COPY_RATIO:
+            Global._NB_TRAINED_STEPS += batch_size

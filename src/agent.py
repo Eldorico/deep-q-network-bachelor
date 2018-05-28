@@ -20,6 +20,8 @@ class Global:
     PRINT_REWARD_EVERY_N_EPISODES = 0
     PRINT_EPISODE_NB_EVERY_N_EPISODES = 1
     PRINT_SCORE_AVG_EVERY_N_EPISODES = 1
+    PRINT_TARGET_COPY_RATIO = False
+    _NB_TRAINED_STEPS = 0
     SAY_WHEN_TARGET_NETWORK_COPIED = False
     SAY_WHEN_AGENT_TRAINED = False
     SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
@@ -99,10 +101,27 @@ class Agent:
 
         episode_nb_steps = 0
 
+        self.bus['last_states'] = [current_state for i in range(4)]
+
+        #debug
+        # debug = 0
+
         episode_done = False
         while not episode_done:
+
+            # debug
+            # print("\nStep %d:" % debug)
+
             action = self.choose_action(current_state)
             next_state, reward, game_over, world_debug = world.step(action)
+
+            # debug
+            # debug += 1
+            # if debug >= 10:
+            #     exit()
+            # else:
+            #     print("bus['last_states'] = ")
+            #     print(self.bus['last_states'])
 
             # debug
             # if world_debug['score'] >= 50:
@@ -152,6 +171,10 @@ class Agent:
     def choose_action(self, state):
         self.bus['state'] = state
 
+        # debug
+        # print("choose_action(): bus['state'] = %s" % self.bus['state'])
+        # print(self.bus['state'].get_ennemy_agent_layer_only())
+
         nb_networks_that_predicted = 0
         while nb_networks_that_predicted != len(self.networks):
             for network in self.networks:
@@ -165,6 +188,15 @@ class Agent:
         """ add experiences to the networks that are training
         """
         self.bus['next_state'] = next_state
+        self.bus['last_states'].pop(0)
+        self.bus['last_states'].append(next_state)
+
+        #debug
+        # print("add_experience (agent): bus['next_state'] = %s" % self.bus['next_state'])
+        # print(self.bus['next_state'])
+        # print("bus['last_states'] = ")
+        # print(self.bus['last_states'])
+
         for network in self.networks:
             if network.is_training:
                 network.add_experience(self.bus, reward, game_over, self.max_experience_size, add_only_n_last_steps)
