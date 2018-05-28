@@ -7,9 +7,9 @@ from world import *
 #############################################################################"""
 def reward_function(world):
     if world.game_over:
-        return - 5
+        return - 1
     else:
-        safe_distance = 7
+        safe_distance = 20
         min_distance = float('inf')
         for ennemy in world.ennemies:
             distance = Direction.distance(ennemy, world.agent)
@@ -17,7 +17,7 @@ def reward_function(world):
                 min_distance = distance
 
         if min_distance >= safe_distance:
-            return 1
+            return math.log(safe_distance+0.01) -1
         elif min_distance <= 1:
             return -1
         else:
