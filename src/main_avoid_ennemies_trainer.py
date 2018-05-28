@@ -5,7 +5,7 @@ from network import *
 from state import *
 from action import *
 from agent import *
-
+ 
 # create the world
 def reward_function(world):
     if world.game_over:
@@ -48,26 +48,28 @@ Global.PRINT_EPISODE_NB_EVERY_N_EPISODES = 2500
 Global.PRINT_SCORE_AVG_EVERY_N_EPISODES = 5000
 Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
 Global.SAY_WHEN_AGENT_TRAINED = False
-Global.PRINT_TARGET_COPY_RATIO = True
 Global.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 5000
 
 # create the neural network that will learn to avoid ennemies
-avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-2,
-        [[40, 'relu'],
-         [40, 'relu'],
-        [Action.NB_POSSIBLE_MOVE_ACTION, 'linear']]
-)
-# avoid_ennemy_model = ImportModel(session, Global.SAVE_FOLDER, 'avoid_ennemy')
+# avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world)*3, 1e-2,
+#         [[40, 'relu'],
+#          [40, 'relu'],
+#         [Action.NB_POSSIBLE_MOVE_ACTION, 'linear']]
+# )
+avoid_ennemy_model = ImportModel(session, Global.SAVE_FOLDER, 'avoid_ennemy')
 def avoid_ennemy_input_adapter(bus, next_state=False):
     if next_state:
-        return bus['next_state'].get_ennemy_agent_layer_only()
+        input_states = [state.get_ennemy_agent_layer_only() for state in bus['last_states'][1:]]
+        input_states = [np.array(input_states).flatten()]
     else:
-        return bus['state'].get_ennemy_agent_layer_only()
+        input_states = [state.get_ennemy_agent_layer_only() for state in bus['last_states'][0:3]]
+        input_states = [np.array(input_states).flatten()]
+    return input_states
 avoid_ennemy_network = Network(
     avoid_ennemy_model,
     avoid_ennemy_input_adapter,
     True,
-    True
+    True 
 )
 
 # create agent and his hyperparameters (config)
@@ -98,4 +100,4 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 # train agent for avoiding ennemies
-agent.train(world, 1000000)
+agent.train(world, 5000000)
