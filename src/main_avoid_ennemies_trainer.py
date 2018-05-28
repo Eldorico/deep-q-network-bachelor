@@ -11,7 +11,7 @@ def reward_function(world):
     if world.game_over:
         return - 1
     else:
-        safe_distance = 11
+        safe_distance = 20
         min_distance = float('inf')
         for ennemy in world.ennemies:
             distance = Direction.distance(ennemy, world.agent)
@@ -38,7 +38,7 @@ session = tf.Session()
 # use tensorboard
 Global.USE_TENSORBOARD = True
 Global.SAVE_MAIN_FILE = True
-Global.SAVE_FOLDER = '../tmp_saves/tests_keep_last_interresting_steps_in_experience'
+Global.SAVE_FOLDER = '../tmp_saves/tests_32/last40_multiple_input'
 Global.SESSION = session
 
 # debug
@@ -58,10 +58,16 @@ avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer
 )
 # avoid_ennemy_model = ImportModel(session, Global.SAVE_FOLDER, 'avoid_ennemy')
 def avoid_ennemy_input_adapter(bus, next_state=False):
+    # if next_state:
+    #     return bus['next_state'].get_ennemy_agent_layer_only()
+    # else:
+    #     return bus['state'].get_ennemy_agent_layer_only()
     if next_state:
-        return bus['next_state'].get_ennemy_agent_layer_only()
+        input_states = [state.get_ennemy_agent_layer_only() for state in bus['last_states'][1:]]
     else:
-        return bus['state'].get_ennemy_agent_layer_only()
+        input_states = [state.get_ennemy_agent_layer_only() for state in bus['last_states'][0:3]]
+    input_states = [np.array(input_states).flatten()]
+    return input_states
 avoid_ennemy_network = Network(
     avoid_ennemy_model,
     avoid_ennemy_input_adapter,
@@ -80,11 +86,11 @@ agent_config['epsilon'] = epsilon
 agent_config['networks'] = [avoid_ennemy_network]
 agent_config['output_network'] = avoid_ennemy_network
 agent_config['copy_target_period'] = 10000
-agent_config['min_experience_size'] = 50000*100
-agent_config['max_experience_size'] = 400000*100
-agent_config['batch_size'] = 32*100
-agent_config['gamma'] = 0.7
-agent_config['train_with_last_n_steps_of_each_episodes'] = 50
+agent_config['min_experience_size'] = 50000
+agent_config['max_experience_size'] = 400000
+agent_config['batch_size'] = 32
+agent_config['gamma'] = 0.8
+agent_config['train_with_last_n_steps_of_each_episodes'] = 40
 
 agent = Agent(agent_config)
 
