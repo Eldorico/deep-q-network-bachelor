@@ -83,10 +83,11 @@ agent_config['epsilon'] = epsilon
 agent_config['networks'] = [avoid_ennemy_network]
 agent_config['output_network'] = avoid_ennemy_network
 agent_config['copy_target_period'] = 10000
-agent_config['min_experience_size'] = 50000 *100
-agent_config['max_experience_size'] = 400000 *100
-agent_config['batch_size'] = 32 *100
-agent_config['gamma'] = 0.9
+agent_config['min_experience_size'] = 50000*100
+agent_config['max_experience_size'] = 400000*100
+agent_config['batch_size'] = 32*100
+agent_config['gamma'] = 0.7
+agent_config['train_with_last_n_steps_of_each_episodes'] = 50
 
 agent = Agent(agent_config)
 

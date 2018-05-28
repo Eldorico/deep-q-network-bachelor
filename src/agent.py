@@ -22,6 +22,7 @@ class Global:
     PRINT_SCORE_AVG_EVERY_N_EPISODES = 1
     PRINT_TARGET_COPY_RATIO = False
     _NB_TRAINED_STEPS = 0
+    SAY_WHEN_TARGET_NETWORK_COPIED = False
     SAY_WHEN_AGENT_TRAINED = False
     SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
     OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 100
@@ -54,6 +55,7 @@ class Agent:
         self.batch_size = config['batch_size']
         self.gamma = config['gamma']
         self.epsilon = config['epsilon']
+        self.train_with_last_n_steps_of_each_episodes = config['train_with_last_n_steps_of_each_episodes'] if 'train_with_last_n_steps_of_each_episodes' in config else None
 
         self.exit = False
 
@@ -139,7 +141,10 @@ class Agent:
             if self.nb_steps_played % self.copy_target_period == 0:
                 self.copy_target_networks()
 
-            self.add_experience(next_state, reward, game_over)
+                if Global.SAY_WHEN_TARGET_NETWORK_COPIED:
+                    print("Target Networks copied")
+
+            self.add_experience(next_state, reward, game_over, self.train_with_last_n_steps_of_each_episodes)
             self.flush_last_prediction_var()
             self.train_networks()
 
@@ -179,7 +184,7 @@ class Agent:
 
         return self.output_network.last_prediction_values['action']
 
-    def add_experience(self, next_state, reward, game_over):
+    def add_experience(self, next_state, reward, game_over, add_only_n_last_steps=None):
         """ add experiences to the networks that are training
         """
         self.bus['next_state'] = next_state
@@ -194,7 +199,7 @@ class Agent:
 
         for network in self.networks:
             if network.is_training:
-                network.add_experience(self.bus, reward, game_over, self.max_experience_size)
+                network.add_experience(self.bus, reward, game_over, self.max_experience_size, add_only_n_last_steps)
 
     def train_networks(self):
         if Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES is not 0:
