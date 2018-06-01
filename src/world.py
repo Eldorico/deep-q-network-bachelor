@@ -131,7 +131,19 @@ class World(gym.Env):
 
         self.score += 1
 
-        # set the reward
+        # update food
+        if self.config['food']:
+            self.agent.stamina -= 1
+            if Direction.distance(self.agent, self.food) <= 2:
+                self.agent.stamina = 100
+                self.food.x, self.food.y = self.rand_pos()
+
+            if self.agent.stamina <= 0:
+                self.game_over = True
+
+            current_state.set_food_state(self.agent.stamina, self.food.x, self.food.y)
+
+        # set the reward (must be at the end)
         reward = self.reward_function(self)
         self.total_reward += reward
         world_debug_info['total_reward'] = self.total_reward
@@ -139,15 +151,6 @@ class World(gym.Env):
         if self.config['print_reward']:
             print("reward: %f" % reward)
         # reward = 1
-
-        # update food
-        if self.config['food']:
-            self.agent.stamina -= 1
-            if Direction.distance(self.agent, self.food) <= 2:
-                self.agent.stamina = 100
-                self.food.x, self.food.y = self.rand_pos()
-            if self.agent.stamina <= 0:
-                self.game_over = True
 
         # render if we have to render the game (show the world in a window)
         if self.config['render']:
@@ -191,13 +194,14 @@ class World(gym.Env):
         else:
             self.agent.x, self.agent.y = self.rand_pos()
 
+        if self.config['food']:
+            self.food.x, self.food.y = self.rand_pos()
+            self.agent.stamina = 101
+
+        # to this at the end!
         current_state, _, _, _ = self.step(Action.DO_NOTHING)
         self.score = 0
         self.total_reward = 0
-
-        if self.config['food']:
-            self.food.x, self.food.y = self.rand_pos()
-            self.agent.stamina = 100
 
         return current_state
 
@@ -301,7 +305,7 @@ if __name__ == "__main__":
     def default_reward(world):
         return 1
     CONFIG = {
-        'ennemies' : True,
+        # 'ennemies' : True,
         'print_reward' : False,
         'reward_function': default_reward,
         'render' : True,

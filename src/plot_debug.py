@@ -6,28 +6,31 @@ from world import *
 """ put the reward fuunction here
 #############################################################################"""
 def reward_function(world):
-    if world.game_over:
-        return - 1
-    else:
-        safe_distance = 20
-        min_distance = float('inf')
-        for ennemy in world.ennemies:
-            distance = Direction.distance(ennemy, world.agent)
-            if distance < min_distance:
-                min_distance = distance
-
-        if min_distance >= safe_distance:
-            return math.log(safe_distance+0.01) -1
-        elif min_distance <= 1:
-            return -1
-        else:
-            return math.log(min_distance+0.01) -1
+    max_distance = 73
+    return 1 - Direction.distance(world.agent, world.food) / max_distance
+    # if world.game_over:
+    #     return - 1
+    # else:
+    #     safe_distance = 20
+    #     min_distance = float('inf')
+    #     for ennemy in world.ennemies:
+    #         distance = Direction.distance(ennemy, world.agent)
+    #         if distance < min_distance:
+    #             min_distance = distance
+    #
+    #     if min_distance >= safe_distance:
+    #         return math.log(safe_distance+0.01) -1
+    #     elif min_distance <= 1:
+    #         return -1
+    #     else:
+    #         return math.log(min_distance+0.01) -1
 """#############################################################################
 """
 
 # create the world
 world = World({
-    'ennemies' : True,
+    'food' : True,
+    # 'ennemies' : True,
     'print_reward' : False,
     'reward_function' : reward_function
 })

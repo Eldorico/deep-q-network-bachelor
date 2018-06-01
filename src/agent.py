@@ -255,6 +255,10 @@ class Agent:
             tmp_total_score += results['score']
 
             # debug
+            # if results['score'] > 100:
+            #     print('score: %f' %results['score'])
+
+            # debug
             # if results['score'] >= 20:
             #     print("agent.train(): score greater than 20: episode = %d, score = %d" % (i, results['score']))
 
