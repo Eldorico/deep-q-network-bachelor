@@ -23,7 +23,7 @@ class Food(GameEntity):
     def __init__(self, position=None):
         super().__init__()
         if position is not None:
-            self.x, self.y = position 
+            self.x, self.y = position
 
 class Agent(GameEntity):
     def __init__(self):
@@ -137,8 +137,17 @@ class World(gym.Env):
         world_debug_info['total_reward'] = self.total_reward
 
         if self.config['print_reward']:
-            print("reward: %f - distance: %f" % (reward, smallest_distance_ennemy_collision_course) )
+            print("reward: %f" % reward)
         # reward = 1
+
+        # update food
+        if self.config['food']:
+            self.agent.stamina -= 1
+            if Direction.distance(self.agent, self.food) <= 2:
+                self.agent.stamina = 100
+                self.food.x, self.food.y = self.rand_pos()
+            if self.agent.stamina <= 0:
+                self.game_over = True
 
         # render if we have to render the game (show the world in a window)
         if self.config['render']:
@@ -147,6 +156,7 @@ class World(gym.Env):
 
         # do the rest... TODO
         world_debug_info['score'] = self.score
+        world_debug_info['stamina'] = self.agent.stamina
         return current_state, reward, self.game_over, world_debug_info
         # return np.array(self.state), reward, done, {}
 
@@ -291,7 +301,7 @@ if __name__ == "__main__":
     def default_reward(world):
         return 1
     CONFIG = {
-        # 'ennemies' : True,
+        'ennemies' : True,
         'print_reward' : False,
         'reward_function': default_reward,
         'render' : True,
@@ -324,5 +334,5 @@ if __name__ == "__main__":
         time.sleep(0.02)
         # time.sleep(0.5)
         state, game_over, debug = move_agent(world)
-
+        print(debug['stamina'])
     print("Score: %d" % debug['score'])
