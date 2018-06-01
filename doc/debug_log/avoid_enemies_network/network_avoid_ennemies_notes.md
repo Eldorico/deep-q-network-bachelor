@@ -817,6 +817,8 @@ $$
 $$
 It seems a bit to complicated. I see at this moment: 
 
+*tmp_saves/food/asdf/TB2018-06-01_19-36-18*
+
 ```
 score avg after 184500 episodes: 100.444000
 episode 185000
@@ -831,3 +833,7 @@ score avg after 185000 episodes: 100.454000
 ```
 
 So I will try dividing the reward by 5. 
+
+
+
+I have another idea: why not using a world with a very small window to get the object, so that the agent is really in a hurry to get this object? Just for the training, so it could accelerate the learning process? 

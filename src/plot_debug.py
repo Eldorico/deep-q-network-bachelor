@@ -6,8 +6,10 @@ from world import *
 """ put the reward fuunction here
 #############################################################################"""
 def reward_function(world):
+    if world.game_over:
+        return - 5
     max_distance = 73
-    return 1 - Direction.distance(world.agent, world.food) / max_distance
+    return (1 - Direction.distance(world.agent, world.food) / max_distance) / 5.0
     # if world.game_over:
     #     return - 1
     # else:
