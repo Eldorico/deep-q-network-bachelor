@@ -19,6 +19,17 @@ class GameEntity:
         self.x = x
         self.y = y
 
+class Food(GameEntity):
+    def __init__(self, position=None):
+        super().__init__()
+        if position is not None:
+            self.x, self.y = position 
+
+class Agent(GameEntity):
+    def __init__(self):
+        super().__init__()
+        self.stamina = 100.0
+
 class Ennemy(GameEntity):
 
     def __init__(self, position, direction=None):
@@ -65,6 +76,10 @@ class World(gym.Env):
             configuration['print_reward'] = False
         if 'render' not in configuration:
             configuration['render'] = False
+        if 'food' not in configuration:
+            configuration['food'] = False
+        if 'ennemies' not in configuration:
+            configuration['ennemies'] = False
 
         self.config = configuration
 
@@ -81,9 +96,10 @@ class World(gym.Env):
         # self.game_width =  10
         # self.game_height = 10
 
-        self.agent = GameEntity()
+        self.agent = Agent()
         self.ennemies = []
 
+        self.food = Food(self.rand_pos()) if self.config['food'] else None
 
         # self.steps_beyond_done = None
 
@@ -160,11 +176,18 @@ class World(gym.Env):
         # do the rest TODO
 
         # self.choose_random_but_safe_start_location_for_agent()
-        self.choose_location_near_pursuing_ennemy()
+        if self.config['ennemies']:
+            self.choose_location_near_pursuing_ennemy()
+        else:
+            self.agent.x, self.agent.y = self.rand_pos()
 
         current_state, _, _, _ = self.step(Action.DO_NOTHING)
         self.score = 0
         self.total_reward = 0
+
+        if self.config['food']:
+            self.food.x, self.food.y = self.rand_pos()
+            self.agent.stamina = 100
 
         return current_state
 
@@ -211,10 +234,12 @@ class World(gym.Env):
             entity.transform = rendering.Transform()
             entity.geom.add_attr(entity.transform)
             self.viewer.add_geom(entity.geom)
-            if type(entity) == GameEntity:
+            if type(entity) == Agent:
                 entity.geom.set_color(0,0,128)
             elif isinstance(entity, Ennemy):
                 entity.geom.set_color(128,0,0)
+            elif isinstance(entity, Food):
+                entity.geom.set_color(0, 128,0)
 
         def render_entity(entity):
             entity.transform.set_translation(entity.x*scale_x+radius, entity.y*scale_y+radius)
@@ -238,11 +263,18 @@ class World(gym.Env):
                 for ennemy in self.ennemies:
                     add_entity_to_renderer(ennemy)
 
+            if self.config['food']:
+                add_entity_to_renderer(self.food)
+
         # render agent + ennemies
         render_entity(self.agent)
         if self.config['ennemies']:
             for ennemy in self.ennemies:
                 render_entity(ennemy)
+
+        # render food
+        if self.config['food']:
+            render_entity(self.food)
 
         return self.viewer.render(return_rgb_array = mode=='rgb_array')
 
@@ -259,13 +291,14 @@ if __name__ == "__main__":
     def default_reward(world):
         return 1
     CONFIG = {
-        'ennemies' : True,
+        # 'ennemies' : True,
         'print_reward' : False,
         'reward_function': default_reward,
-        'render' : True
+        'render' : True,
+        'food' : True
     }
     world = World(CONFIG)
-    world = gym.wrappers.Monitor(world, 'video_output/', force=True) # force=True to overwrite the videos
+    #world = gym.wrappers.Monitor(world, 'video_output/', force=True) # force=True to overwrite the videos
     world.reset()
     game_over = False
 
