@@ -289,6 +289,10 @@ class World(gym.Env):
         # render food
         if self.config['food']:
             render_entity(self.food)
+            agent_stamina_scale = (self.agent.stamina / 1000) * radius
+            print(agent_stamina_scale)
+            self.agent.transform.set_scale(agent_stamina_scale, agent_stamina_scale)
+            # self.agent.geom.render()
 
         return self.viewer.render(return_rgb_array = mode=='rgb_array')
 
@@ -305,7 +309,7 @@ if __name__ == "__main__":
     def default_reward(world):
         return 1
     CONFIG = {
-        # 'ennemies' : True,
+        'ennemies' : True,
         'print_reward' : False,
         'reward_function': default_reward,
         'render' : True,

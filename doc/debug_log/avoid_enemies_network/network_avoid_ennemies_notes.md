@@ -834,6 +834,8 @@ score avg after 185000 episodes: 100.454000
 
 So I will try dividing the reward by 5. 
 
-
-
 I have another idea: why not using a world with a very small window to get the object, so that the agent is really in a hurry to get this object? Just for the training, so it could accelerate the learning process? 
+
+###### I tried playing with ennemies and food:
+
+I tried playing with ennemies and food and it results that it is too difficult to make a descent score.. I should make the game easier with making the ennemies go slower. I should be a parameter that I can tweak. 
