@@ -8,6 +8,7 @@ import shutil
 from chronometer import *
 
 from state import *
+from action import Action
 
 class Global:
     USE_TENSORBOARD = False

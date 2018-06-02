@@ -24,6 +24,7 @@ class Food(GameEntity):
         super().__init__()
         if position is not None:
             self.x, self.y = position
+        self.found = False
 
 class Agent(GameEntity):
     def __init__(self):
@@ -139,6 +140,7 @@ class World(gym.Env):
             if Direction.distance(self.agent, self.food) <= 2:
                 self.agent.stamina = 100
                 self.food.x, self.food.y = self.rand_pos()
+                self.food.found = True
 
             if self.agent.stamina <= 0:
                 self.game_over = True
@@ -149,6 +151,9 @@ class World(gym.Env):
         reward = self.reward_function(self)
         self.total_reward += reward
         world_debug_info['total_reward'] = self.total_reward
+
+        if self.config['food']:
+            self.food.found = False
 
         if self.config['print_reward']:
             print("reward: %f" % reward)

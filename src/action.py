@@ -22,6 +22,35 @@ class Action:
     def random_action():
         return random.randint(0,Action.NB_POSSIBLE_ACTIONS-1)
 
+    @staticmethod
+    def to_str(action):
+        if action == Action.DO_NOTHING:
+            return 'do_nothing'
+        elif action == Action.MOVE_N:
+            return 'move N'
+        elif action == Action.MOVE_NE:
+            return 'move NE'
+        elif action == Action.MOVE_E:
+            return 'move E'
+        elif action == Action.MOVE_SE:
+            return 'move SE'
+        elif action == Action.MOVE_S:
+            return 'move S'
+        elif action == Action.MOVE_SW:
+            return 'move SW'
+        elif action == Action.MOVE_W:
+            return 'move W'
+        elif action == Action.MOVE_NW:
+            return 'move NW'
+        elif action == Action.TAKE:
+            return 'take'
+        elif action == Action.USE:
+            return 'use'
+        elif action == Action.DROP:
+            return 'drop'
+        else:
+            raise 'Action.to_str(): action not recognized'
+
     # @staticmethod
     # def random_move():
     #     return random.randint(0,Action.NB_POSSIBLE_MOVE_ACTION-1)
