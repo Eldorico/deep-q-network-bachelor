@@ -38,8 +38,8 @@ class Ennemy(GameEntity):
         # print(self.direction)
 
     def move(self, world):
-        self.x += Direction.dx[self.direction]
-        self.y += Direction.dy[self.direction]
+        self.x += Direction.dx[self.direction] * world.config['ennemies_speed']
+        self.y += Direction.dy[self.direction] * world.config['ennemies_speed']
 
         if self.x <= 0 or self.x >= world.game_width:
             self.direction = Direction.inverse_x_direction[self.direction]
@@ -57,8 +57,8 @@ class PursuingEnnemy(Ennemy):
         # update direction
         self.direction = Direction.get_direction_to(self, agent)
 
-        self.x += 0.5 * Direction.dx[self.direction]
-        self.y += 0.5 * Direction.dy[self.direction]
+        self.x += 0.5 * Direction.dx[self.direction] * world.config['ennemies_speed']
+        self.y += 0.5 * Direction.dy[self.direction] * world.config['ennemies_speed']
 
 
 class World(gym.Env):
@@ -80,6 +80,8 @@ class World(gym.Env):
             configuration['food'] = False
         if 'ennemies' not in configuration:
             configuration['ennemies'] = False
+        elif 'ennemies_speed' not in configuration:
+            configuration['ennemies_speed'] = 0.5
 
         self.config = configuration
 
@@ -290,7 +292,10 @@ class World(gym.Env):
         if self.config['food']:
             render_entity(self.food)
             agent_stamina_scale = (self.agent.stamina / 1000) * radius
-            print(agent_stamina_scale)
+
+            # debug
+            # print(agent_stamina_scale)
+
             self.agent.transform.set_scale(agent_stamina_scale, agent_stamina_scale)
             # self.agent.geom.render()
 
@@ -310,6 +315,7 @@ if __name__ == "__main__":
         return 1
     CONFIG = {
         'ennemies' : True,
+        'ennemies_speed' : 0.5,
         'print_reward' : False,
         'reward_function': default_reward,
         'render' : True,
@@ -342,5 +348,5 @@ if __name__ == "__main__":
         time.sleep(0.02)
         # time.sleep(0.5)
         state, game_over, debug = move_agent(world)
-        print(debug['stamina'])
+        # print(debug['stamina'])
     print("Score: %d" % debug['score'])
