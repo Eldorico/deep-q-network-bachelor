@@ -73,7 +73,7 @@ class Agent:
 
         # save the main file before someone change it by error
         if Global.SAVE_FOLDER is not None and Global.SAVE_MAIN_FILE:
-            print("Saving mainfile in save folder...")
+            print("Saving mainfile in save folder: %s..." %Global.SAVE_FOLDER)
             shutil.copyfile(__main__.__file__, Global.SAVE_FOLDER + '/' + 'main_file.py')
             print("Done")
 
