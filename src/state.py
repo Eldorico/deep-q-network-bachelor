@@ -159,7 +159,7 @@ class State:
         self.world_width = world.game_width
         self.world_height = world.game_height
         self.ennemy_agent_positions = np.zeros(State.get_ennemy_agent_layer_shape(world))
-        # self.object_positions = np.zeros(world_size_x*world_size_y)
+        self.food_state = np.zeros(3) # stamina, food_x, food_y
         self.agent_state = np.zeros(2)
 
     def place_ennemy(self, ennemy, i):
@@ -169,6 +169,11 @@ class State:
     def place_agent(self, pos_x, pos_y):
         self.ennemy_agent_positions[0] = pos_x / self.world_width
         self.ennemy_agent_positions[1] = pos_y / self.world_height
+
+    def set_food_state(self, stamina, food_x_pos, food_y_pos):
+        self.food_state[0] = stamina / 100.0
+        self.food_state[1] = food_x_pos / self.world_width
+        self.food_state[2] = food_y_pos / self.world_height
 
     def to_1D(self, x, y):
         result = int(y * self.world_width + x)
@@ -183,3 +188,9 @@ class State:
 
     def get_ennemy_agent_layer_only(self):
         return self.ennemy_agent_positions.reshape(1,len(self.ennemy_agent_positions))
+
+    def get_agent_position_layer(self):
+        return self.ennemy_agent_positions[:2]
+
+    def get_food_position_layer(self):
+        return self.food_state[1:]

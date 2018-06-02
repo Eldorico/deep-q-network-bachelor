@@ -793,3 +793,49 @@ It seems obvious that the learning would work. I shouldn't change the copy targe
 ### 27/05/2018
 
 Still, the learning process seems to have broke when using bigger batches. Maybe its because that when using smaller batches, we train more often, so we ajust weights quicklier. (if we have bad weights and we wait 1000 steps to ajust then, we will overfit the NN with the 1000 bad steps. )
+
+
+
+### 01/06/2018
+
+I found that using the 3 last states as input increase dramatically the learning process's rate. To have a mean score of 180, it takes now 5 days instead of 14 days! 
+
+**TODO: insert graphs here!** 
+
+###### Training agent to fetch an object:
+
+I've added the "food" feature to the world and trying now to teach the agent to fetch an object in the world. It should be simple but I'm facing the same problem described at the very begining of this file:  the agent is using only one action and reinforcing this action as it's Q Value is increasing "indefinetly?". 
+
+This problem seems related to the reward function: the problem is that I try to promote the learning process by rewarding the agent to do the right thing, but *I don't penalize enough* when it doesnt do as good as I want.
+
+Maybe the key is to find a reward as: 
+$$
+\begin{eqnarray}
+\sum(\text{reward good behavior}) \in [0,1]  \\
+\sum\gamma^{n-x}r_{-x}+\gamma^{n-x+1}r_{s-x+1}+...+\gamma^{n-1}r_{-1}+\gamma r \in [0,1]
+\end{eqnarray}
+$$
+It seems a bit to complicated. I see at this moment: 
+
+*tmp_saves/food/asdf/TB2018-06-01_19-36-18*
+
+```
+score avg after 184500 episodes: 100.444000
+episode 185000
+predicted values: max: 0 -> 3.413983, min: 2 -> 3.185398
+predicted values: max: 0 -> 3.413983, min: 2 -> 3.185398
+...
+predicted values: max: 0 -> 3.319719, min: 2 -> 3.123233
+predicted values: max: 0 -> 3.319719, min: 2 -> 3.123233
+predicted values: max: 0 -> 3.319719, min: 2 -> 3.123233
+predicted values: max: 0 -> 3.319719, min: 2 -> 3.123233
+score avg after 185000 episodes: 100.454000
+```
+
+So I will try dividing the reward by 5. 
+
+I have another idea: why not using a world with a very small window to get the object, so that the agent is really in a hurry to get this object? Just for the training, so it could accelerate the learning process? 
+
+###### I tried playing with ennemies and food:
+
+I tried playing with ennemies and food and it results that it is too difficult to make a descent score.. I should make the game easier with making the ennemies go slower. I should be a parameter that I can tweak. 
