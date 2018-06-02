@@ -800,7 +800,9 @@ Still, the learning process seems to have broke when using bigger batches. Maybe
 
 I found that using the 3 last states as input increase dramatically the learning process's rate. To have a mean score of 180, it takes now 5 days instead of 14 days! 
 
-**TODO: insert graphs here!** 
+![score_graphs](avoid_ennemies_graphs/score_graphs.png)
+
+
 
 ###### Training agent to fetch an object:
 
