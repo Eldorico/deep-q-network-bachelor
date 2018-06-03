@@ -1,0 +1,2 @@
+model_checkpoint_path: "fetch_object"
+all_model_checkpoint_paths: "fetch_object"
