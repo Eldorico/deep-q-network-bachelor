@@ -9,9 +9,15 @@ from agent import *
 # create the world
 def reward_function(world):
     if world.game_over:
-        return - 10
-    max_distance = 73
-    return (1 - Direction.distance(world.agent, world.food) / max_distance) / 5.0
+        return -1
+    elif world.food.found:
+        return 1
+    else:
+        return -0.01
+    # if world.game_over:
+    #     return - 5
+    # max_distance = 73
+    # return (1 - Direction.distance(world.agent, world.food) / max_distance) / 5.0
 world_config = {
     'food' : True,
     'print_reward' : False,
@@ -26,7 +32,7 @@ session = tf.Session()
 # use tensorboard
 Global.USE_TENSORBOARD = True
 Global.SAVE_MAIN_FILE = True
-Global.SAVE_FOLDER = '../tmp_saves/food/test_reward_divided_by_5_bad_game_over'
+Global.SAVE_FOLDER = '../tmp_saves/food/good_episodes_stressful_reward'
 Global.SESSION = session
 
 # debug
@@ -44,17 +50,27 @@ fetch_object_model = Model(session, 'fetch_object', 4, 1e-2,
          [40, 'relu'],
         [Action.NB_POSSIBLE_MOVE_ACTION, 'linear']]
 )
-# fetch_object_model = ImportModel(session, Global.SAVE_FOLDER, 'avoid_ennemy')
+# fetch_object_model = ImportModel(session, Global.SAVE_FOLDER, 'fetch_object')
 def fetch_object_input_adapter(bus, next_state=False):
     index = 'next_state' if next_state else 'state'
     agent_position = bus[index].get_agent_position_layer()
     food_position = bus[index].get_food_position_layer()
     return [np.array([agent_position, food_position]).flatten()]
+
+def fetch_object_add_experience_hook(network, world):
+    if not hasattr(network, 'tmp_experiences'):
+        network.tmp_experiences = []
+    network.tmp_experiences.append(dict(network.last_prediction_values))
+    if world.game_over and world.score > 110:
+        network.experiences += network.tmp_experiences
+        network.tmp_experiences = []
+
 fetch_object_network = Network(
     fetch_object_model,
     fetch_object_input_adapter,
     True,
-    True
+    True,
+    fetch_object_add_experience_hook
 )
 
 # create agent and his hyperparameters (config)
@@ -73,8 +89,7 @@ agent_config['copy_target_period'] = 10000
 agent_config['min_experience_size'] = 50000
 agent_config['max_experience_size'] = 400000
 agent_config['batch_size'] = 32
-agent_config['gamma'] = 0.7
-# agent_config['train_with_last_n_steps_of_each_episodes'] = 40
+agent_config['gamma'] = 0.9
 
 agent = Agent(agent_config)
 
