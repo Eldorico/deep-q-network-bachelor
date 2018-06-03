@@ -206,7 +206,7 @@ class ImportModel(Model):
 
 class Network:
 
-    def __init__(self, model, input_adapter, continue_exploration=False, is_training=False):
+    def __init__(self, model, input_adapter, continue_exploration=False, is_training=False, custom_add_experience_hook=None):
         self.is_training = is_training
         self.model = model
         self.input_adapter = input_adapter
@@ -219,6 +219,10 @@ class Network:
         self.depends_on = []
         self.experiences = []
         self.last_prediction_values = None # {}
+
+        # to use an custom add_experience function
+        if custom_add_experience_hook is not None:
+            self.add_experience_hook = custom_add_experience_hook
 
     def add_dependency(self, network):
         self.depends_on.append(network)
@@ -243,20 +247,20 @@ class Network:
         # debug
         # print("network.predict(): last_predictions_values_s1 = \n%s" % str(self.last_prediction_values['s1']))
 
-
-    def add_experience(self, bus, reward, game_over, max_experience_size, add_only_n_last_steps=None):
+    def add_experience(self, bus, reward, game_over, max_experience_size, world):
         self.last_prediction_values['s2'] = self.input_adapter(bus, True)
         self.last_prediction_values['reward'] = reward
         self.last_prediction_values['game_over'] = game_over
-
-        if add_only_n_last_steps is not None:
-            if not hasattr(self, 'tmp_experiences'):
-                self.tmp_experiences = []
-            self.tmp_experiences.append(dict(self.last_prediction_values))
-            if game_over:
-                # print("Game over: added %d experiences to experience." % len(self.tmp_experiences[-add_only_n_last_steps:]))
-                self.experiences += self.tmp_experiences[-add_only_n_last_steps:]
-                self.tmp_experiences = []
+        # if add_only_n_last_steps is not None:
+        #     if not hasattr(self, 'tmp_experiences'):
+        #         self.tmp_experiences = []
+        #     self.tmp_experiences.append(dict(self.last_prediction_values))
+        #     if game_over:
+        #         # print("Game over: added %d experiences to experience." % len(self.tmp_experiences[-add_only_n_last_steps:]))
+        #         self.experiences += self.tmp_experiences[-add_only_n_last_steps:]
+        #         self.tmp_experiences = []
+        if hasattr(self, 'add_experience_hook'):
+            self.add_experience_hook(self, world)
         else:
             self.experiences.append(dict(self.last_prediction_values))
 

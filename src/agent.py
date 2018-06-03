@@ -56,7 +56,6 @@ class Agent:
         self.batch_size = config['batch_size']
         self.gamma = config['gamma']
         self.epsilon = config['epsilon']
-        self.train_with_last_n_steps_of_each_episodes = config['train_with_last_n_steps_of_each_episodes'] if 'train_with_last_n_steps_of_each_episodes' in config else None
 
         self.exit = False
 
@@ -145,7 +144,7 @@ class Agent:
                 if Global.SAY_WHEN_TARGET_NETWORK_COPIED:
                     print("Target Networks copied")
 
-            self.add_experience(next_state, reward, game_over, self.train_with_last_n_steps_of_each_episodes)
+            self.add_experience(next_state, reward, game_over, world)
             self.flush_last_prediction_var()
             self.train_networks()
 
@@ -185,7 +184,7 @@ class Agent:
 
         return self.output_network.last_prediction_values['action']
 
-    def add_experience(self, next_state, reward, game_over, add_only_n_last_steps=None):
+    def add_experience(self, next_state, reward, game_over, world):
         """ add experiences to the networks that are training
         """
         self.bus['next_state'] = next_state
@@ -200,7 +199,7 @@ class Agent:
 
         for network in self.networks:
             if network.is_training:
-                network.add_experience(self.bus, reward, game_over, self.max_experience_size, add_only_n_last_steps)
+                network.add_experience(self.bus, reward, game_over, self.max_experience_size, world)
 
     def train_networks(self):
         if Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES is not 0:
