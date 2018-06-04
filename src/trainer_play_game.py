@@ -6,6 +6,9 @@ from state import *
 from action import *
 from agent import *
 
+#debug
+# import time
+
 # create the world
 def reward_function(world):
     if world.game_over:
@@ -13,6 +16,7 @@ def reward_function(world):
     else:
         return 0.002  # goal is 500 score. So i'lltry a reward of 1/500 for each step
 world_config = {
+    # 'render' : True, # debug
     'ennemies' : True,
     'food': True,
     'print_reward' : False,
@@ -33,7 +37,7 @@ Global.SESSION = session
 # debug
 # Global.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 10000
 # Global.PRINT_REWARD_EVERY_N_EPISODES = 10000
-Global.PRINT_EPISODE_NB_EVERY_N_EPISODES = 500 # 2500
+Global.PRINT_EPISODE_NB_EVERY_N_EPISODES = 1 # 500 # 2500
 Global.PRINT_SCORE_AVG_EVERY_N_EPISODES = 500
 Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
 Global.SAY_WHEN_AGENT_TRAINED = False
@@ -90,8 +94,15 @@ def play_game_output_adapter(prediction, random_choice=False):
         policy = 0 if prediction[0] < 0.5 else 1
 
     if policy == 0:
+        # debug
+        # print("trainer_play_game_action(): ennemy: choose_action = %s " % Action.to_str(avoid_ennemy_network.last_prediction_values['action']))
+
         return avoid_ennemy_network.last_prediction_values['action']
     else:
+        # debug
+        # print("trainer_play_game_action(): food: choose_action = %s " % Action.to_str(fetch_food_network.last_prediction_values['action']))
+        # time.sleep(5)
+
         return fetch_food_network.last_prediction_values['action']
 
 play_game_network = Network(
