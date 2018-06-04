@@ -243,6 +243,11 @@ class Network:
             action = random.randint(0,self.model.layers[-1].size[1]-1) if self.output_adapter is None else self.output_adapter(None, True)
         else:
             input_value = self.input_adapter(bus)
+
+            #debug
+            # print(self.model.name)
+            # print(input_value)
+
             prediction = self.model.predict(input_value)[0]
             action = np.argmax(prediction) if self.output_adapter is None else self.output_adapter(prediction)
 

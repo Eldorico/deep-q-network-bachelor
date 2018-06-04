@@ -78,11 +78,11 @@ play_game_model = Model(session, 'play_game', play_game_input_size, 1e-1,
 def play_game_input_adapter(bus, next_state=False):
     index = 'next_state' if next_state else 'state'
     if next_state:
-        agent_ennemies_last_positions = [state.get_ennemy_agent_layer_only() for state in bus['last_states'][1:]]
+        agent_ennemies_last_positions = np.array([state.get_ennemy_agent_layer_only() for state in bus['last_states'][1:]]).flatten()
     else:
-        agent_ennemies_last_positions = [state.get_ennemy_agent_layer_only() for state in bus['last_states'][0:3]]
-    food_position_stamina_value = bus[index].get_food_position_and_stamina_value()
-    return [np.array([agent_ennemies_last_positions, food_position_stamina_value]).flatten()]
+        agent_ennemies_last_positions = np.array([state.get_ennemy_agent_layer_only() for state in bus['last_states'][0:3]]).flatten()
+    food_position_stamina_value = np.array(bus[index].get_food_position_and_stamina_value())
+    return np.array([np.append(agent_ennemies_last_positions, food_position_stamina_value)])
 def play_game_output_adapter(prediction, random_choice=False):
     if random_choice:
         policy = random.randint(0,1)
