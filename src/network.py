@@ -14,7 +14,8 @@ ACTIVATIONS = {
     'relu' : tf.nn.relu,
     'elu'  : tf.nn.elu,
     'linear' : lambda x: x,
-    'softmax' : tf.nn.softmax
+    'softmax' : tf.nn.softmax,
+    'sigmoid' : tf.nn.sigmoid
 }
 
 
@@ -187,21 +188,24 @@ class TargetModel(Model):
 
 class ImportModel(Model):
     def __init__(self, session, folder, model_name):
-        base_path = folder + '/' + model_name
+        model_graph = tf.Graph()
+        with model_graph.as_default():
+            base_path = folder + '/' + model_name
 
-        # create the base model object
-        try:
-            with open( base_path + '.modelconfig', 'r') as config_file:
-                args = json.load(config_file)
-                super().__init__(None, args['model_name'], args['input_size'], args['learning_rate'], args['layers'])
-        except (OSError, IOError) as e:
-            sys.stderr.write("ImportModel(): import file not found: " + base_path + '.modelconfig\n')
-            exit(-1)
+            # create the base model object
+            try:
+                with open( base_path + '.modelconfig', 'r') as config_file:
+                    args = json.load(config_file)
+                    super().__init__(None, args['model_name'], args['input_size'], args['learning_rate'], args['layers'])
+            except (OSError, IOError) as e:
+                sys.stderr.write("ImportModel(): import file not found: " + base_path + '.modelconfig\n')
+                exit(-1)
 
-        # restore the variables
-        self.session = session
-        saver = tf.train.Saver()
-        saver.restore(self.session, base_path)
+            # restore the variables
+            self.session = tf.Session(graph=model_graph)
+            with self.session.as_default():
+                saver = tf.train.Saver()
+                saver.restore(self.session, base_path)
 
 
 class Network:
