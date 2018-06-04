@@ -38,7 +38,7 @@ session = tf.Session()
 # use tensorboard
 Global.USE_TENSORBOARD = True
 Global.SAVE_MAIN_FILE = True
-Global.SAVE_FOLDER = '../tmp_saves/tests_32/last40_multiple_input'
+Global.SAVE_FOLDER = '../tmp_saves/tests_32/multiple_input_e-1_bis'
 Global.SESSION = session
 
 # debug
@@ -51,10 +51,10 @@ Global.SAY_WHEN_AGENT_TRAINED = False
 Global.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 5000
 
 # create the neural network that will learn to avoid ennemies
-avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world), 1e-2,
-        [[40, 'relu'],
-         [40, 'relu'],
-        [Action.NB_POSSIBLE_MOVE_ACTION, 'linear']]
+avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world)*3, 1e-1,
+       [[40, 'relu'],
+        [40, 'relu'],
+       [Action.NB_POSSIBLE_MOVE_ACTION, 'linear']]
 )
 # avoid_ennemy_model = ImportModel(session, Global.SAVE_FOLDER, 'avoid_ennemy')
 def avoid_ennemy_input_adapter(bus, next_state=False):
@@ -90,7 +90,7 @@ agent_config['min_experience_size'] = 50000
 agent_config['max_experience_size'] = 400000
 agent_config['batch_size'] = 32
 agent_config['gamma'] = 0.8
-agent_config['train_with_last_n_steps_of_each_episodes'] = 40
+# agent_config['train_with_last_n_steps_of_each_episodes'] = 40
 
 agent = Agent(agent_config)
 

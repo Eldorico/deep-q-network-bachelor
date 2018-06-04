@@ -9,9 +9,9 @@ from agent import *
 # create the world
 def reward_function(world):
     if world.game_over:
-        return - 5
+        return - 1
     else:
-        safe_distance = 7
+        safe_distance = 20
         min_distance = float('inf')
         for ennemy in world.ennemies:
             distance = Direction.distance(ennemy, world.agent)
@@ -19,7 +19,7 @@ def reward_function(world):
                 min_distance = distance
 
         if min_distance >= safe_distance:
-            return 1
+            return math.log(safe_distance+0.01) -1
         elif min_distance <= 1:
             return -1
         else:
@@ -36,8 +36,7 @@ world = World(world_config)
 session = tf.Session()
 
 # use tensorboard
-# Global.SAVE_FOLDER = '../tmp_saves/series_2'
-Global.SAVE_FOLDER = '../saves/series_2_2'
+Global.SAVE_FOLDER = '../saves/avoid_ennemies'
 Global.SESSION = session
 
 print("loading save from folder %s" % Global.SAVE_FOLDER)
@@ -46,9 +45,11 @@ print("loading save from folder %s" % Global.SAVE_FOLDER)
 avoid_ennemy_model = ImportModel(session, Global.SAVE_FOLDER, 'avoid_ennemy')
 def avoid_ennemy_input_adapter(bus, next_state=False):
     if next_state:
-        return bus['next_state'].get_ennemy_agent_layer_only()
+        input_states = [state.get_ennemy_agent_layer_only() for state in bus['last_states'][1:]]
     else:
-        return bus['state'].get_ennemy_agent_layer_only()
+        input_states = [state.get_ennemy_agent_layer_only() for state in bus['last_states'][0:3]]
+    input_states = [np.array(input_states).flatten()]
+    return input_states
 avoid_ennemy_network = Network(
     avoid_ennemy_model,
     avoid_ennemy_input_adapter
