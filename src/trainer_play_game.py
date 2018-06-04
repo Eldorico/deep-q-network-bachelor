@@ -33,11 +33,11 @@ Global.SESSION = session
 # debug
 # Global.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 10000
 # Global.PRINT_REWARD_EVERY_N_EPISODES = 10000
-Global.PRINT_EPISODE_NB_EVERY_N_EPISODES = 2500
-Global.PRINT_SCORE_AVG_EVERY_N_EPISODES = 5000
+Global.PRINT_EPISODE_NB_EVERY_N_EPISODES = 500 # 2500
+Global.PRINT_SCORE_AVG_EVERY_N_EPISODES = 500
 Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
 Global.SAY_WHEN_AGENT_TRAINED = False
-Global.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 5000
+Global.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 500
 
 # load the neural network that know how avoid ennemies
 avoid_ennemy_model = ImportModel(session, Global.SAVE_FOLDER, 'avoid_ennemy')
@@ -73,12 +73,26 @@ play_game_input_size = agent_ennemies_input_size + food_position_size + stamina_
 play_game_model = Model(session, 'play_game', play_game_input_size, 1e-1,
         [[40, 'relu'],
          [40, 'relu'],
-        [1, 'sigmoid']]  # output = 1 : if output < 0.5 => play avoid ennemy move. Else play fetch food move.
+        [1, 'sigmoid']]  # output_size = 1 : if output < 0.5 => play avoid ennemy move. Else play fetch food move.
 )
 def play_game_input_adapter(bus, next_state=False):
-    pass
-def play_game_output_adapter():
-    pass
+    index = 'next_state' if next_state else 'state'
+    if next_state:
+        agent_ennemies_last_positions = [state.get_ennemy_agent_layer_only() for state in bus['last_states'][1:]]
+    else:
+        agent_ennemies_last_positions = [state.get_ennemy_agent_layer_only() for state in bus['last_states'][0:3]]
+    food_position_stamina_value = bus[index].get_food_position_and_stamina_value()
+    return [np.array([agent_ennemies_last_positions, food_position_stamina_value]).flatten()]
+def play_game_output_adapter(prediction, random_choice=False):
+    if random_choice:
+        policy = random.randint(0,1)
+    else:
+        policy = 0 if prediction[0] < 0.5 else 1
+
+    if policy == 0:
+        return avoid_ennemy_network.last_prediction_values['action']
+    else:
+        return fetch_food_network.last_prediction_values['action']
 
 play_game_network = Network(
     play_game_model,

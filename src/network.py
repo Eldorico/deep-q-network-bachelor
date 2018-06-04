@@ -206,10 +206,11 @@ class ImportModel(Model):
 
 class Network:
 
-    def __init__(self, model, input_adapter, continue_exploration=False, is_training=False, custom_add_experience_hook=None):
+    def __init__(self, model, input_adapter, continue_exploration=False, is_training=False, custom_add_experience_hook=None, output_adapter=None):
         self.is_training = is_training
         self.model = model
         self.input_adapter = input_adapter
+        self.output_adapter = output_adapter
         self.explore = continue_exploration
 
         if self.is_training:
@@ -235,11 +236,11 @@ class Network:
         #     print("episode %d: choosed randomly. epsilon_value = %f" % (Global.EPISODE_NUMBER, epsilon_value))
 
         if choose_randomly:
-            action = random.randint(0,self.model.layers[-1].size[1]-1)
+            action = random.randint(0,self.model.layers[-1].size[1]-1) if self.output_adapter is None else self.output_adapter(None, True)
         else:
             input_value = self.input_adapter(bus)
             prediction = self.model.predict(input_value)[0]
-            action = np.argmax(prediction)
+            action = np.argmax(prediction) if self.output_adapter is None else self.output_adapter(prediction)
 
         self.last_prediction_values = {'action' : action, 's1': self.input_adapter(bus) }
         self.prediction_done = True

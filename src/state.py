@@ -160,7 +160,7 @@ class State:
         self.world_height = world.game_height
         self.ennemy_agent_positions = np.zeros(State.get_ennemy_agent_layer_shape(world))
         self.food_state = np.zeros(3) # stamina, food_x, food_y
-        # self.agent_state = np.zeros(2) 
+        # self.agent_state = np.zeros(2)
 
     def place_ennemy(self, ennemy, i):
         self.ennemy_agent_positions[i*2+2] = ennemy.x / self.world_width
@@ -194,3 +194,6 @@ class State:
 
     def get_food_position_layer(self):
         return self.food_state[1:]
+
+    def get_food_position_and_stamina_value(self):
+        return self.food_state
