@@ -45,7 +45,7 @@ Global.SAY_WHEN_AGENT_TRAINED = False
 Global.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 500
 
 # load the neural network that know how avoid ennemies
-avoid_ennemy_model = ImportModel(session, Global.SAVE_FOLDER, 'avoid_ennemy')
+avoid_ennemy_model = ImportModel(None, Global.SAVE_FOLDER, 'avoid_ennemy')
 def avoid_ennemy_input_adapter(bus, next_state=False):
     if next_state:
         input_states = [state.get_ennemy_agent_layer_only() for state in bus['last_states'][1:]]
@@ -59,7 +59,7 @@ avoid_ennemy_network = Network(
 )
 
 # load the neural that know how to fetch food
-fetch_food_model = ImportModel(session, Global.SAVE_FOLDER, 'fetch_object')
+fetch_food_model = ImportModel(None, Global.SAVE_FOLDER, 'fetch_object')
 def fetch_food_input_adapter(bus, next_state=False):
     index = 'next_state' if next_state else 'state'
     agent_position = bus[index].get_agent_position_layer()
@@ -97,7 +97,7 @@ def play_game_input_adapter(bus, next_state=False):
     stamina = bus[index].get_stamina_value()
     distance_from_ennemy = bus[index].get_min_distance_between_agent_ennemy()
     distance_from_food = bus[index].get_distance_from_food()
-    return np.array([stamina, distance_from_ennemy, distance_from_food])
+    return np.array([[stamina, distance_from_ennemy, distance_from_food]])
 def play_game_output_adapter(action):
     if action == 0:
         # debug
