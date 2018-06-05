@@ -2,6 +2,8 @@ import time
 import datetime
 import shutil
 import __main__
+import tensorflow as tf
+from tensorflow.core.framework import summary_pb2
 
 from state import *
 from chronometer import *
@@ -32,7 +34,7 @@ class Debug:
 
     @staticmethod
     def get_TB_folder():
-        return Global.SAVE_FOLDER + '/TB_'+ datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d_%H-%M-%S')
+        return Debug.SAVE_FOLDER + '/TB_'+ datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d_%H-%M-%S')
 
     @staticmethod
     def set_episode_number(episode_number):
@@ -123,5 +125,27 @@ class Debug:
             print("plotted")
 
     @staticmethod
-    def write_tensorboard_results(results, epsilon_value):
+    def write_tensorboard_results(results, epsilon_value, networks, episode_number): # TODO: replace episode_number with Debug.EPISODE_NUMBER ??
         if Debug.USE_TENSORBOARD and Debug.EPISODE_NUMBER % Debug.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES == 0:
+            value = summary_pb2.Summary.Value(tag="score_per_episode", simple_value=results['score'])
+            summary = summary_pb2.Summary(value=[value])
+            Debug.WRITER.add_summary(summary, episode_number)
+
+            value = summary_pb2.Summary.Value(tag="epsilon_value", simple_value=epsilon_value)
+            summary = summary_pb2.Summary(value=[value])
+            Debug.WRITER.add_summary(summary, episode_number)
+
+            value = summary_pb2.Summary.Value(tag="total reward per episode", simple_value=results['total_reward'])
+            summary = summary_pb2.Summary(value=[value])
+            Debug.WRITER.add_summary(summary, episode_number)
+
+            # log['actions_made'] += results['actions_made']
+            summary = Debug.SESSION.run(Debug.WRITER._actions_made_histogram, feed_dict={Debug.WRITER._actions_made_placeholder: np.reshape(results['actions_made'], (len(results['actions_made']), 1))}) # TODO: why reshape results['actions_made']? maybe it isnt useful anymore
+            Debug.WRITER.add_summary(summary, episode_number)
+            # log['actions_made'] = []
+
+            for network in networks:
+                if network.is_training:
+                    network.model.write_weights_tb_histograms()
+                    if Debug.SAY_WHEN_HISTOGRAMS_ARE_PRINTED:
+                        print("weights histograms printed")

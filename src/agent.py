@@ -1,5 +1,3 @@
-import tensorflow as tf
-from tensorflow.core.framework import summary_pb2
 import numpy as np
 
 from state import *
@@ -213,8 +211,8 @@ class Agent:
         score_avg = 0
         tmp_total_score = 0
 
-        if Debug.USE_TENSORBOARD:
-            log = {'actions_made' : []}
+        # if Debug.USE_TENSORBOARD:
+        #     log = {'actions_made' : []}
 
         Debug.start_non_training_chrono()
         # if Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES is not 0:
@@ -250,30 +248,31 @@ class Agent:
             #     print("agent.train(): score greater than 20: episode = %d, score = %d" % (i, results['score']))
 
             # update tensorboard
-            if Global.USE_TENSORBOARD and Global.EPISODE_NUMBER % Global.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES == 0:
-                value = summary_pb2.Summary.Value(tag="score_per_episode", simple_value=results['score'])
-                summary = summary_pb2.Summary(value=[value])
-                self.writer.add_summary(summary, i)
-
-                value = summary_pb2.Summary.Value(tag="epsilon_value", simple_value=self.epsilon.value)
-                summary = summary_pb2.Summary(value=[value])
-                self.writer.add_summary(summary, i)
-
-                value = summary_pb2.Summary.Value(tag="total reward per episode", simple_value=results['total_reward'])
-                summary = summary_pb2.Summary(value=[value])
-                self.writer.add_summary(summary, i)
-
-                log['actions_made'] += results['actions_made']
-                # if i % 50 == 0:  # TODO: reput 50 instead of 10!
-                summary = Global.SESSION.run(self.actions_made_histogram, feed_dict={self.actions_made_placeholder: np.reshape(log['actions_made'], (len(log['actions_made']), 1))})
-                self.writer.add_summary(summary, i)
-                log['actions_made'] = []
-
-                for network in self.networks:
-                    if network.is_training:
-                        network.model.write_weights_tb_histograms()
-                        if Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED:
-                            print("weights histograms printed")
+            Debug.write_tensorboard_results(results, self.epsilon.value, self.networks, i) # TODO: replace i with Debug.EPISODE_NUMBER ??
+            # if Global.USE_TENSORBOARD and Global.EPISODE_NUMBER % Global.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES == 0:
+            #     value = summary_pb2.Summary.Value(tag="score_per_episode", simple_value=results['score'])
+            #     summary = summary_pb2.Summary(value=[value])
+            #     self.writer.add_summary(summary, i)
+            #
+            #     value = summary_pb2.Summary.Value(tag="epsilon_value", simple_value=self.epsilon.value)
+            #     summary = summary_pb2.Summary(value=[value])
+            #     self.writer.add_summary(summary, i)
+            #
+            #     value = summary_pb2.Summary.Value(tag="total reward per episode", simple_value=results['total_reward'])
+            #     summary = summary_pb2.Summary(value=[value])
+            #     self.writer.add_summary(summary, i)
+            #
+            #     log['actions_made'] += results['actions_made']
+            #     # if i % 50 == 0:  # TODO: reput 50 instead of 10!
+            #     summary = Global.SESSION.run(self.actions_made_histogram, feed_dict={self.actions_made_placeholder: np.reshape(log['actions_made'], (len(log['actions_made']), 1))})
+            #     self.writer.add_summary(summary, i)
+            #     log['actions_made'] = []
+            #
+            #     for network in self.networks:
+            #         if network.is_training:
+            #             network.model.write_weights_tb_histograms()
+            #             if Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED:
+            #                 print("weights histograms printed")
 
             # check if avg score is reached
             if Global.PRINT_SCORE_AVG_EVERY_N_EPISODES > 0 and i % Global.PRINT_SCORE_AVG_EVERY_N_EPISODES == 0 and i != 0:
