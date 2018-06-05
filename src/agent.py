@@ -213,26 +213,30 @@ class Agent:
         score_avg = 0
         tmp_total_score = 0
 
-        if Global.USE_TENSORBOARD:
+        if Debug.USE_TENSORBOARD:
             log = {'actions_made' : []}
 
-        if Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES is not 0:
-            chrono = Chronometer()
-            chrono.resume_chrono(Chronometer.NON_TRAINING_CHRONO)
+        Debug.start_non_training_chrono()
+        # if Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES is not 0:
+        #     chrono = Chronometer()
+        #     chrono.resume_chrono(Chronometer.NON_TRAINING_CHRONO)
 
         for i in range(nb_episodes):
-            if Global.PRINT_EPISODE_NB_EVERY_N_EPISODES > 0 and i != 0 and i % Global.PRINT_EPISODE_NB_EVERY_N_EPISODES == 0:
-                print("episode %d" % (i))
+            Debug.print_episode_number(i)
+            # if Global.PRINT_EPISODE_NB_EVERY_N_EPISODES > 0 and i != 0 and i % Global.PRINT_EPISODE_NB_EVERY_N_EPISODES == 0:
+            #     print("episode %d" % (i))
 
-            if Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES is not 0 and i % Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES == 0:
-                chrono.pause_chrono(Chronometer.NON_TRAINING_CHRONO)
-                chrono.checkpoint_chrono(Chronometer.TRAINING_CHRONO, Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES)
-                chrono.checkpoint_chrono(Chronometer.NON_TRAINING_CHRONO, Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES)
-                chrono.resume_chrono(Chronometer.NON_TRAINING_CHRONO)
-            if Global.PLOT_TIMES_DURATION_ON_N_EPISODES is not 0 and Global.PLOT_TIMES_DURATION_ON_N_EPISODES == i:
-                print("about to plot")
-                chrono.plot_chrono_deltas()
-                print("plotted")
+            Debug.manage_chrono_for_begining_of_episode(i)
+            # if Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES is not 0 and i % Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES == 0:
+            #     chrono.pause_chrono(Chronometer.NON_TRAINING_CHRONO)
+            #     chrono.checkpoint_chrono(Chronometer.TRAINING_CHRONO, Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES)
+            #     chrono.checkpoint_chrono(Chronometer.NON_TRAINING_CHRONO, Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES)
+            #     chrono.resume_chrono(Chronometer.NON_TRAINING_CHRONO)
+            Debug.plot_chronos_results(i)
+            # if Global.PLOT_TIMES_DURATION_ON_N_EPISODES is not 0 and Global.PLOT_TIMES_DURATION_ON_N_EPISODES == i:
+            #     print("about to plot")
+            #     chrono.plot_chrono_deltas()
+            #     print("plotted")
 
             results = self.play_episode(world, max_score_per_episode)
             tmp_total_score += results['score']

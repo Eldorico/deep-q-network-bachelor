@@ -93,3 +93,35 @@ class Debug:
             chrono = Chronometer()
             chrono.pause_chrono(Chronometer.TRAINING_CHRONO)
             chrono.resume_chrono(Chronometer.NON_TRAINING_CHRONO)
+
+    @staticmethod
+    def start_non_training_chrono():
+        if Debug.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES is not 0:
+            chrono = Chronometer()
+            chrono.resume_chrono(Chronometer.NON_TRAINING_CHRONO)
+
+    @staticmethod
+    def print_episode_number(episode_number):
+        if Debug.PRINT_EPISODE_NB_EVERY_N_EPISODES > 0 and episode_number != 0 and episode_number % Debug.PRINT_EPISODE_NB_EVERY_N_EPISODES == 0:
+            print("episode %d" % episode_number)
+
+    @staticmethod
+    def manage_chrono_for_begining_of_episode(episode_number):
+        if Debug.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES is not 0 and episode_number % Debug.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES == 0:
+            chrono = Chronometer()
+            chrono.pause_chrono(Chronometer.NON_TRAINING_CHRONO)
+            chrono.checkpoint_chrono(Chronometer.TRAINING_CHRONO, Debug.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES)
+            chrono.checkpoint_chrono(Chronometer.NON_TRAINING_CHRONO, Debug.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES)
+            chrono.resume_chrono(Chronometer.NON_TRAINING_CHRONO)
+
+    @staticmethod
+    def plot_chronos_results(episode_number):
+        if Debug.PLOT_TIMES_DURATION_ON_N_EPISODES is not 0 and Debug.PLOT_TIMES_DURATION_ON_N_EPISODES == episode_number:
+            print("about to plot")
+            chrono = Chronometer()
+            chrono.plot_chrono_deltas()
+            print("plotted")
+
+    @staticmethod
+    def write_tensorboard_results(results, epsilon_value):
+        if Debug.USE_TENSORBOARD and Debug.EPISODE_NUMBER % Debug.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES == 0:
