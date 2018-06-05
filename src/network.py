@@ -240,7 +240,7 @@ class Network:
         #     print("episode %d: choosed randomly. epsilon_value = %f" % (Global.EPISODE_NUMBER, epsilon_value))
 
         if choose_randomly:
-            action = random.randint(0,self.model.layers[-1].size[1]-1) if self.output_adapter is None else self.output_adapter(None, True)
+            action = random.randint(0,self.model.layers[-1].size[1]-1) if self.output_adapter is None else self.output_adapter(None, 'random_predict')
         else:
             input_value = self.input_adapter(bus)
 
@@ -249,7 +249,7 @@ class Network:
             # print(input_value)
 
             prediction = self.model.predict(input_value)[0]
-            action = np.argmax(prediction) if self.output_adapter is None else self.output_adapter(prediction)
+            action = np.argmax(prediction) if self.output_adapter is None else self.output_adapter(prediction, 'predi_output')
 
         self.last_prediction_values = {'action' : action, 's1': self.input_adapter(bus) }
         self.prediction_done = True
@@ -276,6 +276,9 @@ class Network:
 
         while len(self.experiences) > max_experience_size:
             self.experiences.pop(0)
+
+    def get_last_action(self):
+        action = self.last_prediction_values['action'] if self.output_adapter is None else self.output_adapter(self.last_prediction_values['action'], 'network_output')
 
     def flush_last_prediction_var(self):
         self.last_prediction_values = None

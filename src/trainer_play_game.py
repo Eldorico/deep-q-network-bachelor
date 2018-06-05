@@ -87,23 +87,24 @@ def play_game_input_adapter(bus, next_state=False):
         agent_ennemies_last_positions = np.array([state.get_ennemy_agent_layer_only() for state in bus['last_states'][0:3]]).flatten()
     food_position_stamina_value = np.array(bus[index].get_food_position_and_stamina_value())
     return np.array([np.append(agent_ennemies_last_positions, food_position_stamina_value)])
-def play_game_output_adapter(prediction, random_choice=False):
-    if random_choice:
-        policy = random.randint(0,1)
-    else:
-        policy = 0 if prediction[0] < 0.5 else 1
+def play_game_output_adapter(value, mode):
+    if mode == 'random_predict':
+        return random.random()
+    elif mode == 'prediction_output':
+        return value
+    elif mode == 'network_output':
+        policy = 'ennemy' if value < 0.5 else 'food'
+        if policy == 'ennemy':
+            # debug
+            print("trainer_play_game_action(): ennemy: choose_action = %s " % Action.to_str(avoid_ennemy_network.last_prediction_values['action']))
 
-    if policy == 0:
-        # debug
-        # print("trainer_play_game_action(): ennemy: choose_action = %s " % Action.to_str(avoid_ennemy_network.last_prediction_values['action']))
+            return avoid_ennemy_network.last_prediction_values['action']
+        else:
+            # debug
+            print("trainer_play_game_action(): food: choose_action = %s " % Action.to_str(fetch_food_network.last_prediction_values['action']))
+            # time.sleep(5)
 
-        return avoid_ennemy_network.last_prediction_values['action']
-    else:
-        # debug
-        # print("trainer_play_game_action(): food: choose_action = %s " % Action.to_str(fetch_food_network.last_prediction_values['action']))
-        # time.sleep(5)
-
-        return fetch_food_network.last_prediction_values['action']
+            return fetch_food_network.last_prediction_values['action']
 
 play_game_network = Network(
     play_game_model,
@@ -126,8 +127,8 @@ agent_config = {}
 agent_config['epsilon'] = epsilon
 agent_config['networks'] = [avoid_ennemy_network, fetch_food_network, play_game_network]
 agent_config['output_network'] = play_game_network
-agent_config['copy_target_period'] = 10000
-agent_config['min_experience_size'] = 50000
+agent_config['copy_target_period'] = 40 # 10000
+agent_config['min_experience_size'] = 40 # 50000
 agent_config['max_experience_size'] = 400000
 agent_config['batch_size'] = 32
 agent_config['gamma'] = 0.9

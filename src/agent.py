@@ -182,7 +182,7 @@ class Agent:
                     network.predict(self.bus, self.epsilon.value)
                     nb_networks_that_predicted += 1
 
-        return self.output_network.last_prediction_values['action']
+        return self.output_network.get_last_action()
 
     def add_experience(self, next_state, reward, game_over, world):
         """ add experiences to the networks that are training
