@@ -12,9 +12,13 @@ from agent import *
 # create the world
 def reward_function(world):
     if world.game_over:
-        return - 1
-    else:
-        return 0.002  # goal is 500 score. So i'lltry a reward of 1/500 for each step
+        return - 5
+    max_distance = 73
+    return (1 - Direction.distance(world.agent, world.food) / max_distance)
+    # if world.game_over:
+    #     return - 1
+    # else:
+    #     return 0.002  # goal is 500 score. So i'lltry a reward of 1/500 for each step
 world_config = {
     # 'render' : True, # debug
     'ennemies' : True,
@@ -31,7 +35,7 @@ session = tf.Session()
 # use tensorboard
 Global.USE_TENSORBOARD = True
 Global.SAVE_MAIN_FILE = True
-Global.SAVE_FOLDER = '../tmp_saves/play_game/asdf'
+Global.SAVE_FOLDER = '../tmp_saves/play_game/food_reward_gamma05'
 Global.SESSION = session
 
 # debug
@@ -136,7 +140,7 @@ agent_config['copy_target_period'] = 10000
 agent_config['min_experience_size'] = 50000
 agent_config['max_experience_size'] = 400000
 agent_config['batch_size'] = 32
-agent_config['gamma'] = 0.9
+agent_config['gamma'] = 0.99
 
 agent = Agent(agent_config)
 
