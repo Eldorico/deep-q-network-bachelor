@@ -71,23 +71,33 @@ fetch_food_network = Network(
 )
 
 # create the network model that will learn to play the game using the fetch food and avoid ennemies networks
-agent_ennemies_input_size = State.get_ennemy_agent_layer_shape(world)*3
-food_position_size = 2
-stamina_size = 1
-play_game_input_size = agent_ennemies_input_size + food_position_size + stamina_size
-play_game_model = Model(session, 'play_game', play_game_input_size, 1e-1,
+# agent_ennemies_input_size = State.get_ennemy_agent_layer_shape(world)*3
+# food_position_size = 2
+# stamina_size = 1
+# play_game_input_size = agent_ennemies_input_size + food_position_size + stamina_size
+# play_game_model = Model(session, 'play_game', play_game_input_size, 1e-1,
+#         [[40, 'relu'],
+#          [40, 'relu'],
+#         [2, 'linear']]
+# )
+play_game_model = Model(session, 'play_game', 3, 1e-1,
         [[40, 'relu'],
          [40, 'relu'],
         [2, 'linear']]
 )
 def play_game_input_adapter(bus, next_state=False):
+    # index = 'next_state' if next_state else 'state'
+    # if next_state:
+    #     agent_ennemies_last_positions = np.array([state.get_ennemy_agent_layer_only() for state in bus['last_states'][1:]]).flatten()
+    # else:
+    #     agent_ennemies_last_positions = np.array([state.get_ennemy_agent_layer_only() for state in bus['last_states'][0:3]]).flatten()
+    # food_position_stamina_value = np.array(bus[index].get_food_position_and_stamina_value())
+    # return np.array([np.append(agent_ennemies_last_positions, food_position_stamina_value)])
     index = 'next_state' if next_state else 'state'
-    if next_state:
-        agent_ennemies_last_positions = np.array([state.get_ennemy_agent_layer_only() for state in bus['last_states'][1:]]).flatten()
-    else:
-        agent_ennemies_last_positions = np.array([state.get_ennemy_agent_layer_only() for state in bus['last_states'][0:3]]).flatten()
-    food_position_stamina_value = np.array(bus[index].get_food_position_and_stamina_value())
-    return np.array([np.append(agent_ennemies_last_positions, food_position_stamina_value)])
+    stamina = bus[index].get_stamina_value()
+    distance_from_ennemy = bus[index].get_min_distance_between_agent_ennemy()
+    distance_from_food = bus[index].get_distance_from_food()
+    return np.array([stamina, distance_from_ennemy, distance_from_food])
 def play_game_output_adapter(action):
     if action == 0:
         # debug

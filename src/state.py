@@ -78,6 +78,10 @@ class Direction:
        return ( (entity1.x-entity2.x)**2 + (entity1.y-entity2.y)**2 ) ** 0.5
 
     @staticmethod
+    def distance2(x1, y1, x2, y2):
+        return ( (x1-x2)**2 + (y1-y2)**2 ) ** 0.5
+
+    @staticmethod
     def get_direction_to(me, target):
         if target.y > me.y:
             if target.x > me.x:
@@ -195,5 +199,19 @@ class State:
     def get_food_position_layer(self):
         return self.food_state[1:]
 
+    def get_stamina_value(self):
+        return self.food_state[0]
+
     def get_food_position_and_stamina_value(self):
         return self.food_state
+
+    def get_min_distance_between_agent_ennemy(self):
+        agent_x, agent_y = self.ennemy_agent_positions[0], self.ennemy_agent_positions[1]
+        min_distance = float('inf')
+        for i in range(2, len(self.ennemy_agent_positions), 2):
+            ennemy_x, ennemy_y = self.ennemy_agent_positions[i], self.ennemy_agent_positions[i+1]
+            min_distance = min(min_distance, Direction.distance2(agent_x, agent_y, ennemy_x, ennemy_y))
+        return min_distance
+
+    def get_distance_from_food(self):
+        return Direction.distance2(self.ennemy_agent_positions[0], self.ennemy_agent_positions[1], self.food_state[1], self.food_state[2])
