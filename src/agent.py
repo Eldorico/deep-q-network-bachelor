@@ -274,19 +274,26 @@ class Agent:
             #             if Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED:
             #                 print("weights histograms printed")
 
-            # check if avg score is reached
-            if Global.PRINT_SCORE_AVG_EVERY_N_EPISODES > 0 and i % Global.PRINT_SCORE_AVG_EVERY_N_EPISODES == 0 and i != 0:
-                score_avg = tmp_total_score / Global.PRINT_SCORE_AVG_EVERY_N_EPISODES
-                print("score avg after %d episodes: %f" % (i, score_avg) )
+
+            avg_score_printed, score_avg = Debug.print_avg_score(i, tmp_total_score)
+            if avg_score_printed:
                 tmp_total_score = 0
-                if stop_on_score_avg is not None and score_avg >= stop_on_score_avg:
-                    print("Score avg reached. Stop learning")
-                    self.exit = True
+            if stop_on_score_avg is not None and score_avg is not None and score_avg >= stop_on_score_avg:
+                print("Score avg reached. Stop learning")
+                self.exit = True
+            # if Global.PRINT_SCORE_AVG_EVERY_N_EPISODES > 0 and i % Global.PRINT_SCORE_AVG_EVERY_N_EPISODES == 0 and i != 0:
+            #     score_avg = tmp_total_score / Global.PRINT_SCORE_AVG_EVERY_N_EPISODES
+            #     print("score avg after %d episodes: %f" % (i, score_avg) )
+            #     tmp_total_score = 0
+            # check if avg score is reached
+            # if stop_on_score_avg is not None and score_avg >= stop_on_score_avg:
+            #     print("Score avg reached. Stop learning")
+            #     self.exit = True
 
             # exit
             if self.exit:
                 self._save_and_exit()
 
         print("Nb max episodes reached. Stop learning")
-        if Global.SAVE_FOLDER is not None:
+        if Debug.SAVE_FOLDER is not None:
             self._save()

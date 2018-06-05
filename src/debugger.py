@@ -149,3 +149,10 @@ class Debug:
                     network.model.write_weights_tb_histograms()
                     if Debug.SAY_WHEN_HISTOGRAMS_ARE_PRINTED:
                         print("weights histograms printed")
+    @staticmethod
+    def print_avg_score(episode_number, total_score): # TODO: replace episode_number by Debug.EPISODE_NUMBER ?
+        if Debug.PRINT_SCORE_AVG_EVERY_N_EPISODES > 0 and episode_number % Debug.PRINT_SCORE_AVG_EVERY_N_EPISODES == 0 and episode_number != 0:
+            score_avg = tmp_total_score / Debug.PRINT_SCORE_AVG_EVERY_N_EPISODES
+            print("score avg after %d episodes: %f" % (episode_number, score_avg) )
+            return True, score_avg
+        return False, None
