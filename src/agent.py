@@ -283,9 +283,10 @@ class Agent:
                 log['actions_made'] = []
 
                 for network in self.networks:
-                    network.model.write_weights_tb_histograms()
-                    if Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED:
-                        print("weights histograms printed")
+                    if network.is_training:
+                        network.model.write_weights_tb_histograms()
+                        if Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED:
+                            print("weights histograms printed")
 
             # check if avg score is reached
             if Global.PRINT_SCORE_AVG_EVERY_N_EPISODES > 0 and i % Global.PRINT_SCORE_AVG_EVERY_N_EPISODES == 0 and i != 0:
