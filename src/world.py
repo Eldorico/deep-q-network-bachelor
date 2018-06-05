@@ -136,7 +136,7 @@ class World(gym.Env):
 
         # update food
         if self.config['food']:
-            self.agent.stamina -= 1
+            self.agent.stamina -= 0.5
             if Direction.distance(self.agent, self.food) <= 2:
                 self.agent.stamina = 100
                 self.food.x, self.food.y = self.rand_pos()
