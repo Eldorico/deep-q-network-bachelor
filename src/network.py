@@ -202,7 +202,7 @@ class ImportModel(Model):
                 exit(-1)
 
             # restore the variables
-            self.session = tf.Session(graph=model_graph)
+            self.session = session if self.is_training else tf.Session(graph=model_graph)
             with self.session.as_default():
                 saver = tf.train.Saver()
                 saver.restore(self.session, base_path)
