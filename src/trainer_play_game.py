@@ -35,7 +35,7 @@ session = tf.Session()
 # use tensorboard
 Global.USE_TENSORBOARD = True
 Global.SAVE_MAIN_FILE = True
-Global.SAVE_FOLDER = '../tmp_saves/play_game/food_reward_gamma09'
+Global.SAVE_FOLDER = '../tmp_saves/play_game/food_reward_gamma05_last_distances_from_ennemies_gamma_1e-1'
 Global.SESSION = session
 
 # debug
@@ -84,7 +84,7 @@ fetch_food_network = Network(
 #          [40, 'relu'],
 #         [2, 'linear']]
 # )
-play_game_model = Model(session, 'play_game', 3, 1e-1,
+play_game_model = Model(session, 'play_game', 3+2, 1e-1,
         [[40, 'relu'],
          [40, 'relu'],
         [2, 'linear']]
@@ -97,11 +97,25 @@ def play_game_input_adapter(bus, next_state=False):
     #     agent_ennemies_last_positions = np.array([state.get_ennemy_agent_layer_only() for state in bus['last_states'][0:3]]).flatten()
     # food_position_stamina_value = np.array(bus[index].get_food_position_and_stamina_value())
     # return np.array([np.append(agent_ennemies_last_positions, food_position_stamina_value)])
+
+    # index = 'next_state' if next_state else 'state'
+    # stamina = bus[index].get_stamina_value()
+    # distance_from_ennemy = bus[index].get_min_distance_between_agent_ennemy()
+    # distance_from_food = bus[index].get_distance_from_food()
+    # return np.array([[stamina, distance_from_ennemy, distance_from_food]])
+
+    if next_state:
+        distances_from_ennemy = [state.get_min_distance_between_agent_ennemy() for state in bus['last_states'][1:]]
+    else:
+        distances_from_ennemy = [state.get_min_distance_between_agent_ennemy() for state in bus['last_states'][0:3]]
     index = 'next_state' if next_state else 'state'
     stamina = bus[index].get_stamina_value()
-    distance_from_ennemy = bus[index].get_min_distance_between_agent_ennemy()
     distance_from_food = bus[index].get_distance_from_food()
-    return np.array([[stamina, distance_from_ennemy, distance_from_food]])
+    to_return = distances_from_ennemy
+    to_return.append(stamina)
+    to_return.append(distance_from_food)
+    return np.array([to_return])
+
 def play_game_output_adapter(action):
     if action == 0:
         # debug
@@ -140,7 +154,7 @@ agent_config['copy_target_period'] = 10000
 agent_config['min_experience_size'] = 50000
 agent_config['max_experience_size'] = 400000
 agent_config['batch_size'] = 32
-agent_config['gamma'] = 0.9
+agent_config['gamma'] = 0.5
 
 agent = Agent(agent_config)
 
