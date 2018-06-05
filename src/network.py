@@ -97,7 +97,7 @@ class Model:
     def predict(self, input_values):
         predicted_values = self.session.run(self.predict_op, feed_dict={self.X: input_values})
 
-        if Global.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES > 0 and Global.EPISODE_NUMBER % Global.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES == 0:
+        if (len(Global.PRINT_PREDICTED_VALUES_FOR) == 0 or self.name in Global.PRINT_PREDICTED_VALUES_FOR) and Global.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES > 0 and Global.EPISODE_NUMBER % Global.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES == 0:
             max_index = np.argmax(predicted_values[0])
             max_value = predicted_values[0][max_index]
             min_index = np.argmin(predicted_values[0])
@@ -240,7 +240,7 @@ class Network:
         #     print("episode %d: choosed randomly. epsilon_value = %f" % (Global.EPISODE_NUMBER, epsilon_value))
 
         if choose_randomly:
-            action = random.randint(0,self.model.layers[-1].size[1]-1) if self.output_adapter is None else self.output_adapter(None, 'random_predict')
+            action = random.randint(0,self.model.layers[-1].size[1]-1) # if self.output_adapter is None else self.output_adapter(None, 'random_predict')
         else:
             input_value = self.input_adapter(bus)
 
@@ -249,7 +249,7 @@ class Network:
             # print(input_value)
 
             prediction = self.model.predict(input_value)[0]
-            action = np.argmax(prediction) if self.output_adapter is None else self.output_adapter(prediction, 'predi_output')
+            action = np.argmax(prediction) # if self.output_adapter is None else self.output_adapter(prediction, 'prediction_output')
 
         self.last_prediction_values = {'action' : action, 's1': self.input_adapter(bus) }
         self.prediction_done = True
@@ -278,7 +278,7 @@ class Network:
             self.experiences.pop(0)
 
     def get_last_action(self):
-        action = self.last_prediction_values['action'] if self.output_adapter is None else self.output_adapter(self.last_prediction_values['action'], 'network_output')
+        return self.last_prediction_values['action'] if self.output_adapter is None else self.output_adapter(self.last_prediction_values['action'])
 
     def flush_last_prediction_var(self):
         self.last_prediction_values = None

@@ -35,9 +35,10 @@ Global.SAVE_FOLDER = '../tmp_saves/play_game/asdf'
 Global.SESSION = session
 
 # debug
-# Global.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 10000
+Global.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 1000
+Global.PRINT_PREDICTED_VALUES_FOR.append('play_game')
 # Global.PRINT_REWARD_EVERY_N_EPISODES = 10000
-Global.PRINT_EPISODE_NB_EVERY_N_EPISODES = 1 # 500 # 2500
+Global.PRINT_EPISODE_NB_EVERY_N_EPISODES = 500 # 2500
 Global.PRINT_SCORE_AVG_EVERY_N_EPISODES = 500
 Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
 Global.SAY_WHEN_AGENT_TRAINED = False
@@ -77,7 +78,7 @@ play_game_input_size = agent_ennemies_input_size + food_position_size + stamina_
 play_game_model = Model(session, 'play_game', play_game_input_size, 1e-1,
         [[40, 'relu'],
          [40, 'relu'],
-        [1, 'sigmoid']]  # output_size = 1 : if output < 0.5 => play avoid ennemy move. Else play fetch food move.
+        [2, 'linear']]
 )
 def play_game_input_adapter(bus, next_state=False):
     index = 'next_state' if next_state else 'state'
@@ -87,24 +88,18 @@ def play_game_input_adapter(bus, next_state=False):
         agent_ennemies_last_positions = np.array([state.get_ennemy_agent_layer_only() for state in bus['last_states'][0:3]]).flatten()
     food_position_stamina_value = np.array(bus[index].get_food_position_and_stamina_value())
     return np.array([np.append(agent_ennemies_last_positions, food_position_stamina_value)])
-def play_game_output_adapter(value, mode):
-    if mode == 'random_predict':
-        return random.random()
-    elif mode == 'prediction_output':
-        return value
-    elif mode == 'network_output':
-        policy = 'ennemy' if value < 0.5 else 'food'
-        if policy == 'ennemy':
-            # debug
-            print("trainer_play_game_action(): ennemy: choose_action = %s " % Action.to_str(avoid_ennemy_network.last_prediction_values['action']))
+def play_game_output_adapter(action):
+    if action == 0:
+        # debug
+        # print("trainer_play_game_action(): ennemy: choose_action = %s " % Action.to_str(avoid_ennemy_network.last_prediction_values['action']))
 
-            return avoid_ennemy_network.last_prediction_values['action']
-        else:
-            # debug
-            print("trainer_play_game_action(): food: choose_action = %s " % Action.to_str(fetch_food_network.last_prediction_values['action']))
-            # time.sleep(5)
+        return avoid_ennemy_network.last_prediction_values['action']
+    else:
+        # debug
+        # print("trainer_play_game_action(): food: choose_action = %s " % Action.to_str(fetch_food_network.last_prediction_values['action']))
+        # time.sleep(5)
 
-            return fetch_food_network.last_prediction_values['action']
+        return fetch_food_network.last_prediction_values['action']
 
 play_game_network = Network(
     play_game_model,
@@ -127,8 +122,8 @@ agent_config = {}
 agent_config['epsilon'] = epsilon
 agent_config['networks'] = [avoid_ennemy_network, fetch_food_network, play_game_network]
 agent_config['output_network'] = play_game_network
-agent_config['copy_target_period'] = 40 # 10000
-agent_config['min_experience_size'] = 40 # 50000
+agent_config['copy_target_period'] = 10000
+agent_config['min_experience_size'] = 50000
 agent_config['max_experience_size'] = 400000
 agent_config['batch_size'] = 32
 agent_config['gamma'] = 0.9

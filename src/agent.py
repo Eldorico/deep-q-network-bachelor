@@ -18,6 +18,7 @@ class Global:
     WRITER = None
     EPISODE_NUMBER = -1
     PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 0
+    PRINT_PREDICTED_VALUES_FOR = []
     PRINT_REWARD_EVERY_N_EPISODES = 0
     PRINT_EPISODE_NB_EVERY_N_EPISODES = 1
     PRINT_SCORE_AVG_EVERY_N_EPISODES = 1
@@ -85,8 +86,8 @@ class Agent:
 
     def _save(self):
         if Global.SAVE_FOLDER is not None:
-            print("Saving networks models as %s ..." % (Global.SAVE_FOLDER + '/') )
-            for network in self.networks:
+            for network in filter(lambda x: x.is_training, self.networks):
+                print("Saving network %s model as %s ..." % (network.model.name, Global.SAVE_FOLDER + '/') )
                 network.model.export_model(Global.SAVE_FOLDER)
             print("Saving done.")
 
