@@ -1,0 +1,1 @@
+{"model_name": "avoid_ennemy", "input_size": 30, "learning_rate": 0.1, "layers": [[40, "relu"], [40, "relu"], [9, "linear"]], "name": "avoid_ennemy"}

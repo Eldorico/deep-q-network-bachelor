@@ -1,0 +1,1 @@
+{"model_name": "play_game", "input_size": 3, "learning_rate": 0.01, "layers": [[40, "relu"], [40, "relu"], [2, "linear"]], "name": "play_game"}
