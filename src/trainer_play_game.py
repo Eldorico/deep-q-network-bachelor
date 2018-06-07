@@ -5,9 +5,7 @@ from network import *
 from state import *
 from action import *
 from agent import *
-
-#debug
-# import time
+from debugger import *
 
 # create the world
 def reward_function(world):
@@ -15,10 +13,6 @@ def reward_function(world):
         return - 5
     max_distance = 73
     return (1 - Direction.distance(world.agent, world.food) / max_distance)
-    # if world.game_over:
-    #     return - 1
-    # else:
-    #     return 0.002  # goal is 500 score. So i'lltry a reward of 1/500 for each step
 world_config = {
     # 'render' : True, # debug
     'ennemies' : True,
@@ -29,27 +23,26 @@ world_config = {
 world = World(world_config)
 world.reset()
 
-# create the session
+# create the training session
 session = tf.Session()
 
 # use tensorboard
-Global.USE_TENSORBOARD = True
-Global.SAVE_MAIN_FILE = True
-Global.SAVE_FOLDER = '../tmp_saves/play_game/food_reward_gamma05_last_distances_from_ennemies_gamma_1e-1'
-Global.SESSION = session
+Debug.USE_TENSORBOARD = True
+Debug.SAVE_MAIN_FILE = True
+Debug.SAVE_FOLDER = '../tmp_saves/debug/play_game'
+Debug.SESSION = session
 
 # debug
-Global.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 1000
-Global.PRINT_PREDICTED_VALUES_FOR.append('play_game')
-# Global.PRINT_REWARD_EVERY_N_EPISODES = 10000
-Global.PRINT_EPISODE_NB_EVERY_N_EPISODES = 500 # 2500
-Global.PRINT_SCORE_AVG_EVERY_N_EPISODES = 500
-Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
-Global.SAY_WHEN_AGENT_TRAINED = False
-Global.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 500
+Debug.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 1000
+Debug.PRINT_PREDICTED_VALUES_FOR.append('play_game')
+Debug.PRINT_EPISODE_NB_EVERY_N_EPISODES = 500 # 2500
+Debug.PRINT_SCORE_AVG_EVERY_N_EPISODES = 500
+Debug.SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
+Debug.SAY_WHEN_AGENT_TRAINED = False
+Debug.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 500
 
-# load the neural network that know how avoid ennemies
-avoid_ennemy_model = ImportModel(None, Global.SAVE_FOLDER, 'avoid_ennemy')
+# load the neural network that knows how avoid ennemies
+avoid_ennemy_model = ImportModel(None, Debug.SAVE_FOLDER, 'avoid_ennemy')
 def avoid_ennemy_input_adapter(bus, next_state=False):
     if next_state:
         input_states = [state.get_ennemy_agent_layer_only() for state in bus['last_states'][1:]]
@@ -62,8 +55,8 @@ avoid_ennemy_network = Network(
     avoid_ennemy_input_adapter
 )
 
-# load the neural that know how to fetch food
-fetch_food_model = ImportModel(None, Global.SAVE_FOLDER, 'fetch_object')
+# load the neural that knows how to fetch food
+fetch_food_model = ImportModel(None, Debug.SAVE_FOLDER, 'fetch_object')
 def fetch_food_input_adapter(bus, next_state=False):
     index = 'next_state' if next_state else 'state'
     agent_position = bus[index].get_agent_position_layer()
@@ -75,20 +68,12 @@ fetch_food_network = Network(
 )
 
 # create the network model that will learn to play the game using the fetch food and avoid ennemies networks
-# agent_ennemies_input_size = State.get_ennemy_agent_layer_shape(world)*3
-# food_position_size = 2
-# stamina_size = 1
-# play_game_input_size = agent_ennemies_input_size + food_position_size + stamina_size
-# play_game_model = Model(session, 'play_game', play_game_input_size, 1e-1,
+# play_game_model = Model(session, 'play_game', 3, 1e-2,
 #         [[40, 'relu'],
 #          [40, 'relu'],
 #         [2, 'linear']]
 # )
-play_game_model = Model(session, 'play_game', 3+2, 1e-1,
-        [[40, 'relu'],
-         [40, 'relu'],
-        [2, 'linear']]
-)
+play_game_model = ImportModel(session, Debug.SAVE_FOLDER, 'play_game')
 def play_game_input_adapter(bus, next_state=False):
     # index = 'next_state' if next_state else 'state'
     # if next_state:
@@ -97,25 +82,11 @@ def play_game_input_adapter(bus, next_state=False):
     #     agent_ennemies_last_positions = np.array([state.get_ennemy_agent_layer_only() for state in bus['last_states'][0:3]]).flatten()
     # food_position_stamina_value = np.array(bus[index].get_food_position_and_stamina_value())
     # return np.array([np.append(agent_ennemies_last_positions, food_position_stamina_value)])
-
-    # index = 'next_state' if next_state else 'state'
-    # stamina = bus[index].get_stamina_value()
-    # distance_from_ennemy = bus[index].get_min_distance_between_agent_ennemy()
-    # distance_from_food = bus[index].get_distance_from_food()
-    # return np.array([[stamina, distance_from_ennemy, distance_from_food]])
-
-    if next_state:
-        distances_from_ennemy = [state.get_min_distance_between_agent_ennemy() for state in bus['last_states'][1:]]
-    else:
-        distances_from_ennemy = [state.get_min_distance_between_agent_ennemy() for state in bus['last_states'][0:3]]
     index = 'next_state' if next_state else 'state'
     stamina = bus[index].get_stamina_value()
+    distance_from_ennemy = bus[index].get_min_distance_between_agent_ennemy()
     distance_from_food = bus[index].get_distance_from_food()
-    to_return = distances_from_ennemy
-    to_return.append(stamina)
-    to_return.append(distance_from_food)
-    return np.array([to_return])
-
+    return np.array([[stamina, distance_from_ennemy, distance_from_food]])
 def play_game_output_adapter(action):
     if action == 0:
         # debug
@@ -168,4 +139,4 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 # train agent for avoiding ennemies
-agent.train(world, 5000000)
+agent.train(world, 1000000)
