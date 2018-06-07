@@ -185,8 +185,8 @@ class World(gym.Env):
             self.viewer = None
 
         if self.config['ennemies']:
-            # self.ennemies = [Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), PursuingEnnemy(self.rand_pos())]
-            self.ennemies = [Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), Ennemy(self.rand_pos())]
+            self.ennemies = [Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), PursuingEnnemy(self.rand_pos())]
+            # self.ennemies = [Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), Ennemy(self.rand_pos())]
 
         if self.config['ennemies']:
             if len(list(filter(lambda x: isinstance(x, PursuingEnnemy), self.ennemies))) != 0:
