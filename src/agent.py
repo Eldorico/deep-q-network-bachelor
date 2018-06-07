@@ -1,40 +1,9 @@
-import tensorflow as tf
-from tensorflow.core.framework import summary_pb2
 import numpy as np
-import time
-import datetime
-import __main__
-import shutil
-from chronometer import *
 
 from state import *
 from action import Action
+from debugger import *
 
-class Global:
-    USE_TENSORBOARD = False
-    SAVE_MAIN_FILE = False
-    SAVE_FOLDER = None
-    SESSION = None
-    WRITER = None
-    EPISODE_NUMBER = -1
-    PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 0
-    PRINT_PREDICTED_VALUES_FOR = []
-    PRINT_REWARD_EVERY_N_EPISODES = 0
-    PRINT_EPISODE_NB_EVERY_N_EPISODES = 1
-    PRINT_SCORE_AVG_EVERY_N_EPISODES = 1
-    PRINT_TARGET_COPY_RATIO = False
-    _NB_TRAINED_STEPS = 0
-    SAY_WHEN_TARGET_NETWORK_COPIED = False
-    SAY_WHEN_AGENT_TRAINED = False
-    SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
-    OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 100
-    PLOT_TIMES_DURATION_ON_N_EPISODES = 0
-    RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES = 0
-
-
-    @staticmethod
-    def get_TB_folder():
-        return Global.SAVE_FOLDER + '/TB_'+ datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d_%H-%M-%S')
 
 class Epsilon:
     def __init__(self, start_epsilon_value):
@@ -46,8 +15,8 @@ class Epsilon:
     def update_epsilon(self):
         self.epsilon_function(self)
 
-class Agent:
 
+class Agent:
     def __init__(self, config, session=None):
         self.networks = config['networks']
         self.output_network = config['output_network']
@@ -60,22 +29,28 @@ class Agent:
 
         self.exit = False
 
-        if Global.USE_TENSORBOARD:
-            Global.EPISODE_NUMBER = 0
+        Debug.set_episode_number(0)
+        Debug.create_tensorboard_writer()
+        self.actions_made_placeholder, self.actions_made_histogram = Debug.create_tensorboard_writer() # TODO: can remove this attributes since they are on Debug?
+        # save the main file before someone change it by error
+        Debug.save_main_file()
 
-            # TODO: remove the self.writer ?
-            self.writer = tf.summary.FileWriter(Global.get_TB_folder())
-            self.writer.add_graph(Global.SESSION.graph)
-            Global.WRITER = self.writer
-
-            self.actions_made_placeholder = tf.placeholder(tf.int32, [None, 1])
-            self.actions_made_histogram = tf.summary.histogram('actions_distribution', self.actions_made_placeholder)
+        # if Global.USE_TENSORBOARD:
+        #     Global.EPISODE_NUMBER = 0
+        #
+        #     # TODO: remove the self.writer ?
+        #     self.writer = tf.summary.FileWriter(Global.get_TB_folder())
+        #     self.writer.add_graph(Global.SESSION.graph)
+        #     Global.WRITER = self.writer
+        #
+        #     self.actions_made_placeholder = tf.placeholder(tf.int32, [None, 1])
+        #     self.actions_made_histogram = tf.summary.histogram('actions_distribution', self.actions_made_placeholder)
 
         # save the main file before someone change it by error
-        if Global.SAVE_FOLDER is not None and Global.SAVE_MAIN_FILE:
-            print("Saving mainfile in save folder: %s..." %Global.SAVE_FOLDER)
-            shutil.copyfile(__main__.__file__, Global.SAVE_FOLDER + '/' + 'main_file.py')
-            print("Done")
+        # if Global.SAVE_FOLDER is not None and Global.SAVE_MAIN_FILE:
+        #     print("Saving mainfile in save folder: %s..." %Global.SAVE_FOLDER)
+        #     shutil.copyfile(__main__.__file__, Global.SAVE_FOLDER + '/' + 'main_file.py')
+        #     print("Done")
 
         self.bus = {} # used to keep the current_state and the next_state (s1 and s2)
 
@@ -85,10 +60,10 @@ class Agent:
         self.exit = True
 
     def _save(self):
-        if Global.SAVE_FOLDER is not None:
+        if Debug.SAVE_FOLDER is not None:
             for network in filter(lambda x: x.is_training, self.networks):
-                print("Saving network %s model as %s ..." % (network.model.name, Global.SAVE_FOLDER + '/') )
-                network.model.export_model(Global.SAVE_FOLDER)
+                print("Saving network %s model as %s ..." % (network.model.name, Debug.SAVE_FOLDER + '/') )
+                network.model.export_model(Debug.SAVE_FOLDER)
             print("Saving done.")
 
     def _save_and_exit(self):
@@ -128,22 +103,23 @@ class Agent:
             # if world_debug['score'] >= 50:
             #     print("episode %d: score = %d" % (Global.EPISODE_NUMBER, world_debug['score']))
 
-            if Global.PRINT_REWARD_EVERY_N_EPISODES > 0 and Global.EPISODE_NUMBER % Global.PRINT_REWARD_EVERY_N_EPISODES == 0:
-                print("Ennemy.x=%d, Ennemy.y=%d, Ennemy.direction=%s, agent.x=%d, agent.y=%d, action=%d Reward: %f" % ( world_debug['ennemies_position'][0][0],
-                                                                                                                        world_debug['ennemies_position'][0][1],
-                                                                                                                        Direction.toStr[world_debug['ennemies_position'][0][2]],
-                                                                                                                        world_debug['agent_x'],
-                                                                                                                        world_debug['agent_y'],
-                                                                                                                        action,
-                                                                                                                        reward))
+            # if Global.PRINT_REWARD_EVERY_N_EPISODES > 0 and Global.EPISODE_NUMBER % Global.PRINT_REWARD_EVERY_N_EPISODES == 0:
+            #     print("Ennemy.x=%d, Ennemy.y=%d, Ennemy.direction=%s, agent.x=%d, agent.y=%d, action=%d Reward: %f" % ( world_debug['ennemies_position'][0][0],
+            #                                                                                                             world_debug['ennemies_position'][0][1],
+            #                                                                                                             Direction.toStr[world_debug['ennemies_position'][0][2]],
+            #                                                                                                             world_debug['agent_x'],
+            #                                                                                                             world_debug['agent_y'],
+            #                                                                                                             action,
+            #                                                                                                             reward))
                 # debug
                 # print("Debug: current ennemy.x=%d, ennemy.y=%d, direction=%d" %(world.ennemies[0].x, world.ennemies[0].y, world.ennemies[0].direction))
 
             if self.nb_steps_played % self.copy_target_period == 0:
                 self.copy_target_networks()
+                Debug.print_target_network_copied()
 
-                if Global.SAY_WHEN_TARGET_NETWORK_COPIED:
-                    print("Target Networks copied")
+                # if Global.SAY_WHEN_TARGET_NETWORK_COPIED:
+                #     print("Target Networks copied")
 
             self.add_experience(next_state, reward, game_over, world)
             self.flush_last_prediction_var()
@@ -158,7 +134,8 @@ class Agent:
             episode_nb_steps += 1
             action_log.append(action)
 
-        Global.EPISODE_NUMBER += 1
+        Debug.increment_episode_number()
+        # Global.EPISODE_NUMBER += 1
         return {'score': world_debug['score'], 'total_reward': world_debug['total_reward'] , 'actions_made' : action_log}
 
     def flush_last_prediction_var(self):
@@ -203,19 +180,21 @@ class Agent:
                 network.add_experience(self.bus, reward, game_over, self.max_experience_size, world)
 
     def train_networks(self):
-        if Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES is not 0:
-            chrono = Chronometer()
-            chrono.pause_chrono(Chronometer.NON_TRAINING_CHRONO)
-            chrono.resume_chrono(Chronometer.TRAINING_CHRONO)
+        Debug.pause_non_training_chrono_and_resume_training_chrono()
+        # if Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES is not 0:
+        #     chrono = Chronometer()
+        #     chrono.pause_chrono(Chronometer.NON_TRAINING_CHRONO)
+        #     chrono.resume_chrono(Chronometer.TRAINING_CHRONO)
 
         for network in self.networks:
             if network.is_training:
                 network.train(self.gamma, self.min_experience_size, self.batch_size)
 
-        if Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES is not 0:
-            chrono = Chronometer()
-            chrono.pause_chrono(Chronometer.TRAINING_CHRONO)
-            chrono.resume_chrono(Chronometer.NON_TRAINING_CHRONO)
+        Debug.pause_training_chrono_and_resume_non_training_chrono()
+        # if Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES is not 0:
+        #     chrono = Chronometer()
+        #     chrono.pause_chrono(Chronometer.TRAINING_CHRONO)
+        #     chrono.resume_chrono(Chronometer.NON_TRAINING_CHRONO)
 
     def copy_target_networks(self):
         """ Make the network that are training do a copy of themselves.
@@ -231,26 +210,30 @@ class Agent:
         score_avg = 0
         tmp_total_score = 0
 
-        if Global.USE_TENSORBOARD:
-            log = {'actions_made' : []}
+        # if Debug.USE_TENSORBOARD:
+        #     log = {'actions_made' : []}
 
-        if Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES is not 0:
-            chrono = Chronometer()
-            chrono.resume_chrono(Chronometer.NON_TRAINING_CHRONO)
+        Debug.start_non_training_chrono()
+        # if Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES is not 0:
+        #     chrono = Chronometer()
+        #     chrono.resume_chrono(Chronometer.NON_TRAINING_CHRONO)
 
         for i in range(nb_episodes):
-            if Global.PRINT_EPISODE_NB_EVERY_N_EPISODES > 0 and i != 0 and i % Global.PRINT_EPISODE_NB_EVERY_N_EPISODES == 0:
-                print("episode %d" % (i))
+            Debug.print_episode_number(i)
+            # if Global.PRINT_EPISODE_NB_EVERY_N_EPISODES > 0 and i != 0 and i % Global.PRINT_EPISODE_NB_EVERY_N_EPISODES == 0:
+            #     print("episode %d" % (i))
 
-            if Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES is not 0 and i % Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES == 0:
-                chrono.pause_chrono(Chronometer.NON_TRAINING_CHRONO)
-                chrono.checkpoint_chrono(Chronometer.TRAINING_CHRONO, Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES)
-                chrono.checkpoint_chrono(Chronometer.NON_TRAINING_CHRONO, Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES)
-                chrono.resume_chrono(Chronometer.NON_TRAINING_CHRONO)
-            if Global.PLOT_TIMES_DURATION_ON_N_EPISODES is not 0 and Global.PLOT_TIMES_DURATION_ON_N_EPISODES == i:
-                print("about to plot")
-                chrono.plot_chrono_deltas()
-                print("plotted")
+            Debug.manage_chrono_for_begining_of_episode(i)
+            # if Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES is not 0 and i % Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES == 0:
+            #     chrono.pause_chrono(Chronometer.NON_TRAINING_CHRONO)
+            #     chrono.checkpoint_chrono(Chronometer.TRAINING_CHRONO, Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES)
+            #     chrono.checkpoint_chrono(Chronometer.NON_TRAINING_CHRONO, Global.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES)
+            #     chrono.resume_chrono(Chronometer.NON_TRAINING_CHRONO)
+            Debug.plot_chronos_results(i)
+            # if Global.PLOT_TIMES_DURATION_ON_N_EPISODES is not 0 and Global.PLOT_TIMES_DURATION_ON_N_EPISODES == i:
+            #     print("about to plot")
+            #     chrono.plot_chrono_deltas()
+            #     print("plotted")
 
             results = self.play_episode(world, max_score_per_episode)
             tmp_total_score += results['score']
@@ -264,44 +247,52 @@ class Agent:
             #     print("agent.train(): score greater than 20: episode = %d, score = %d" % (i, results['score']))
 
             # update tensorboard
-            if Global.USE_TENSORBOARD and Global.EPISODE_NUMBER % Global.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES == 0:
-                value = summary_pb2.Summary.Value(tag="score_per_episode", simple_value=results['score'])
-                summary = summary_pb2.Summary(value=[value])
-                self.writer.add_summary(summary, i)
+            Debug.write_tensorboard_results(results, self.epsilon.value, self.networks, self.actions_made_histogram, self.actions_made_placeholder, i) # TODO: replace i with Debug.EPISODE_NUMBER ??
+            # if Global.USE_TENSORBOARD and Global.EPISODE_NUMBER % Global.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES == 0:
+            #     value = summary_pb2.Summary.Value(tag="score_per_episode", simple_value=results['score'])
+            #     summary = summary_pb2.Summary(value=[value])
+            #     self.writer.add_summary(summary, i)
+            #
+            #     value = summary_pb2.Summary.Value(tag="epsilon_value", simple_value=self.epsilon.value)
+            #     summary = summary_pb2.Summary(value=[value])
+            #     self.writer.add_summary(summary, i)
+            #
+            #     value = summary_pb2.Summary.Value(tag="total reward per episode", simple_value=results['total_reward'])
+            #     summary = summary_pb2.Summary(value=[value])
+            #     self.writer.add_summary(summary, i)
+            #
+            #     log['actions_made'] += results['actions_made']
+            #     # if i % 50 == 0:  # TODO: reput 50 instead of 10!
+            #     summary = Global.SESSION.run(self.actions_made_histogram, feed_dict={self.actions_made_placeholder: np.reshape(log['actions_made'], (len(log['actions_made']), 1))})
+            #     self.writer.add_summary(summary, i)
+            #     log['actions_made'] = []
+            #
+            #     for network in self.networks:
+            #         if network.is_training:
+            #             network.model.write_weights_tb_histograms()
+            #             if Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED:
+            #                 print("weights histograms printed")
 
-                value = summary_pb2.Summary.Value(tag="epsilon_value", simple_value=self.epsilon.value)
-                summary = summary_pb2.Summary(value=[value])
-                self.writer.add_summary(summary, i)
 
-                value = summary_pb2.Summary.Value(tag="total reward per episode", simple_value=results['total_reward'])
-                summary = summary_pb2.Summary(value=[value])
-                self.writer.add_summary(summary, i)
-
-                log['actions_made'] += results['actions_made']
-                # if i % 50 == 0:  # TODO: reput 50 instead of 10!
-                summary = Global.SESSION.run(self.actions_made_histogram, feed_dict={self.actions_made_placeholder: np.reshape(log['actions_made'], (len(log['actions_made']), 1))})
-                self.writer.add_summary(summary, i)
-                log['actions_made'] = []
-
-                for network in self.networks:
-                    if network.is_training:
-                        network.model.write_weights_tb_histograms()
-                        if Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED:
-                            print("weights histograms printed")
-
-            # check if avg score is reached
-            if Global.PRINT_SCORE_AVG_EVERY_N_EPISODES > 0 and i % Global.PRINT_SCORE_AVG_EVERY_N_EPISODES == 0 and i != 0:
-                score_avg = tmp_total_score / Global.PRINT_SCORE_AVG_EVERY_N_EPISODES
-                print("score avg after %d episodes: %f" % (i, score_avg) )
+            avg_score_printed, score_avg = Debug.print_avg_score(i, tmp_total_score)
+            if avg_score_printed:
                 tmp_total_score = 0
-                if stop_on_score_avg is not None and score_avg >= stop_on_score_avg:
-                    print("Score avg reached. Stop learning")
-                    self.exit = True
+            if stop_on_score_avg is not None and score_avg is not None and score_avg >= stop_on_score_avg:
+                print("Score avg reached. Stop learning")
+                self.exit = True
+            # if Global.PRINT_SCORE_AVG_EVERY_N_EPISODES > 0 and i % Global.PRINT_SCORE_AVG_EVERY_N_EPISODES == 0 and i != 0:
+            #     score_avg = tmp_total_score / Global.PRINT_SCORE_AVG_EVERY_N_EPISODES
+            #     print("score avg after %d episodes: %f" % (i, score_avg) )
+            #     tmp_total_score = 0
+            # check if avg score is reached
+            # if stop_on_score_avg is not None and score_avg >= stop_on_score_avg:
+            #     print("Score avg reached. Stop learning")
+            #     self.exit = True
 
             # exit
             if self.exit:
                 self._save_and_exit()
 
         print("Nb max episodes reached. Stop learning")
-        if Global.SAVE_FOLDER is not None:
+        if Debug.SAVE_FOLDER is not None:
             self._save()

@@ -118,8 +118,10 @@ class World(gym.Env):
         if self.config['ennemies']:
             world_debug_info['ennemies_position'] = [(e.x, e.y, e.direction) for e in self.ennemies]
 
+        # create a new state to return
         current_state = State(self)
 
+        # exit if we have an incompatible action number
         if action < 0 or action >= Action.NB_POSSIBLE_ACTIONS:
              sys.stderr.write("World.step(): action not in action space: %d \n" % action)
              exit(-1)
@@ -129,9 +131,11 @@ class World(gym.Env):
         self.agent.y +=  Action.to_dY[action] if self.agent.y + Action.to_dY[action] < self.game_height and self.agent.y + Action.to_dY[action] >= 0 else 0
         current_state.place_agent(self.agent.x,self.agent.y)
 
+        # manage ennemies
         if self.config['ennemies']:
             self._manage_enemies(current_state)
 
+        # update the overall score (one step alive == 1 point)
         self.score += 1
 
         # update food
@@ -152,24 +156,21 @@ class World(gym.Env):
         self.total_reward += reward
         world_debug_info['total_reward'] = self.total_reward
 
+        # reset some information. (put this here because the reward function (managed above can use self.food.found))
         if self.config['food']:
             self.food.found = False
-
-        if self.config['print_reward']:
-            print("reward: %f" % reward)
-        # reward = 1
 
         # render if we have to render the game (show the world in a window)
         if self.config['render']:
             self.render()
-            time.sleep(0.02) # TODO: put this instead of the next line
-            # time.sleep(5)
+            time.sleep(0.02)
 
-        # do the rest... TODO
+        # add some debug information and return
+        if self.config['print_reward']:
+            print("reward: %f" % reward)
         world_debug_info['score'] = self.score
         world_debug_info['stamina'] = self.agent.stamina
         return current_state, reward, self.game_over, world_debug_info
-        # return np.array(self.state), reward, done, {}
 
     def _manage_enemies(self, current_state):
         # update ennemies position
