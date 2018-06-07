@@ -5,20 +5,13 @@ from network import *
 from state import *
 from action import *
 from agent import *
-from debugger import *
 
 # create the world
 def reward_function(world):
-    # if world.game_over:
-    #     return -1
-    # elif world.food.found:
-    #     return 1
-    # else:
-    #     return -0.01
     if world.game_over:
         return - 5
     max_distance = 73
-    return (1 - Direction.distance(world.agent, world.food) / max_distance) / 5.0
+    return (1 - Direction.distance(world.agent, world.food) / max_distance)
 world_config = {
     'food' : True,
     'print_reward' : False,
@@ -30,30 +23,19 @@ world.reset()
 # create the session
 session = tf.Session()
 
-# config the debugging scope
-# Debug.USE_TENSORBOARD = True
-# Debug.SAVE_MAIN_FILE = True
-# Debug.SAVE_FOLDER = '../tmp_saves/debugger/asdf'
-# Debug.SESSION = session
-#
-# # debug
-# Debug.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 5000 # 10000
-# # Global.PRINT_REWARD_EVERY_N_EPISODES = 10000
-# Debug.PRINT_EPISODE_NB_EVERY_N_EPISODES = 2500
-# Debug.PRINT_SCORE_AVG_EVERY_N_EPISODES = 500
-# Debug.SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
-# Debug.SAY_WHEN_AGENT_TRAINED = False
-# Debug.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 50
+# use tensorboard
 Debug.USE_TENSORBOARD = True
 Debug.SAVE_MAIN_FILE = True
-Debug.SAVE_FOLDER = '../tmp_saves/debugger/asdf2'
+Debug.SAVE_FOLDER = '../tmp_saves/debug/food'
 Debug.SESSION = session
-Debug.PRINT_PREDICTED_VALUES_FOR = [] # TODO: check this for trainer_playgame
-Debug.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 50
 
-# Debug: TODO: TEST THIS
-Debug.PLOT_TIMES_DURATION_ON_N_EPISODES = 0
-Debug.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES = 0
+# debug
+Debug.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 5000
+Debug.PRINT_EPISODE_NB_EVERY_N_EPISODES = 2500
+Debug.PRINT_SCORE_AVG_EVERY_N_EPISODES = 500
+Debug.SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
+Debug.SAY_WHEN_AGENT_TRAINED = False
+Debug.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 500
 
 # create the neural network that will learn to fetch
 fetch_object_model = Model(session, 'fetch_object', 4, 1e-1,
@@ -73,7 +55,7 @@ def fetch_object_add_experience_hook(network, world):
         network.tmp_experiences = []
     network.tmp_experiences.append(dict(network.last_prediction_values))
     if world.game_over and world.score > 110:
-        network.experiences += network.tmp_experiences
+        network.experiences += network.tmp_experiences[:-99]
         network.tmp_experiences = []
 
 fetch_object_network = Network(
@@ -85,10 +67,8 @@ fetch_object_network = Network(
 )
 
 # create agent and his hyperparameters (config)
-# epsilon = Epsilon(1)
 epsilon = Epsilon(0.1)
 def update_epsilon(epsilon):
-    # epsilon.value = max(0.1, epsilon.value - 1e-6)
     epsilon.value = epsilon.value
 epsilon.set_epsilon_function(update_epsilon)
 
@@ -114,4 +94,4 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 # train agent for avoiding ennemies
-agent.train(world, 5000000)
+agent.train(world, 1000000)
