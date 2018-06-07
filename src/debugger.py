@@ -156,3 +156,37 @@ class Debug:
             print("score avg after %d episodes: %f" % (episode_number, score_avg) )
             return True, score_avg
         return False, None
+
+    @staticmethod
+    def print_predicted_values(name, predicted_values):
+        if (len(Debug.PRINT_PREDICTED_VALUES_FOR) == 0 or name in Debug.PRINT_PREDICTED_VALUES_FOR) and Debug.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES > 0 and Debug.EPISODE_NUMBER % Debug.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES == 0:
+            max_index = np.argmax(predicted_values[0])
+            max_value = predicted_values[0][max_index]
+            min_index = np.argmin(predicted_values[0])
+            min_value = predicted_values[0][min_index]
+            print("predicted values: max: %d -> %f, min: %d -> %f" % (max_index, max_value, min_index, min_value))
+
+    @staticmethod
+    def is_time_to_write_summary():
+        return Debug.USE_TENSORBOARD and Debug.EPISODE_NUMBER % Debug.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES == 0:
+
+    @staticmethod
+    def write_summary(summary_op):
+        summary = Debug.SESSION.run(summary_op)
+        Debug.WRITER.add_summary(summary, Debug.EPISODE_NUMBER)
+
+    @staticmethod
+    def print_target_network_copied():
+        if Debug.PRINT_TARGET_COPY_RATIO:
+            print("Target network copied after having trained %d steps" % Debug._NB_TRAINED_STEPS)
+            Debug._NB_TRAINED_STEPS = 0
+
+    @staticmethod
+    def print_network_has_trained():
+        if Debug.SAY_WHEN_AGENT_TRAINED:
+            print("Network trained")
+
+    @staticmethod
+    def increment_nb_training_steps(increment):
+        if Debug.PRINT_TARGET_COPY_RATIO:
+            Debug._NB_TRAINED_STEPS += increment

@@ -7,6 +7,7 @@ import sys
 
 from action import *
 from agent import *
+from debugger import *
 
 
 ACTIVATIONS = {
@@ -28,7 +29,7 @@ class HiddenLayer:
         self.size = size
         self.model_name = model_name
 
-        if Global.USE_TENSORBOARD:
+        if Debug.USE_TENSORBOARD:
             self.W_histogram = tf.summary.histogram('hist_' + model_name+"_W_"+self.id, self.W)
             self.b_histogram = tf.summary.histogram('hist_' + model_name+"_b_"+self.id, self.b)
 
@@ -78,7 +79,7 @@ class Model:
             # self.train_op = tf.train.AdamOptimizer(self.learning_rate).minimize(self.cost_op)  # TODO: why using this optimizer it changes the weights?
             self.train_op = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(self.cost_op)
 
-            if Global.USE_TENSORBOARD:
+            if Debug.USE_TENSORBOARD:
                 self.cost_scalar = tf.summary.scalar("cost", self.cost_op)
 
         # init the model variables (if we have a session. if we dont have a session, its because its an imported model so we dont want to init the variables. (session is set after in ImportModel()))
@@ -91,18 +92,19 @@ class Model:
             self.session.run(init)
 
         # init tensorboard variables
-        if Global.USE_TENSORBOARD:
-            self.last_cost_summary_episode = -1
+        # if Debug.USE_TENSORBOARD:
+        #     self.last_cost_summary_episode = -1
 
     def predict(self, input_values):
         predicted_values = self.session.run(self.predict_op, feed_dict={self.X: input_values})
 
-        if (len(Global.PRINT_PREDICTED_VALUES_FOR) == 0 or self.name in Global.PRINT_PREDICTED_VALUES_FOR) and Global.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES > 0 and Global.EPISODE_NUMBER % Global.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES == 0:
-            max_index = np.argmax(predicted_values[0])
-            max_value = predicted_values[0][max_index]
-            min_index = np.argmin(predicted_values[0])
-            min_value = predicted_values[0][min_index]
-            print("predicted values: max: %d -> %f, min: %d -> %f" % (max_index, max_value, min_index, min_value))
+        Debug.print_predicted_values(self.name, predicted_values)
+        # if (len(Global.PRINT_PREDICTED_VALUES_FOR) == 0 or self.name in Global.PRINT_PREDICTED_VALUES_FOR) and Global.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES > 0 and Global.EPISODE_NUMBER % Global.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES == 0:
+        #     max_index = np.argmax(predicted_values[0])
+        #     max_value = predicted_values[0][max_index]
+        #     min_index = np.argmin(predicted_values[0])
+        #     min_value = predicted_values[0][min_index]
+        #     print("predicted values: max: %d -> %f, min: %d -> %f" % (max_index, max_value, min_index, min_value))
 
         return predicted_values
 
@@ -113,10 +115,13 @@ class Model:
         :param: T ([float]): the targets with ONLY the value to update. ex: [0,0,13.24, 0 0]
                 the value to update corresponds to the choosen action. The size of T as to be [None, output_dim]
         """
-        if Global.USE_TENSORBOARD and Global.EPISODE_NUMBER % Global.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES == 0:
+        if Debug.is_time_to_write_summary():
             _, cost_summary = self.session.run([self.train_op, self.cost_scalar], feed_dict={self.X:X, self.Y:Y, self.T:T})
-            Global.WRITER.add_summary(cost_summary, Global.EPISODE_NUMBER)
-            self.last_cost_summary_episode = Global.EPISODE_NUMBER
+            Debug.WRITER.add_summary(cost_summary, Global.EPISODE_NUMBER)
+        # if Debug.USE_TENSORBOARD and Debug.EPISODE_NUMBER % Debug.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES == 0:
+        #     _, cost_summary = self.session.run([self.train_op, self.cost_scalar], feed_dict={self.X:X, self.Y:Y, self.T:T})
+        #     Global.WRITER.add_summary(cost_summary, Global.EPISODE_NUMBER)
+            # self.last_cost_summary_episode = Global.EPISODE_NUMBER
             # print("Predict = ")
             # print(train_result)
             # print("Cost = ")
@@ -157,10 +162,12 @@ class Model:
 
     def write_weights_tb_histograms(self):
         for layer in self.layers:
-            W_summary = Global.SESSION.run(layer.W_histogram)
-            Global.WRITER.add_summary(W_summary, Global.EPISODE_NUMBER)
-            b_summary = Global.SESSION.run(layer.b_histogram)
-            Global.WRITER.add_summary(b_summary, Global.EPISODE_NUMBER)
+            Debug.write_summary(layer.W_histogram)
+            Debug.write_summary(layer.b_histogram)
+            # W_summary = Global.SESSION.run(layer.W_histogram)
+            # Global.WRITER.add_summary(W_summary, Global.EPISODE_NUMBER)
+            # b_summary = Global.SESSION.run(layer.b_histogram)
+            # Global.WRITER.add_summary(b_summary, Global.EPISODE_NUMBER)
 
     def debug_list_all_variables(self):
         tvars = tf.trainable_variables()
@@ -304,9 +311,10 @@ class Network:
 
     def copy_target_network(self):
         self.target_model.copy_from(self.model)
-        if Global.PRINT_TARGET_COPY_RATIO:
-            print("Target network copied after having trained %d steps" % Global._NB_TRAINED_STEPS)
-            Global._NB_TRAINED_STEPS = 0
+        Debug.print_target_network_copied()
+        # if Global.PRINT_TARGET_COPY_RATIO:
+        #     print("Target network copied after having trained %d steps" % Global._NB_TRAINED_STEPS)
+        #     Global._NB_TRAINED_STEPS = 0
 
     def train(self, gamma, min_experience_size, batch_size):
         if len(self.experiences) < min_experience_size:
@@ -330,7 +338,10 @@ class Network:
             targets.append(target)
 
         self.model.train(inputs, choosen_actions, targets)
-        if Global.SAY_WHEN_AGENT_TRAINED:
-            print("Network trained")
-        if Global.PRINT_TARGET_COPY_RATIO:
-            Global._NB_TRAINED_STEPS += batch_size
+
+        Debug.print_network_has_trained()
+        # if Global.SAY_WHEN_AGENT_TRAINED:
+        #     print("Network trained")
+        Debug.increment_np_training_steps(batch_size)
+        # if Global.PRINT_TARGET_COPY_RATIO:
+        #     Global._NB_TRAINED_STEPS += batch_size
