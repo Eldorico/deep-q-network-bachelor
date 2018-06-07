@@ -5,19 +5,20 @@ from network import *
 from state import *
 from action import *
 from agent import *
+from debugger import *
 
 # create the world
 def reward_function(world):
-    if world.game_over:
-        return -1
-    elif world.food.found:
-        return 1
-    else:
-        return -0.01
     # if world.game_over:
-    #     return - 5
-    # max_distance = 73
-    # return (1 - Direction.distance(world.agent, world.food) / max_distance) / 5.0
+    #     return -1
+    # elif world.food.found:
+    #     return 1
+    # else:
+    #     return -0.01
+    if world.game_over:
+        return - 5
+    max_distance = 73
+    return (1 - Direction.distance(world.agent, world.food) / max_distance) / 5.0
 world_config = {
     'food' : True,
     'print_reward' : False,
@@ -29,28 +30,38 @@ world.reset()
 # create the session
 session = tf.Session()
 
-# use tensorboard
-Global.USE_TENSORBOARD = True
-Global.SAVE_MAIN_FILE = True
-Global.SAVE_FOLDER = '../tmp_saves/food/good_episodes_stressful_reward'
-Global.SESSION = session
+# config the debugging scope
+# Debug.USE_TENSORBOARD = True
+# Debug.SAVE_MAIN_FILE = True
+# Debug.SAVE_FOLDER = '../tmp_saves/debugger/asdf'
+# Debug.SESSION = session
+#
+# # debug
+# Debug.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 5000 # 10000
+# # Global.PRINT_REWARD_EVERY_N_EPISODES = 10000
+# Debug.PRINT_EPISODE_NB_EVERY_N_EPISODES = 2500
+# Debug.PRINT_SCORE_AVG_EVERY_N_EPISODES = 500
+# Debug.SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
+# Debug.SAY_WHEN_AGENT_TRAINED = False
+# Debug.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 50
+Debug.USE_TENSORBOARD = True
+Debug.SAVE_MAIN_FILE = True
+Debug.SAVE_FOLDER = '../tmp_saves/debugger/asdf2'
+Debug.SESSION = session
+Debug.PRINT_PREDICTED_VALUES_FOR = [] # TODO: check this for trainer_playgame
+Debug.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 50
 
-# debug
-Global.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 5000 # 10000
-# Global.PRINT_REWARD_EVERY_N_EPISODES = 10000
-Global.PRINT_EPISODE_NB_EVERY_N_EPISODES = 2500
-Global.PRINT_SCORE_AVG_EVERY_N_EPISODES = 500
-Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
-Global.SAY_WHEN_AGENT_TRAINED = False
-Global.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 500
+# Debug: TODO: TEST THIS
+Debug.PLOT_TIMES_DURATION_ON_N_EPISODES = 0
+Debug.RECORD_EVERY_TIME_DURATION_EVERY_N_EPISODES = 0
 
 # create the neural network that will learn to fetch
-fetch_object_model = Model(session, 'fetch_object', 4, 1e-2,
+fetch_object_model = Model(session, 'fetch_object', 4, 1e-1,
         [[40, 'relu'],
          [40, 'relu'],
         [Action.NB_POSSIBLE_MOVE_ACTION, 'linear']]
 )
-# fetch_object_model = ImportModel(session, Global.SAVE_FOLDER, 'fetch_object')
+# fetch_object_model = ImportModel(session, Debug.SAVE_FOLDER, 'fetch_object')
 def fetch_object_input_adapter(bus, next_state=False):
     index = 'next_state' if next_state else 'state'
     agent_position = bus[index].get_agent_position_layer()
@@ -89,7 +100,7 @@ agent_config['copy_target_period'] = 10000
 agent_config['min_experience_size'] = 50000
 agent_config['max_experience_size'] = 400000
 agent_config['batch_size'] = 32
-agent_config['gamma'] = 0.9
+agent_config['gamma'] = 0.5
 
 agent = Agent(agent_config)
 

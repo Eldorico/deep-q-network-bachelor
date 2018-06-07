@@ -117,7 +117,7 @@ class Model:
         """
         if Debug.is_time_to_write_summary():
             _, cost_summary = self.session.run([self.train_op, self.cost_scalar], feed_dict={self.X:X, self.Y:Y, self.T:T})
-            Debug.WRITER.add_summary(cost_summary, Global.EPISODE_NUMBER)
+            Debug.WRITER.add_summary(cost_summary, Debug.EPISODE_NUMBER)
         # if Debug.USE_TENSORBOARD and Debug.EPISODE_NUMBER % Debug.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES == 0:
         #     _, cost_summary = self.session.run([self.train_op, self.cost_scalar], feed_dict={self.X:X, self.Y:Y, self.T:T})
         #     Global.WRITER.add_summary(cost_summary, Global.EPISODE_NUMBER)
@@ -342,6 +342,6 @@ class Network:
         Debug.print_network_has_trained()
         # if Global.SAY_WHEN_AGENT_TRAINED:
         #     print("Network trained")
-        Debug.increment_np_training_steps(batch_size)
+        Debug.increment_nb_training_steps(batch_size)
         # if Global.PRINT_TARGET_COPY_RATIO:
         #     Global._NB_TRAINED_STEPS += batch_size

@@ -103,7 +103,6 @@ class Agent:
             # if world_debug['score'] >= 50:
             #     print("episode %d: score = %d" % (Global.EPISODE_NUMBER, world_debug['score']))
 
-            Debug.print_reward(world_debug, action, reward)
             # if Global.PRINT_REWARD_EVERY_N_EPISODES > 0 and Global.EPISODE_NUMBER % Global.PRINT_REWARD_EVERY_N_EPISODES == 0:
             #     print("Ennemy.x=%d, Ennemy.y=%d, Ennemy.direction=%s, agent.x=%d, agent.y=%d, action=%d Reward: %f" % ( world_debug['ennemies_position'][0][0],
             #                                                                                                             world_debug['ennemies_position'][0][1],
@@ -248,7 +247,7 @@ class Agent:
             #     print("agent.train(): score greater than 20: episode = %d, score = %d" % (i, results['score']))
 
             # update tensorboard
-            Debug.write_tensorboard_results(results, self.epsilon.value, self.networks, i) # TODO: replace i with Debug.EPISODE_NUMBER ??
+            Debug.write_tensorboard_results(results, self.epsilon.value, self.networks, self.actions_made_histogram, self.actions_made_placeholder, i) # TODO: replace i with Debug.EPISODE_NUMBER ??
             # if Global.USE_TENSORBOARD and Global.EPISODE_NUMBER % Global.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES == 0:
             #     value = summary_pb2.Summary.Value(tag="score_per_episode", simple_value=results['score'])
             #     summary = summary_pb2.Summary(value=[value])
