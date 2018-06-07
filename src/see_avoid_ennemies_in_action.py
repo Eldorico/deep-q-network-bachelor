@@ -5,6 +5,7 @@ from network import *
 from state import *
 from action import *
 from agent import *
+from debugger import *
 
 # create the world
 def reward_function(world):
@@ -36,13 +37,13 @@ world = World(world_config)
 session = tf.Session()
 
 # use tensorboard
-Global.SAVE_FOLDER = '../saves/avoid_ennemies'
-Global.SESSION = session
+Debug.SAVE_FOLDER = '../saves/avoid_ennemies'
+Debug.SESSION = session
 
-print("loading save from folder %s" % Global.SAVE_FOLDER)
+print("loading save from folder %s" % Debug.SAVE_FOLDER)
 
 # create the neural network that will learn to avoid ennemies
-avoid_ennemy_model = ImportModel(session, Global.SAVE_FOLDER, 'avoid_ennemy')
+avoid_ennemy_model = ImportModel(session, Debug.SAVE_FOLDER, 'avoid_ennemy')
 def avoid_ennemy_input_adapter(bus, next_state=False):
     if next_state:
         input_states = [state.get_ennemy_agent_layer_only() for state in bus['last_states'][1:]]

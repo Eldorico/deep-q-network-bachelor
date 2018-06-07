@@ -52,6 +52,8 @@ class Debug:
             Debug._actions_made_placeholder = tf.placeholder(tf.int32, [None, 1])
             Debug._actions_made_histogram = tf.summary.histogram('actions_distribution', Debug._actions_made_placeholder)
             return Debug._actions_made_placeholder, Debug._actions_made_histogram # TODO: why should I return this now?
+        else:
+            return None, None
 
     @staticmethod
     def save_main_file():

@@ -5,6 +5,7 @@ from network import *
 from state import *
 from action import *
 from agent import *
+from debugger import *
 
 #debug
 # import time
@@ -34,11 +35,11 @@ world.reset()
 session = tf.Session()
 
 # use tensorboard
-Global.SAVE_FOLDER = '../saves/play_game'
-# Global.SESSION = session
+Debug.SAVE_FOLDER = '../saves/play_game'
+# Debug.SESSION = session
 
 # load the neural network that know how avoid ennemies
-avoid_ennemy_model = ImportModel(None, Global.SAVE_FOLDER, 'avoid_ennemy')
+avoid_ennemy_model = ImportModel(None, Debug.SAVE_FOLDER, 'avoid_ennemy')
 def avoid_ennemy_input_adapter(bus, next_state=False):
     if next_state:
         input_states = [state.get_ennemy_agent_layer_only() for state in bus['last_states'][1:]]
@@ -52,7 +53,7 @@ avoid_ennemy_network = Network(
 )
 
 # load the neural that know how to fetch food
-fetch_food_model = ImportModel(None, Global.SAVE_FOLDER, 'fetch_object')
+fetch_food_model = ImportModel(None, Debug.SAVE_FOLDER, 'fetch_object')
 def fetch_food_input_adapter(bus, next_state=False):
     index = 'next_state' if next_state else 'state'
     agent_position = bus[index].get_agent_position_layer()
@@ -73,7 +74,7 @@ fetch_food_network = Network(
 #          [40, 'relu'],
 #         [2, 'linear']]
 # )
-play_game_model = fetch_food_model = ImportModel(None, Global.SAVE_FOLDER, 'play_game')
+play_game_model = fetch_food_model = ImportModel(None, Debug.SAVE_FOLDER, 'play_game')
 def play_game_input_adapter(bus, next_state=False):
     index = 'next_state' if next_state else 'state'
     stamina = bus[index].get_stamina_value()
