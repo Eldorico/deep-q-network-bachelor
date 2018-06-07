@@ -185,11 +185,14 @@ class World(gym.Env):
             self.viewer = None
 
         if self.config['ennemies']:
-            # self.ennemies = [PursuingEnnemy(self.rand_pos())]
-            self.ennemies = [Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), PursuingEnnemy(self.rand_pos())]
+            # self.ennemies = [Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), PursuingEnnemy(self.rand_pos())]
+            self.ennemies = [Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), Ennemy(self.rand_pos())]
 
         if self.config['ennemies']:
-            self.choose_location_near_pursuing_ennemy()
+            if len(list(filter(lambda x: isinstance(x, PursuingEnnemy), self.ennemies))) != 0:
+                self.choose_location_near_pursuing_ennemy()
+            else:
+                self.choose_random_but_safe_start_location_for_agent()
         else:
             self.agent.x, self.agent.y = self.rand_pos()
 
