@@ -6,7 +6,7 @@ import tensorflow as tf
 from tensorflow.core.framework import summary_pb2
 
 from state import *
-from chronometer import *
+from tools.chronometer import *
 
 class Debug:
     USE_TENSORBOARD = False
