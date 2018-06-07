@@ -36,32 +36,27 @@ world.reset()
 session = tf.Session()
 
 # use tensorboard
-Global.USE_TENSORBOARD = True
-Global.SAVE_MAIN_FILE = True
-Global.SAVE_FOLDER = '../tmp_saves/tests_32/multiple_input_e-1_bis'
-Global.SESSION = session
+Debug.USE_TENSORBOARD = True
+Debug.SAVE_MAIN_FILE = True
+Debug.SAVE_FOLDER = '../tmp_saves/debug/avoid_ennemies'
+Debug.SESSION = session
 
 # debug
-# Global.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 10000
-# Global.PRINT_REWARD_EVERY_N_EPISODES = 10000
-Global.PRINT_EPISODE_NB_EVERY_N_EPISODES = 2500
-Global.PRINT_SCORE_AVG_EVERY_N_EPISODES = 5000
-Global.SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
-Global.SAY_WHEN_AGENT_TRAINED = False
-Global.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 5000
+# Debug.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 10000
+Debug.PRINT_EPISODE_NB_EVERY_N_EPISODES = 2500
+Debug.PRINT_SCORE_AVG_EVERY_N_EPISODES = 50 # 5000
+Debug.SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
+Debug.SAY_WHEN_AGENT_TRAINED = False
+Debug.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 5000
 
 # create the neural network that will learn to avoid ennemies
-avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world)*3, 1e-1,
-       [[40, 'relu'],
-        [40, 'relu'],
-       [Action.NB_POSSIBLE_MOVE_ACTION, 'linear']]
-)
-# avoid_ennemy_model = ImportModel(session, Global.SAVE_FOLDER, 'avoid_ennemy')
+# avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world)*3, 1e-1,
+#        [[40, 'relu'],
+#         [40, 'relu'],
+#        [Action.NB_POSSIBLE_MOVE_ACTION, 'linear']]
+# )
+avoid_ennemy_model = ImportModel(session, Debug.SAVE_FOLDER, 'avoid_ennemy')
 def avoid_ennemy_input_adapter(bus, next_state=False):
-    # if next_state:
-    #     return bus['next_state'].get_ennemy_agent_layer_only()
-    # else:
-    #     return bus['state'].get_ennemy_agent_layer_only()
     if next_state:
         input_states = [state.get_ennemy_agent_layer_only() for state in bus['last_states'][1:]]
     else:
@@ -90,7 +85,6 @@ agent_config['min_experience_size'] = 50000
 agent_config['max_experience_size'] = 400000
 agent_config['batch_size'] = 32
 agent_config['gamma'] = 0.8
-# agent_config['train_with_last_n_steps_of_each_episodes'] = 40
 
 agent = Agent(agent_config)
 
@@ -104,4 +98,4 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 # train agent for avoiding ennemies
-agent.train(world, 5000000)
+agent.train(world, 1000000)
