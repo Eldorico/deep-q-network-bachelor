@@ -14,7 +14,6 @@ def reward_function(world):
     max_distance = 73
     return (1 - Direction.distance(world.agent, world.food) / max_distance)
 world_config = {
-    # 'render' : True, # debug
     'ennemies' : True,
     'food': True,
     'print_reward' : False,
@@ -32,7 +31,7 @@ Debug.SAVE_MAIN_FILE = True
 Debug.SAVE_FOLDER = '../tmp_saves/debug/play_game'
 Debug.SESSION = session
 
-# debug
+# config the debugger
 Debug.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 1000
 Debug.PRINT_PREDICTED_VALUES_FOR.append('play_game')
 Debug.PRINT_EPISODE_NB_EVERY_N_EPISODES = 500 # 2500
@@ -68,20 +67,13 @@ fetch_food_network = Network(
 )
 
 # create the network model that will learn to play the game using the fetch food and avoid ennemies networks
-# play_game_model = Model(session, 'play_game', 3, 1e-2,
-#         [[40, 'relu'],
-#          [40, 'relu'],
-#         [2, 'linear']]
-# )
-play_game_model = ImportModel(session, Debug.SAVE_FOLDER, 'play_game')
+play_game_model = Model(session, 'play_game', 3, 1e-2,
+        [[40, 'relu'],
+         [40, 'relu'],
+        [2, 'linear']]
+)
+# play_game_model = ImportModel(session, Debug.SAVE_FOLDER, 'play_game')
 def play_game_input_adapter(bus, next_state=False):
-    # index = 'next_state' if next_state else 'state'
-    # if next_state:
-    #     agent_ennemies_last_positions = np.array([state.get_ennemy_agent_layer_only() for state in bus['last_states'][1:]]).flatten()
-    # else:
-    #     agent_ennemies_last_positions = np.array([state.get_ennemy_agent_layer_only() for state in bus['last_states'][0:3]]).flatten()
-    # food_position_stamina_value = np.array(bus[index].get_food_position_and_stamina_value())
-    # return np.array([np.append(agent_ennemies_last_positions, food_position_stamina_value)])
     index = 'next_state' if next_state else 'state'
     stamina = bus[index].get_stamina_value()
     distance_from_ennemy = bus[index].get_min_distance_between_agent_ennemy()
@@ -89,15 +81,8 @@ def play_game_input_adapter(bus, next_state=False):
     return np.array([[stamina, distance_from_ennemy, distance_from_food]])
 def play_game_output_adapter(action):
     if action == 0:
-        # debug
-        # print("trainer_play_game_action(): ennemy: choose_action = %s " % Action.to_str(avoid_ennemy_network.last_prediction_values['action']))
-
         return avoid_ennemy_network.last_prediction_values['action']
     else:
-        # debug
-        # print("trainer_play_game_action(): food: choose_action = %s " % Action.to_str(fetch_food_network.last_prediction_values['action']))
-        # time.sleep(5)
-
         return fetch_food_network.last_prediction_values['action']
 
 play_game_network = Network(
