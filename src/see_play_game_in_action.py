@@ -7,21 +7,13 @@ from action import *
 from agent import *
 from debugger import *
 
-#debug
-# import time
-
 # create the world
 def reward_function(world):
     if world.game_over:
         return - 5
     max_distance = 73
     return (1 - Direction.distance(world.agent, world.food) / max_distance)
-    # if world.game_over:
-    #     return - 1
-    # else:
-    #     return 0.002  # goal is 500 score. So i'lltry a reward of 1/500 for each step
 world_config = {
-    # 'render' : True, # debug
     'ennemies' : True,
     'food': True,
     'print_reward' : False,
@@ -36,7 +28,6 @@ session = tf.Session()
 
 # use tensorboard
 Debug.SAVE_FOLDER = '../saves/play_game'
-# Debug.SESSION = session
 
 # load the neural network that know how avoid ennemies
 avoid_ennemy_model = ImportModel(None, Debug.SAVE_FOLDER, 'avoid_ennemy')
@@ -65,15 +56,6 @@ fetch_food_network = Network(
 )
 
 # create the network model that will learn to play the game using the fetch food and avoid ennemies networks
-# agent_ennemies_input_size = State.get_ennemy_agent_layer_shape(world)*3
-# food_position_size = 2
-# stamina_size = 1
-# play_game_input_size = agent_ennemies_input_size + food_position_size + stamina_size
-# play_game_model = Model(session, 'play_game', play_game_input_size, 1e-1,
-#         [[40, 'relu'],
-#          [40, 'relu'],
-#         [2, 'linear']]
-# )
 play_game_model = fetch_food_model = ImportModel(None, Debug.SAVE_FOLDER, 'play_game')
 def play_game_input_adapter(bus, next_state=False):
     index = 'next_state' if next_state else 'state'
@@ -83,15 +65,8 @@ def play_game_input_adapter(bus, next_state=False):
     return np.array([[stamina, distance_from_ennemy, distance_from_food]])
 def play_game_output_adapter(action):
     if action == 0:
-        # debug
-        # print("trainer_play_game_action(): ennemy: choose_action = %s " % Action.to_str(avoid_ennemy_network.last_prediction_values['action']))
-
         return avoid_ennemy_network.last_prediction_values['action']
     else:
-        # debug
-        # print("trainer_play_game_action(): food: choose_action = %s " % Action.to_str(fetch_food_network.last_prediction_values['action']))
-        # time.sleep(5)
-
         return fetch_food_network.last_prediction_values['action']
 
 play_game_network = Network(

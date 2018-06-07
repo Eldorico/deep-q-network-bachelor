@@ -11,8 +11,6 @@ import time
 seed = time.time()-round(time.time())
 random.seed(seed)
 print("random seed: %f" % seed)
-# random_dir = [Direction.N, Direction.NE, Direction.E, Direction.SE, Direction.S, Direction.SW, Direction.W, Direction.NW]
-# random.shuffle(random_dir)
 
 class GameEntity:
     def __init__(self, x=0, y=0):
@@ -36,7 +34,6 @@ class Ennemy(GameEntity):
     def __init__(self, position, direction=None):
         super().__init__(position[0], position[1])
         self.direction = direction if direction is not None else random.randint(1,8) # _dir.pop(random.randint(0,len(random_dir)-1))
-        # print(self.direction)
 
     def move(self, world):
         self.x += Direction.dx[self.direction] * world.config['ennemies_speed']
@@ -96,15 +93,11 @@ class World(gym.Env):
 
         self.game_width =  60
         self.game_height = 40
-        # self.game_width =  10
-        # self.game_height = 10
 
         self.agent = Agent()
         self.ennemies = []
 
         self.food = Food(self.rand_pos()) if self.config['food'] else None
-
-        # self.steps_beyond_done = None
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -195,9 +188,6 @@ class World(gym.Env):
             # self.ennemies = [PursuingEnnemy(self.rand_pos())]
             self.ennemies = [Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), Ennemy(self.rand_pos()), PursuingEnnemy(self.rand_pos())]
 
-        # do the rest TODO
-
-        # self.choose_random_but_safe_start_location_for_agent()
         if self.config['ennemies']:
             self.choose_location_near_pursuing_ennemy()
         else:
@@ -213,8 +203,6 @@ class World(gym.Env):
         self.total_reward = 0
 
         return current_state
-
-        # return np.array(self.state)
 
     def rand_pos(self):
         return random.randint(0, self.game_width-1), random.randint(0, self.game_height-1)
@@ -267,11 +255,8 @@ class World(gym.Env):
         def render_entity(entity):
             entity.transform.set_translation(entity.x*scale_x+radius, entity.y*scale_y+radius)
 
-        # start
         screen_width = 600
         screen_height = 400
-        # screen_width = 100
-        # screen_height = 100
         radius = 10
         scale_x = (screen_width - 1 * radius) / self.game_width
         scale_y = (screen_height - 1 * radius) / self.game_height
@@ -300,11 +285,7 @@ class World(gym.Env):
             render_entity(self.food)
             agent_stamina_scale = (self.agent.stamina / 1000) * radius
 
-            # debug
-            # print(agent_stamina_scale)
-
             self.agent.transform.set_scale(agent_stamina_scale, agent_stamina_scale)
-            # self.agent.geom.render()
 
         return self.viewer.render(return_rgb_array = mode=='rgb_array')
 
@@ -329,7 +310,6 @@ if __name__ == "__main__":
         'food' : True
     }
     world = World(CONFIG)
-    #world = gym.wrappers.Monitor(world, 'video_output/', force=True) # force=True to overwrite the videos
     world.reset()
     game_over = False
 
@@ -355,5 +335,5 @@ if __name__ == "__main__":
         time.sleep(0.02)
         # time.sleep(0.5)
         state, game_over, debug = move_agent(world)
-        # print(debug['stamina'])
+
     print("Score: %d" % debug['score'])

@@ -1,6 +1,5 @@
 import random
 
-
 class Action:
     DO_NOTHING = 0
     MOVE_N = 1
@@ -50,10 +49,6 @@ class Action:
             return 'drop'
         else:
             raise 'Action.to_str(): action not recognized'
-
-    # @staticmethod
-    # def random_move():
-    #     return random.randint(0,Action.NB_POSSIBLE_MOVE_ACTION-1)
 
     to_dX = {
         DO_NOTHING : 0,
