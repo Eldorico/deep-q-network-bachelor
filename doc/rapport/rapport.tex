@@ -48,7 +48,7 @@
 }
 
 
-\newcommand\vartitle{Étude sur l'apprentissage par renforcement dans les jeux \\Projet de Bachelor - HEPIA}
+\newcommand\vartitle{Étude sur l'apprentissage par renforcement dans les jeux \\Projet de Bachelor - hepia}
 \newcommand\varauthor{Federico Pfeiffer}
 \newcommand\vardate{\today}
 
@@ -197,8 +197,124 @@
     \par Dans ce projet de bachelor, nous considérerons l'environnement déterministe, ce qui réduit l'équation de Bellman à ceci: 
     
     $$V_\pi(s) = \sum_a\pi(a|s)\left\{r+\gamma V_\pi(s')\right\}$$
-
-    \par Enfin, l'équation de Bellman suppose donc que l'on connaisse tous les états possibles et toutes les actions possibles pour chaque état. Ceci pose évidemment problème dans le cas de l'apprentissage par renforcement, étant donné que l'agent doit apprendre en explorant lui-même à travers les actions qu'il entreprend. Pour des raisons de temps de calcul, nous ne souhaitons pas explorer toutes les actions possibles, mais souhaitons explorer que celles qui nous semblent nous mener à un meilleur comportement de l'agent. Heureusement, des algorithmes ont été mis en place afin de pouvoir estimer correctement la fonction de Bellman ($V(s)$) sans avoir à tout explorer, permettant ainsi à l'agent de pouvoir estimer raisonnablement la valeur de l'état dans lequel il se trouve, et choisir l'action adéquate pour maximiser son score. 
+    
+    \par De même, nous considérerons que lorsque un agent choisit d'effectuer une action, celle-ci sera réalisée, réduisant l'équation de Bellman à ceci: 
+    
+    $$V_\pi(s) = r+\gamma V_\pi(s')$$
+    
+  \subsection{Apprentissage par renforcement: pseudo code}
+  
+  \par Maintenant que nous connaissons comment attribuer une valeur à chaque état, nous pouvons imaginer un premier pseudo-code permettant à un agent d'apprendre à évoluer dans un environnement. Le problème de cette équation est qu'elle part du principe que nous connaissons tous les états et actions possibles. Il faut donc procéder de manière itérative jusqu'à ce que la valeur d'un état converge vers une valeur fixe. Nous nous arrêtons lorsque toutes les valeurs des états semblent avoir été calculées:  
+  
+   \begin{lstlisting}[language=python]
+ 
+  # phase d'apprentissage
+  world = new World()
+  agent = new Agent()
+  gamma = 0.9
+  
+  max_divergence = 0.1
+  divergence = inf
+  while divergence > max_divergence:
+    for state in world.get_all_states():
+      for action in world.get_possible_actions(state):
+        reward, next_state = world.do_action(state, action)
+        old_v = agent.V[state]
+        agent.V[state] = reward + gamma * agent.V[next_state]
+        divergence = max(divergence, abs(old_v-agent.V[state]))
+        
+  # phase une fois l'apprentissage effectué
+  state = world.reset()
+  while not world.is_in_terminal_state():
+    action = agent.choose_action_to_best_state(state)
+    state = world.do_action(action)
+        
+   \end{lstlisting}
+  
+  \par Enfin, l'équation de Bellman suppose donc que l'on connaisse tous les états possibles et toutes les actions possibles pour chaque état. Ceci pose évidemment problème dans le cas de l'apprentissage par renforcement, étant donné que l'agent doit apprendre en explorant lui-même à travers les actions qu'il entreprend. Pour des raisons de temps de calcul, nous ne souhaitons pas explorer toutes les actions possibles, mais souhaitons explorer que celles qui nous semblent nous mener à un meilleur comportement de l'agent. Heureusement, des algorithmes ont été mis en place afin de pouvoir estimer correctement la fonction de Bellman ($V(s)$) sans avoir à tout explorer, permettant ainsi à l'agent de pouvoir estimer raisonnablement la valeur de l'état dans lequel il se trouve, et choisir l'action adéquate pour maximiser son score. 
+    
+  \section{Algorithme Q-Learning}
+  
+  \subsection{Explore vs Exploit} 
+  
+    \par Dans la précédente section, nous avons vu un algorithme permettant d'évaluer V(s) en supposant que l'on connaisse tous les états, actions et récompenses possibles suivant l'environnement donné. Dans la majorité des cas, il n'est évidemment pas possible de connaître toutes ces valeurs à l'avance. Il convient donc d'utiliser l'agent de sorte à ce qu'il explore de lui même toutes ces différentes valeurs dans le but d'estimer correctement la fonction V(s).     
+    
+    \par Au fur et à mesure que l'agent explore les actions, la fonction V(s) va petit à petit atteindre une estimation correcte, et l'agent va petit à petit connaître les meilleurs états à rencontrer, ou les meilleures actions à effectuer pour chaque état. 
+    
+    \par Comment savoir si l'agent dispose de connaissances suffisantes pour arrêter d'explorer/tester des actions? A quel moment l'agent doit-il utiliser la connaissance qu'il dispose de V(s)? Une solution est d'effectuer une action aléatoire avec une probabilité $\epsilon$. La valeur de $\epsilon$ peut varier en fonction du temps selon ce qu'a choisit le programmeur. 
+  
+  \subsection{Valeur d'un état avec Q(s,a)}
+  
+    \par Utiliser V(s) pour attribuer une valeur à chaque état peut s'avérer limitant: on n'enregistre finalement que la valeur d'un état en fonction de l'état en question. Au lieu d'attribuer une valeur à un état, nous pourrions attribuer une valeur à un couple état/action effectué. 
+    
+    \par La fonction attribuant une valeur à un couple état/action s'appelle la fonction Q value, ou Q(s,a), et peut être représentée de la sorte, ressemblant fortement à V(s): 
+        
+    \begin{eqnarray}
+      V_\pi(s) &=& \sum_a\pi(a|s)\sum_{s'}\sum_rp(s',r\ |s,a)\left\{r+\gamma V_\pi(s')\right\} \\
+      Q_\pi(s,a) &=& \sum_{s'}\sum_rp(s',r\ |s,a)\left\{r+\gamma Q_\pi(s',a')\right\}
+    \end{eqnarray}
+    
+    \par Comme indiqué plus haut, l'environnement utilisé est déterministe, ce qui permet de réduire les équations à ceci: 
+    
+    \begin{eqnarray}
+      V_\pi(s) &=& \sum_a\pi(a|s)\left\{r+\gamma V_\pi(s')\right\} \\
+      Q_\pi(s,a) &=& \left\{r+\gamma Q_\pi(s',a')\right\}
+    \end{eqnarray}
+    
+  \subsection{Algorithme Q-Learning}
+  
+   \par Si nous connaissions tous les états, actions et récompenses possibles, il serait possible de définir Q(s,a) dans un environnement déterministe, de la manière suivante: 
+    $$Q(s,a) = r +  \gamma Q(s',a')$$
+    Or, ne connaissant pas tous les états, actions et récompenses possibles, (et ne voulant pas tous les explorer), l'idée du Q-learning est d'ajuster petit à petit Q(s,a), par une fraction $\alpha$.  
+    $$Q(s,a) = old\_Q(s,a) + \alpha(new\_Q(s,a) - old\_Q(s,a))$$
+    Le terme $\alpha$ est appelé "learning\_rate" est choisi arbitrairement par le développeur et est compris entre $[0,1]$. Il correspond à l'$\alpha$ utilisé lors d'un "gradient descent". 
+    
+    \par La méthode Q-Learning met donc Q(s,a) à jour selon la formule suivante: 
+    $$Q(s,a) = Q(s,a) + \alpha(\left\{  r + \gamma Q(s', a') \right\} - Q(s,a) )$$  
+    
+    \par Le pseudo-code de la méthode Q-learning peut être défini de la manière suivante: 
+  
+   \begin{lstlisting}[language=python]
+ 
+  # phase d'apprentissage
+  world = new World()
+  agent = new Agent()
+  max_episodes = 100000
+  gamma = 0.9
+  epsilon = 0.1
+  alpha = 0.1
+  
+  for i in range(max_episodes):
+    state = world.reset()
+    while not world.game_over():
+      action = agent.choose_action(state, epsilon)
+      reward, next_state = world.do_action(state, action)
+      a2 = agent.choose_action(next_state, epsilon)
+      agent.Q[state][action] += alpha*(reward+gamma*agent.Q[next_state][a2])
+      state = next_state
+    
+        
+  # phase une fois l'apprentissage effectué
+  state = world.reset()
+  while not world.game_over():
+    action = agent.choose_action(state, epsilon)
+    state, _ = world.do_action(action)
+        
+   \end{lstlisting} 
+    
+  \subsection{Limitations de l'algorithme Q-Learning}
+    
+    \par L'inconvénient majeur de l'algorithme Q-Learning vient du fait qu'il faut pouvoir stocker la fonction Q(s,a) dans un tableau représentant chaque couple (état, action): si le fait de garder en mémoire V(s) utilise un tableau à 1 dimensions de taille équivalant à autant d'états possibles, la fonction Q(s,a) nécessite beaucoup plus de mémoire car elle doit enregistrer les valeurs dans un tableau à 2 dimensions, de taille $|S| * |A|$ cases. 
+    
+    \begin{figure}[!h]
+    \center
+    \includegraphics[scale=0.45]{ressources/v_s_vs_q_sa.png}
+    \caption{Enregistrement V(s) et Q(s,a)}
+    \end{figure} 
+    
+   \par Dans des environnements avec de nombreux (voir infinités) d'états et d'autant d'actions possibles, le stockage de la valeur de Q(s,a) devient très difficile vu la taille qu'elle représente. De plus, si l'environnement présente autant d'états et d'action possibles, l'agent va devoir effectuer beaucoup d'exploration afin d'évaluer la valeur de chaque couple (état, action), ce qui rendrait l'apprentissage extrêmement lent, voir impossible. Une solution pour palier à cet inconvénient est de remplacer le tableau Q[s][a] par un réseau neuronal. 
+   
+  \section{Réseaux neuronaux}
   
   \chapter{Conception}
   
