@@ -596,28 +596,6 @@ for i in range(max_episodes):
     
     \par Pour conclure cette section, il est important de signaler qu'un réseau de neurone ne peut s'ajuster qu'avec un seul X et T. Il faut bien entendu répéter le calcul de back-propagation un grand nombre de fois afin d'arriver à des valeurs des poids permettant un pourcentage de prédiction correct. Une fois le réseau de neurones bien entraîné (après avoir répété la back-propagation de nombreuses fois), on peut ensuite fournir une valeur X sans connaître son résultat correct, mais en osant espérer que la prédiction sera correcte. 
   
-  \subsection{Difficultés}
-  
-  \subsubsection{Le champ d'application des réseaux neuronaux est vaste}
-  
-    \par Je tiens à préciser ici que la théorie que nous avons vue dans ce chapitre ne constitue que les notions essentielles permettant appréhender correctement la suite de ce rapport. De nombreux modèles de réseaux neuronaux différèrent selon le champ d'application. Pour la reconnaissance d'images par exemple, il faut rajouter des couches de "convolution" afin de traiter les images correctement avant de faire suivre l'information dans un réseau de neurones tel que nous l'avons vu. Ces modèles de réseaux de neurones s'appellent les "convolutional neural network". De même, pour la reconnaissance de voix et prédire la phrase prononcée par un utlisateur, il faut rajouter la notion (je crois) de réseaux neuronaux récursifs, dont des sorties de certaines couches de neurones sont les entrées de couches positionnées en amont (reccurent neurals networks). 
-  
-  \subsubsection{Données fournies à l'apprentissage}
-  
-    \par Nous pouvons constater que l’efficacité d'apprentissage d'un réseau de neurones dépend fortement des données qui lui sont transmises en phase d’apprentissage. Pour donner un exemple concret, voici l'histoire d'un groupe de programmeurs ayant développé un réseau de neurones capables de décerner la différence entre un chien et un loup. Après de nombreuses sessions d'apprentissages, le réseau ne pouvait discerner un chien que lorsqu'il ne se trouvait pas entouré de neige. De même, seuls les loups étaient reconnus lorsqu'ils étaient entourés de neige. Après des semaines d'études, les développeurs se sont rendus compte que la majorité des images de loups données lors de l'apprentissage était une image d'un loup dans la neige. Les développeurs se sont ainsi rendus compte que le réseau de neurone avait appris à reconnaître la neige pour discerner un chien d'un loup. \\
-  Il convient donc de faire attention à donner des données suffisamment diversifiées lors de l'apprentissage afin que celui-ci soit le plus performant possible. 
-  
-    \par Par ailleurs, imaginons qu'un réseau de neurones doit pouvoir classifier une valeur d'entrée entre A et B. Imaginons aussi que les seules valeurs d'entrées que nous avons pour entraîner l'agent à reconnaître 'A', soient des données X ayant pour valeurs comprises entre 100 et 1000. De même, imaginons que les données que nous avons pour entraîner l'agent à reconnaître 'B' soient des valeurs comprises entre 10 et 100. Dans ce genre de cas, il est fort probable que l'agent ne puisse pas apprendre correctement, tant les données X sont éloignées des valeurs généralement utilisées dans un réseau neuronal $X \in [0,1]$. Il convient dans la majorité des cas, d'effectuer un travail en amont afin d'uniformiser les valeurs X à fournir au réseau de neurones. Par exemple, transformer les valeurs de $[100,1000]$ à des valeurs entre $[0.1,1]$, et les valeurs entre $[10,100]$ à des valeurs comprises entre $[0.01, 0.1]$. Plusieurs stratégies existent pour cette uniformisation des données avant qu'elles soient traitées par les réseaux neuronaux. Nous ne les verrons pas dans ce rapport. 
-  
-  \subsubsection{Hyper-paramètres}
-  
-    \par Les réseaux neuronaux contiennent aussi leurs lots d'hyper-paramètres. Ne serait-ce le choix de l'architecture du réseau neuronal appelé "Modèle". Pour un même objectif, un réseau à 3 couches cachées avec 4 neurones par couche peut avoir la même performance qu'avec un réseau à 2 couches cachées contenant 2 neurones par couches.  Le choix de l'architecture a un impact significatif sur la durée d'apprentissage. 
-  
-    \par Une fois une architecture choisie, il y a encore beaucoup de paramètres à choisir afin de guider le réseau de neurones sur un bon apprentissage: le choix du learning rate $\alpha$, le choix des fonctions d'activations pour chaque couche, le choix de la fonction de coût J(Y,T)... De plus, d'autres méthodes alternatives à la manière d'ajuster les poids de chaque neurone existent.
-  
-    \par De même que dans le champ de l'apprentissage par renforcement, le choix adéquat de bons hyper-paramètres peuvent s'avérer cruciaux et seul la bonne expérience du programmeur peut mener à un bon choix de ceux-ci.   
-  
-
   \section{Algorithme Deep Q-Learning (DQN)}
   
     \par Dans la section "Q-Learning, nous avons vu une méthode pour enseigner à un agent comment apprendre à évoluer dans un environnement donné en explorant les actions possibles. La méthode s'avère efficace lorsque l'environnement ne possède qu'une petite quantité d'états / actions possibles. Dans ces petits environnements, l'agent peut garder une copie de chaque états et actions visitées afin d'estimer correctement la fonction Q(s,a) de sorte à apprendre à savoir quelle action effectuer pour un état donné, dans le but d'effectuer un score maximal lors d'un épisode. \\ 
