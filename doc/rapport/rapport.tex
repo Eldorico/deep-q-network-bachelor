@@ -48,7 +48,7 @@
 }
 
 
-\newcommand\vartitle{Étude sur l'apprentissage par renforcement dans les jeux \\Projet de Bachelor - hepia}
+\newcommand\vartitle{Étude sur l'apprentissage par renforcement dans les jeux \\Projet de Bachelor 2018 - hepia}
 \newcommand\varauthor{Federico Pfeiffer}
 \newcommand\vardate{\today}
 
@@ -118,6 +118,46 @@
   
   \chapter{Théorie}
   
+  \section{Définitions}
+  
+  \subsubsection{Apprentissage par renforcement}  
+  
+    \par L'apprentissage par renforcement consiste à considérer un agent autonome évoluant dans un environnement donné. La seule chose que connaît l'agent sont les différentes actions qu'il peut effectuer au sein de son environnement. Le but de l'agent est d'obtenir un score maximal par le biais de récompenses vis à vis des actions qu'il a entrepris. Il est également informé si l'agent atteint un état terminal (fin d'un jeu par exemple). 
+    
+    \par Au début, l'agent choisit les actions de manière aléatoire, et on lui indique si l'action qu'il a entrepris lui confère une récompense, un malus, ou pas de retour particulier. Si l'état terminal est atteint, l'environnement est remis à zéro et l'agent continue ses expériences depuis cet état initial. L'agent peut ainsi "apprendre par la pratique", les actions à entreprendre en fonction de l'état où il se trouve, dans le but de maximiser le score.
+  
+  \subsubsection{Agent}
+  
+    \par Un agent est un programme informatique autonome, ou une partie d'un programme qui est autonome, c'est à dire qu'il ne dépend pas d'interventions extérieures pour évoluer. (Il ne doit pas rester bloqué en attente d'une intervention humaine). 
+    
+    \par Les entrées (input) de l'agent permettent de percevoir l'environnement dans lequel l'agent évolue. Les sorties (output) de l'agent sont les actions choisies par l'agent pour influer sur l'environnement dans lequel il évolue. Il n'y a pas d'autres entrées/sorties. Toute la logique applicative liée à l'agent est donc implémentée au sein de l'agent. La seule chose avec laquelle communique l'agent est donc l'environnement externe, par le biais de "capteurs" ou autres "sens" au terme "biologique". Il est important de signaler que l'agent n'a pas forcément conscience de l'état complet de l'environnement. La représentation de l'environnement que l'agent se fait dépend donc des capteurs qu'il détient. 
+   
+  \subsubsection{Environnement}
+  
+    \par L'environnement est le monde dans lequel l'agent évolue et dans lequel l'agent, de par ses actions, modifie l'état de l'environnement. L'environnement est séparé de l'agent, et le seul lien entre ces derniers sont les \textit{inputs} de l'agent, c'est à dire les capteurs par lesquels l'agent peut percevoir l'environnement, et les \textit{outputs} de l'agent, c'est à dire les différentes actions que l'agent a pour influer sur l'environnement. 
+    
+  \subsubsection{État et état terminal}
+  
+    \par Un état est une photo instantanée du monde perçu par l'agent. Un état comprend l'état de l'environnement ainsi que l'état de l'agent. Un état terminal représente un état dans lequel l'agent n'a plus d'actions à effectuer. Étant donné qu'il n'y a plus d'actions à effectuer, l'environnement peut alors être "remis à zéro" afin que l'agent puisse recommencer à évoluer. 
+  
+   \subsubsection{Action et récompense}
+  
+    \par Chaque action mène à un changement d'état. Une action est la seule possibilité pour un agent d'influencer l'environnement dans lequel il évolue. C'est aussi la seule manière pour un agent de savoir si l'action qu'il a entrepris est bonne, mauvaise ou "sans effet". Pour chaque action, l'agent reçoit donc une récompense (bonne, mauvaise ou neutre). Si la récompense est "bonne", l'agent reçoit un score positif; si l'action est "mauvaise", l'agent reçoit une récompense négative. L'agent peut alors ajuster son expérience dans le but de favoriser les actions menant à maximiser un score positif, ou minimiser un score négatif.
+    
+    \par Si la récompense est neutre, l'agent enregistre néanmoins l'action qu'il a entrepris au cas où l'action neutre même à futur état permettant un score positif ou négatif. Si l'agent est un joueur d'échec et que l'action qu'il entreprend ne permet pas de gagner, il est quand même important d'enregistrer l'état/action vécu si jamais cela l’emmène par la suite dans un état/action où il gagne ou perd. De même, si une voiture doit tourner à gauche et qu'elle continue tout droit pendant une fraction de seconde, elle doit pouvoir savoir si le fait de tourner à gauche la fraction de seconde d'après l'amènera à une sortie de route, ou si elle peut quand même tourner à gauche sans sortir de route. 
+    
+    \par L'important pour l'agent est de pouvoir enregistrer les actions prises d'une manière où d'une autre, en vue de savoir si cette action mène plutôt à un échec, une réussite, ou à un état neutre. 
+    
+    \begin{figure}[!h]
+    \center
+    \includegraphics[scale=0.5]{ressources/shema_agent_environnement.png}
+    \caption{Action et récompenses}
+    \end{figure} 
+    
+  \subsubsection{Épisode}
+  
+    \par Un épisode commence depuis l'état initial (environnement mis à zéro) et termine à un état terminal. Lorsque l'agent atteint un état terminal, l'environnement est réinitialisé et l'agent recommence un nouvel épisode. L'agent enregistre chaque récompense durant toute la durée de l'épisode afin de connaître le score total que l'agent a eu pendant l'épisode.
+    
   \section{Notions de base}
   
   \subsection{Fonctionnement général de l'apprentissage par renforcement}
@@ -583,8 +623,20 @@ for i in range(max_episodes):
     \par Dans la section "Q-Learning, nous avons vu une méthode pour enseigner à un agent comment apprendre à évoluer dans un environnement donné en explorant les actions possibles. La méthode s'avère efficace lorsque l'environnement ne possède qu'une petite quantité d'états / actions possibles. Dans ces petits environnements, l'agent peut garder une copie de chaque états et actions visitées afin d'estimer correctement la fonction Q(s,a) de sorte à apprendre à savoir quelle action effectuer pour un état donné, dans le but d'effectuer un score maximal lors d'un épisode. \\ 
    Lorsque l'environnement devient plus complexe, l'espace état / actions devient beaucoup plus grand et la tâche devient presque impossible étant donné la taille du tableau Q(s,a) à garder en mémoire, et le temps nécessaire pour explorer correctement tous les couples "état / action". Les réseaux neuronaux constituent une solution  adéquate pour effectuer une estimation complexe d'un problème donné. L'enjeu du Deep Q-learning est d'utiliser les réseaux neuronaux pour effectuer une estimation suffisante de la fonction Q(s,a) sans devoir connaître / explorer l'espace complet état / actions d'un environnement donné. Un réseau neuronal peut être appelé "Deep neural network" lorsque un réseau neuronal comprends de nombreuses couches cachées; la notion de "Deep" dans "Deep Q-learning" correspond donc à appliquer la méthode Q-learning avec un réseau de neurones à plusieurs couches cachées (hidden layers). 
    
+   \par Dans le cadre de ce travail, la valeur des actions $a$ en fonction de l'état $s$ $Q(s,a)$ est définie par la prédiction d'un réseau neuronal. Nous fournissons un vecteur d'entrée X = s représentant l'état de l'environnement. Par exemple: 
    
-   \par TODO: expliquer à quoi ressemble un QNetwork.predict(): (que le réseau prédit la valeur de chaque action, donc on a un résultat de taille nb\_posible\_actions. Expliquer également qu'une action est un nombre entier entre 0 et nb\_posible\_actions. 
+  \begin{lstlisting}[language=python]
+  X = s = [agent.x, agent.y, ennemy.x, ennemy.y]
+  \end{lstlisting}
+   
+   \par Le résultat du réseau neuronal est une estimation de $Q(s,a)$ pour chaque action possible lors de l'état $s$. La taille du vecteur de sortie correspond au nombre total d'actions possibles lors de l'état $s$. L'action choisie sera l'index correspondant à la plus haute valeur rencontrée. 
+
+  \begin{lstlisting}[language=python]
+  Y = predicted_values = [value_action1, value_action2, value_action3, value_action4]
+  action = argmax[predicted_values]
+  \end{lstlisting}   
+  
+  \par Une action est donc un nombre entier compris entre $[0, nb\_actions\_possibles]$
 
   \subsection{Mise à jour de la fonction Q(s,a)}
   
@@ -598,8 +650,6 @@ for i in range(max_episodes):
   \par Pour palier à ceci, l'idée est d'enregistrer tous les états / actions / récompenses dans une liste d'échantillons dont la longueur est définie par le programmeur. D'ici à ce que la liste d'échantillons ne soit pas pleine, l'agent ne met pas à jour la fonction Q(s,a). Si la liste est pleine, les échantillons (états / actions / récompenses) les plus vieux sont remplacés par les nouveaux échantillons rencontrés. 
   
   \par Une fois que l'on dispose d'une liste d'échantillons suffisamment grande, l'agent met à jour la fonction Q(s,a) en choisissant \textbf{aléatoirement} une \textbf{petite} partie de ces échantillons (batch). L'on par exemple mettre à jour la fonction Q(s,a) à chaque nouvel épisode, pour autant que la liste soit suffisamment grande afin de permettre de choisir \textbf{aléatoirement} un groupe d'échantillons de la liste d'échantillons. L'on peut ainsi supposer que l'agent puisse mettre à jour la fonction Q(s,a) parmi un choix d'échantillons aléatoires et suffisamment homogène. 
-  
-  \par Dans l'implémentation de ce dernier exercice du rapport, la liste d'échantillons états / actions / récompenses est sauvegardée dans une variable appelée \textit{experience}. Le nombre minimum d'échantillons à avoir est de 1000, et le nombre maximum à avoir est de 10'000. Lorsque l'agent possède un nombre suffisamment grand d'échantillons, ce dernier met à jour la fonction Q(s,a) en utilisant un nombre d'échantillons aléatoire (batch) de 512 échantillons. 
   
   \subsubsection{Apprentissage du réseau neuronal: Estimation Y et Target T}
   
