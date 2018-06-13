@@ -118,7 +118,7 @@
   
   \section{Contexte}
   
-  \par 
+  \par TODO: faire en sorte que l'on comprenne que les objectifs ci-dessous correspondent au contexte, et qu'un jeu va être créé pour que l'agent évolue dans tout ceci
   
   \section{Objectifs}
   
@@ -144,7 +144,21 @@
   
   \section{Réalisation}
   
-  \par 
+  \par Afin de faciliter l'apprentissage, ce dernier a été divisé en 3 parties: 
+  
+  \begin{enumerate} 
+  \item Apprendre à éviter les ennemis (sans nourriture)
+  \item Apprendre à attraper la nourriture (sans ennemis)
+  \item Une fois les deux premières connaissances apprises, apprendre à jongler entre ces deux dernières afin de jouer convenablement au jeu. 
+  \end{enumerate}
+  
+  \par Cela implique les contraintes suivantes: 
+  
+  \begin{itemize}
+  \item L'environnement (jeu) doit être configurable pour qu'il être utilisé indépendamment avec uniquement des ennemis, que de la nourriture, ou les deux en même temps. 
+  \item L'agent doit être implémenté de manière générique, de sorte à ce qu'il puisse apprendre les connaissances indépendamment. (éviter les ennemis, attraper la nourriture, ou les deux en même temps). 
+  \item Une fois des connaissances apprises, l'on doit pouvoir les sauvegarder afin de pouvoir les réutiliser pour la suite de l'apprentissage: une fois que l'agent a appris à éviter les ennemis ou attraper de la nourriture, il faut pouvoir faire en sorte de réutiliser ces connaissances sans avoir à les réapprendre à chaque fois que le programme démarre. 
+  \end{itemize}
   
   \chapter{Théorie}
   
@@ -152,7 +166,7 @@
   
   \subsubsection{Apprentissage par renforcement}  
   
-    \par L'apprentissage par renforcement consiste à considérer un agent autonome évoluant dans un environnement donné. La seule chose que connaît l'agent sont les différentes actions qu'il peut effectuer au sein de son environnement. Le but de l'agent est d'obtenir un score maximal par le biais de récompenses vis à vis des actions qu'il a entrepris. Il est également informé si l'agent atteint un état terminal (fin d'un jeu par exemple). 
+    \par L'apprentissage par renforcement consiste à considérer un agent autonome évoluant dans un environnement donné. La seule chose que connaît l'agent sont les différentes actions qu'il peut effectuer au sein de son environnement. Le but de l'agent est d'obtenir un score maximal par le biais de récompenses vis à vis des actions qu'il a entrepris.
     
     \par Au début, l'agent choisit les actions de manière aléatoire, et on lui indique si l'action qu'il a entrepris lui confère une récompense, un malus, ou pas de retour particulier. Si l'état terminal est atteint, l'environnement est remis à zéro et l'agent continue ses expériences depuis cet état initial. L'agent peut ainsi "apprendre par la pratique", les actions à entreprendre en fonction de l'état où il se trouve, dans le but de maximiser le score.
   

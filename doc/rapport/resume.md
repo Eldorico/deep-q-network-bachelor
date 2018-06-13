@@ -73,6 +73,8 @@ https://docs.google.com/document/d/1HytWVtQqaVrpeAMHay2dsBTXUWB_GTnW1SdYKMtnhoY/
 
 #### Architecture
 
+- présenter vite fait l'interface de World. 
+
 #### Fonctionnement
 
 #### Points-Clefs
@@ -97,6 +99,7 @@ https://docs.google.com/document/d/1HytWVtQqaVrpeAMHay2dsBTXUWB_GTnW1SdYKMtnhoY/
 
 ## Conclusion
 
+- Dire que les apprentissages n'étaient pas forcéements adaptés. Mais qu'on peut réutiliser ceci dans un cadre plus adapté du genre: apprendre à marcher. Si on tombe, appredre à se relever, puis apprendre à marcher. 
 - Suite à ce projet, que faire si j'étais encore dessus?
 
 ## Annexes
