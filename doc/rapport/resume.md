@@ -31,7 +31,7 @@ https://docs.google.com/document/d/1HytWVtQqaVrpeAMHay2dsBTXUWB_GTnW1SdYKMtnhoY/
 - Présentation de l'environnement (World.py)
 - Résumer le fonctionnent du code (en très général)
 
-#### Définitions 
+#### Définitions --> ds théorie? 
 
 - Agent, apprentissage par renforcement? etc
 
@@ -87,7 +87,9 @@ https://docs.google.com/document/d/1HytWVtQqaVrpeAMHay2dsBTXUWB_GTnW1SdYKMtnhoY/
 
 #### Paramètres finaux utilisés pour l'apprentissage
 
+## Conclusion
 
+- Suite à ce projet, que faire si j'étais encore dessus?
 
 ## Annexes
 
