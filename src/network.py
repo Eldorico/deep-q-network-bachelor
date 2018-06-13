@@ -285,7 +285,7 @@ class Network:
 
             action_values_s2 = self.target_model.predict(s2)[0]
             action_value = action_values_s2[action]
-            target = self.target_model.predict(s1)[0]
+            target = self.target_model.predict(s1)[0] # TODO: this line is useless??
             target[action] = reward if game_over else reward + gamma * action_value
             target = [0 if i != action else value for i, value in enumerate(target)]
             targets.append(target)

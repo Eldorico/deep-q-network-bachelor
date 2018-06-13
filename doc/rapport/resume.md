@@ -18,7 +18,8 @@ https://docs.google.com/document/d/1HytWVtQqaVrpeAMHay2dsBTXUWB_GTnW1SdYKMtnhoY/
 
 #### Contexte: 
 
-- Machine learning et apprentissage par renforcement
+- Machine learning et apprentissage par renforcement.
+- Indiquer que ce sujet n'est pas enseigné dans le cadre du bachelor, et que c'est sujet à bcp de recherches et les techniques évoluent sans cesse.  La théorie qui va suivre date d'il y a 2/3 ans, et bcp de techniques plus performantes ont vu le jour. Mais la base reste la même dans le cadre du réinforcement learning. 
 
 #### Objectif
 
@@ -48,7 +49,12 @@ https://docs.google.com/document/d/1HytWVtQqaVrpeAMHay2dsBTXUWB_GTnW1SdYKMtnhoY/
 
 #### Q-Learning
 
+- explore vs exploit
+
+
 - Valeur d'état / action Q(s,a)
+- présentation algorithme Q-Learning
+- Limitations Q-Learning
 
 #### Réseaux neuronaux
 
@@ -60,8 +66,10 @@ https://docs.google.com/document/d/1HytWVtQqaVrpeAMHay2dsBTXUWB_GTnW1SdYKMtnhoY/
 - Explore vs Exploit
 
 
-
 ## Conception
+
+- expliquer quelque part le où se trouve les codes implémentant le pseudo-code vu dans la partie DQN
+- parler du fait que l'on utiliser la librairie tensorflow afin de s'épargner tous les calculs de prédiction et backpropagation
 
 #### Architecture
 
