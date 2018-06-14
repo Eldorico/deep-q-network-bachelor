@@ -118,7 +118,9 @@
   
   \section{Contexte}
   
-  \par TODO: faire en sorte que l'on comprenne que les objectifs ci-dessous correspondent au contexte, et qu'un jeu va être créé pour que l'agent évolue dans tout ceci
+  \par L'apprentissage par renforcement est une branche d'intelligence artificielle connaissant un essor depuis quelques années, et qui a permi des avancées technologiques telles que la voiture autonome, le logiciel "AlphaGo" de Google réussissant à battre le champion du monde de Go, ou encore la création de robots capables d'apprendre à se mouvoir sans intervention humaine. Le champ d'application est vaste, et est actuellement sujet à de nombreuses recherches pour découvrir de nouveaux champs d'applications. 
+  
+  \par J'ai profité du travail de Bachelor afin d'étudier par la pratique l'apprentissage par renforcement. Pour ce faire, un environnement de jeu a été créé pour faire évoluer un agent dans celui-ci. L'étude des réseaux de neurones artificiels a également été nécessaire étant donné qu'une grande partie des algorithmes d'apprentissage par renforcement utilisent de tels réseaux de neurones. 
   
   \section{Objectifs}
   
@@ -134,7 +136,9 @@
   \item Rédaction du rapport
   \end{itemize}
   
-  \par Afin de répondre aux objectifs ci-dessus, le jeu suivant a été créé: un agent (en bleu) doit apprendre à éviter des ennemis représentés en rouge, tout en récupérant de la nourriture (en vert). Au fur et à mesure que l'agent avance, l'endurance de l'agent faibli (le diamètre de l'agent diminue). Si l'endurance de l'agent est trop faible, le jeu se termine. Si l'agent se fait attraper par un ennemi, le jeu est également terminé. Si l'agent atteint la nourriture, son endurance est remise au maximum, et une nouvelle nourriture est placée aléatoirement dans le jeu. Le but de l'agent est de tenir un maximum de temps sans que le jeu se termine. 
+  \section{Réalisation}
+  
+  \par Le jeu dans lequel l'agent évolue est le suivant: un agent (en bleu) doit éviter des ennemis représentés en rouge, tout en récupérant de la nourriture (en vert). Au fur et à mesure que l'agent avance, l'endurance de l'agent faibli (le diamètre de l'agent diminue). Si l'endurance de l'agent est trop faible, le jeu se termine. Si l'agent se fait attraper par un ennemi, le jeu est également terminé. Si l'agent atteint la nourriture, son endurance est remise au maximum, et une nouvelle nourriture est placée aléatoirement dans le jeu. Le but de l'agent est de tenir un maximum de temps sans que le jeu se termine. 
   
    \begin{figure}[!h]
    \center
@@ -142,14 +146,12 @@
    \caption{Présentation de l'environnement (Jeu)}
    \end{figure} 
   
-  \section{Réalisation}
-  
   \par Afin de faciliter l'apprentissage, ce dernier a été divisé en 3 parties: 
   
   \begin{enumerate} 
   \item Apprendre à éviter les ennemis (sans nourriture)
   \item Apprendre à attraper la nourriture (sans ennemis)
-  \item Une fois les deux premières connaissances apprises, apprendre à jongler entre ces deux dernières afin de jouer convenablement au jeu. 
+  \item Une fois les deux premières compétences apprises, l'agent doit ensuite apprendre à jongler entre les deux compétences afin de jouer convenablement au jeu. 
   \end{enumerate}
   
   \par Cela implique les contraintes suivantes: 
@@ -157,7 +159,7 @@
   \begin{itemize}
   \item L'environnement (jeu) doit être configurable pour qu'il être utilisé indépendamment avec uniquement des ennemis, que de la nourriture, ou les deux en même temps. 
   \item L'agent doit être implémenté de manière générique, de sorte à ce qu'il puisse apprendre les connaissances indépendamment. (éviter les ennemis, attraper la nourriture, ou les deux en même temps). 
-  \item Une fois des connaissances apprises, l'on doit pouvoir les sauvegarder afin de pouvoir les réutiliser pour la suite de l'apprentissage: une fois que l'agent a appris à éviter les ennemis ou attraper de la nourriture, il faut pouvoir faire en sorte de réutiliser ces connaissances sans avoir à les réapprendre à chaque fois que le programme démarre. 
+  \item Une fois des connaissances apprises, l'on doit pouvoir les sauvegarder afin de pouvoir les réutiliser pour la suite de l'apprentissage: une fois que l'agent a appris à éviter les ennemis ou attraper de la nourriture, il faut pouvoir faire en sorte de réutiliser ces compétences sans avoir à les réapprendre à chaque fois que le programme démarre. 
   \end{itemize}
   
   \chapter{Théorie}
