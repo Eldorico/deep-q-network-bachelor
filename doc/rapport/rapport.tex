@@ -138,7 +138,7 @@
   
   \section{Réalisation}
   
-  \par Le jeu dans lequel l'agent évolue est le suivant: un agent (en bleu) doit éviter des ennemis représentés en rouge, tout en récupérant de la nourriture (en vert). Au fur et à mesure que l'agent avance, l'endurance de l'agent faibli (le diamètre de l'agent diminue). Si l'endurance de l'agent est trop faible, le jeu se termine. Si l'agent se fait attraper par un ennemi, le jeu est également terminé. Si l'agent atteint la nourriture, son endurance est remise au maximum, et une nouvelle nourriture est placée aléatoirement dans le jeu. Le but de l'agent est de tenir un maximum de temps sans que le jeu se termine. 
+  \par Le jeu dans lequel l'agent évolue est le suivant: un agent (en bleu) doit éviter des ennemis représentés en rouge, tout en récupérant de la nourriture (en vert). Au fur et à mesure que l'agent avance, l'endurance de l'agent faibli (le diamètre de l'agent diminue). Si l'endurance de l'agent est trop faible, le jeu se termine. Si l'agent se fait attraper par un ennemi, le jeu est également terminé. Si l'agent atteint la nourriture, son endurance est remise au maximum, et une nouvelle nourriture est placée aléatoirement dans le jeu. Le but de l'agent est de tenir un maximum de temps sans que le jeu se termine. Les actions possibles dans l'environnement sont d'avancer dans une direction des points cardinaux (N, NE, E, SE, S, SO, O, NE), ou ne rien faire. Le nombre d'actions possibles équivaut donc à neuf. 
   
    \begin{figure}[!h]
    \center
@@ -829,11 +829,191 @@ def train(QNetwork, TNetwork, experience, batch_size, alpha):
   
   $$W = W + \alpha \frac{dJ(Y,T)}{dW}$$
   
-  \par Enfin, les librairies permettent d’entraîner un réseau neuronal en lui fournissant une matrice d'inputs (X), predicted\_values (Y) et target (T). Le principe reste le même, mais cela permet d'effectuer les calculs beaucoup plus rapidement qu'en fournissant à chaque fois qu'un seul vecteur. C'est la raison pour laquelle le pseudo code entraîne le QNetwork avec des matrices (X = inputs), (Y = predicted\_values) et (T = targets). 
+  \par Enfin, les librairies permettent d’entraîner un réseau neuronal en lui fournissant une matrice d'inputs (X), predicted\_values (Y) et target (T) (à la place d'un vecteur à la fois). Le principe reste le même, mais cela permet d'effectuer les calculs beaucoup plus rapidement qu'en fournissant à chaque fois qu'un seul vecteur. C'est la raison pour laquelle le pseudo code entraîne le QNetwork avec des matrices (X = inputs), (Y = predicted\_values) et (T = targets). 
+  
+  \chapter{Implémentation}
+  
+  \section{Fonctionnement}
+  
+  \subsection{Vue d'ensemble: choix d'une action}
+  
+  \par Les actions possibles dans l'environnement implémenté sont d'avancer dans une direction des points cardinaux (N, NE, E, SE, S, SO, O, NE), ou ne rien faire. Le nombre d'actions possibles équivaut donc à neuf. 
+
+  \par Comme indiqué dans l'introduction, l'apprentissage est divisé en trois parties. Dans un premier temps, l'agent doit pouvoir évoluer dans un monde qu'avec des ennemis, en utilisant un réseau neuronal dédié estimant la meilleure action à effectuer. Dans un deuxième temps, l'agent doit pouvoir évoluer uniquement avec de la nourriture utilisant un autre réseau neuronal dédié à attraper la nourriture. Enfin, l'agent doit pouvoir évoluer dans un monde "complet", avec ennemis et nourriture. Dans ce dernier cas, l'agent dispose de trois réseaux neuronaux: un pour choisir la meilleure action de sorte à éviter les ennemis, un deuxième estimant la meilleure action pour attraper la nourriture, et un troisième réseau neuronal estimant quel est le meilleur réseau neuronal à écouter: effectuer l'action évitant les ennemis, ou effectuer l'action pour attraper la nourriture. 
+  
+   \begin{figure}[!h]
+   \center
+   \includegraphics[scale=0.6]{ressources/vue_ensemble_reseaux_agents.png}
+   \caption{Vue d'ensemble: choix d'une action}
+   \end{figure} 
+  
+  \par Il aurait été possible de n'utiliser qu'un grand réseau neuronal pour apprendre directement à jouer dans un monde complet, sans fractionner l'apprentissage. Il y a plusieurs raisons pour laquelle nous avons choisi d'utiliser plusieurs réseaux neuronaux: la première vient de la difficulté à choisir une fonction de récompense adéquate à ce que nous voulons apprendre à l'agent. L'apprentissage est plus efficace lorsque la fonction de récompense renforce le comportement de l'agent dans un contexte bien spécifique (éviter ennemis ou attraper la nourriture). \\
+  La deuxième raison vient du fait que plus un réseau neuronal est grand, moins l'apprentissage est rapide. Plus il y a d'inputs dans le réseau neuronal, plus ce dernier est grand. Il est donc préférable d’entraîner l'agent sur des problèmes spécifiques avant de l’entraîner à jouer de manière complète. Comme indiqué dans la figure ci-dessus, avec cette méthode, le réseau neuronal capable de jouer pas besoin de beaucoup d'inputs. Ce dernier ne connaît même pas la position de la nourriture, de l'agent ni des ennemis. \\
+  Enfin, une fois qu'un agent a appris une tâche spécifique, il n'y a pas besoin de le ré-entraîner  (pour autant que le monde et les inputs concernés ne changent pas). Imaginons maintenant que nous ayons utilisé un seul grand réseau neuronal pour jouer, et que l'on veuille ajouter une nouvelle tâche à apprendre à l'agent. Il faudrait ré-entraîner le tout depuis zéro. En fractionnant l'apprentissage en tâches spécifiques, il y aurait seulement besoin d’entraîner le nouveau réseau concernant la nouvelle tâche, et le réseau capable de jouer.  
+  
+  \subsection{Apprentissage}
+    
+  \par L'apprentissage de l'agent se fait à travers trois scripts qui durent entre 24 et 48 heures. Chaque script a pour but d'enseigner à l'agent une "capacité": éviter les ennemis, attraper la nourriture ou apprendre à jongler entre les deux pour jouer au jeu complet. Chaque capacité est contenue dans un réseau neuronal QNetwork; l'apprentissage correspond à modifier les poids de ces réseaux (back-propagation) de sorte à pouvoir estimer correctement la fonction $Q(s,a)$.
+
+  \renewcommand{\labelitemi}{\textbullet}
+  \begin{itemize}
+  \item \textbf{trainer\_avoid\_ennemies.py}: 
+      \begin{enumerate}
+      \item charger un monde qu'avec des ennemis
+      \item créer un nouveau réseau neuronal 
+      \item entraîner l'agent à éviter les ennemis
+      \item enregistrer l'état du réseau neuronal lorsque l'agent  a appris à éviter les ennemis puis quitter le script
+      \end{enumerate}
+  \item \textbf{trainer\_fetch\_object.py}: 
+      \begin{enumerate}
+      \item charger un monde qu'avec de la nourriture
+      \item créer un nouveau réseau neuronal
+      \item entraîner l'agent à attraper la nourriture
+      \item enregistrer l'état du réseau neuronal lorsque l'agent  a appris à attraper la nourriture puis quitter le script
+      \end{enumerate}  
+  \item \textbf{trainer\_play\_game.py}:
+      \begin{enumerate}
+      \item charger le monde complet (ennemis + nourriture)
+      \item charger les deux réseaux neuronaux estimant correctement les actions pour éviter les ennemis et attraper la nourriture
+      \item créer un nouveau réseau neuronal (qui apprendra à jongler entre les deux réseaux neuronaux chargés)
+      \item entraîner l'agent à jouer au jeu complet
+      \item enregistrer l'état du réseau neuronal lorsque l'agent  a appris à jouer au jeu complet puis quitter le script
+      \end{enumerate}
+  \end{itemize}
+  
+  \subsection{Regarder l'agent jouer}
+  
+  \par Trois scripts supplémentaires ont été créés permettant de visualiser en temps réel l'agent évoluer dans le monde voulu. Ces scripts chargent le mondent, chargent l'agent en important les réseaux neuronaux adéquats à partir des sauvegardes contenues dans le dossier \textit{saves}. 
+
+  \renewcommand{\labelitemi}{\textbullet}
+  \begin{itemize}
+  \item \textbf{see\_avoid\_ennemies\_in\_action.py}
+  \item \textbf{see\_fetch\_object\_in\_action.py}
+  \item \textbf{see\_play\_game\_in\_action.py}
+  \end{itemize}
+  
+  \subsection{Tester soi-même l'environnement}
+  
+  \par Afin de tester le monde dans lequel va évoluer l'agent, il est possible d’exécuter le fichier \textbf{World.py} afin de pouvoir jouer soi-même. 
+  
+  \begin{lstlisting}[language=bash]
+  $ python world.py
+  \end{lstlisting} 
+  
+  \subsection{Configuration}
+  
+  \par Le choix de tous les hyper-paramètres tels que la fonction de récompense, le discount factor $\gamma$, la taille de l’expérience, le learning rate $\alpha$, etc. sont tous définis dans les scripts directement (et null part ailleurs). Cela facilite grandement lorsque qu'il s'agit de voir quels hyper-paramètres ont été utilisés lorsque un agent a spécialement réussi un apprentissage. De plus, à chaque fois que l'un script de type \textit{trainer} est executé, une copie de celui-ci est enregistrée dans le dossier choisi pour les sauvegardes. 
+  
+  \par Dans cette sous-section, nous passons en revue le contenu des scripts définis plus haut. 
+  
+  \subsubsection{Chargement de l'environnement}
+  
+  \par Le chargement de l'environnement se fait de la manière suivante en choisissant la configuration désirée. La fonction de récompense est définie à ce moment là: c'est elle qui retourne la récompense. Cette fonction est appelée par le monde (classe World) lorsque l'agent effectue une action dans celui-ci. A noter que pour les scripts de type \textbf{see\_*\_in\_action.py}, la fonction récompense n'est pas utilisée étant donné que l'agent n'est pas chargé pour apprendre. L'exemple suivant est importé du script \textbf{trainer\_fetch\_object.py}.
+  
+  \begin{lstlisting}[language=python]
+# create the world
+def reward_function(world):
+    if world.game_over:
+        return - 5
+    max_distance = 73
+    return (1 - Direction.distance(world.agent, world.food) / max_distance)
+world_config = {
+    'food' : True,
+    'print_reward' : False,
+    'reward_function': reward_function
+}
+world = World(world_config)
+world.reset()
+  \end{lstlisting}   
+  
+  \subsubsection{Choix du dossier de sauvegarde et création de graphiques Tensorboard}
+  
+  \par Les réseaux neuronaux sont une boite noire difficiles à déboguer. Afin de visualiser l'apprentissage par des graphiques, nous utilisons l'outil \textit{Tensorboard} disponible dans la librairie \textit{Tensorflow}. La création des graphiques et le choix du dossier dans lequel vont être enregistrés les réseaux neuronaux se définissent de la manière suivante, à travers la classe statique \textbf{Debug}: 
+  
+  \begin{lstlisting}[language=python]
+Debug.USE_TENSORBOARD = True
+Debug.SAVE_MAIN_FILE = True
+Debug.SAVE_FOLDER = '../tmp_saves/avoid_ennemies'
+Debug.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 5000
+  \end{lstlisting}   
+  
+ \subsubsection{Création d'un réseau neuronal} 
+ 
+ \par Comme vu dans la figure 3.1, un réseau neuronal doit pouvoir être configuré de sorte à ce que les entrées et sorties puissent être définies manuellement au cas par cas. Au lieu de donner l'état du monde tel quel en entrée, nous passons par une fonction \textit{input\_adapter()} qui retourne le vecteur X désiré. De même, l'on peut définir une fonction \textit{output\_adapter()} afin de convertir la sortie d'un réseau neuronal en une action particulière. La fonction \textit{output\_adapter()} est facultative. 
+ 
+  \begin{figure}[!h]
+  \center
+  \includegraphics[scale=0.6]{ressources/input_output_adapters.png}
+  \caption{Input et Output adapters}
+  \end{figure} 
+
+  \par La création d'un réseau neuronal se crée de la manière suivante. On crée d'abord un modèle contenant l'architecture du réseau neuronal, le nom de celui-ci ainsi que le learning\_rate $\alpha$. 
+  
+ \begin{lstlisting}[language=python]
+fetch_object_model = Model (session , name, nb_input, learning_rate,
+  [[size_layer1 , activation_function_layer1],
+  [size_layer2 , activation_function_layer2],
+  [ size_output_layer , activation_function_layer3]]
+)
+  \end{lstlisting}  
+  
+  \par Puis on crée le réseau neuronal à partir de l'architecture définie plus haut. Voici un exemple tiré du script \textbf{trainer\_fetch\_object.py}. La variable \textit{bus} contiendra les états \textit{s1} et \textit{s2} nécessaires pour définir la fonction \textit{input\_adapter}
+  
+  \begin{lstlisting}[language=python]
+# create the neural network that will learn to fetch
+fetch_object_model = Model(session, 'fetch_object', 4, 1e-1,
+        [[40, 'relu'],
+         [40, 'relu'],
+        [Action.NB_POSSIBLE_MOVE_ACTION, 'linear']]
+)
+# fetch_object_model = ImportModel(session, Debug.SAVE_FOLDER, 'fetch_object')
+def fetch_object_input_adapter(bus, next_state=False):
+    index = 'next_state' if next_state else 'state'
+    agent_position = bus[index].get_agent_position_layer()
+    food_position = bus[index].get_food_position_layer()
+    return [np.array([agent_position, food_position]).flatten()]
+
+fetch_object_network = Network(
+    fetch_object_model,
+    fetch_object_input_adapter,
+    True, # continue_exploration
+    True, # is_training (has to be trained during process)
+    None, # add experience hook
+    None # output_adapter
+)
+  \end{lstlisting}  
+  
+  \subsubsection{Création de l'agent} 
+  
+  \par Maintenant que le monde et un réseau neuronal est créé, l'on peut créer l'agent. Nous définissons le reste des hyper-paramètres tels que la fonction epsilon $\epsilon$, la taille d'un batch, ou du discount factor $\gamma$. Comme il peut y avoir plusieurs réseaux neuronaux, il faut définir quel est le réseau neuronal de sortie. Dans cet exemple, la valeur epsilon $\epsilon$ reste stable durant tout l’entraînement. 
+
+  \begin{lstlisting}[language=python]
+# create agent and his hyperparameters (config)
+epsilon = Epsilon(0.1)
+def update_epsilon(epsilon):
+    epsilon.value = epsilon.value
+epsilon.set_epsilon_function(update_epsilon)
+
+agent_config = {}
+agent_config['epsilon'] = epsilon
+agent_config['networks'] = [fetch_object_network]
+agent_config['output_network'] = fetch_object_network
+agent_config['copy_target_period'] = 10000
+agent_config['min_experience_size'] = 50000
+agent_config['max_experience_size'] = 400000
+agent_config['batch_size'] = 32
+agent_config['gamma'] = 0.5
+
+agent = Agent(agent_config)
+  \end{lstlisting} 
+
+
+  \section{Architecture}
+  
+  \par Nous avons vu jusqu'ici le contenu des scripts permettant l'apprentissage de l'agent, et des scripts permettant la visualisation de l'agent en train d'évoluer dans le monde. Voici un diagramme des classes simplifié des classes utilisées par ces scripts. 
   
   
-  \chapter{Conception}
-  
+
   \chapter{Résultats}
   
   \chapter{Annexes}

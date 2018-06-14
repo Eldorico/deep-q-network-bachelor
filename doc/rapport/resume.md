@@ -14,6 +14,8 @@ https://docs.google.com/document/d/1HytWVtQqaVrpeAMHay2dsBTXUWB_GTnW1SdYKMtnhoY/
 
 ## Acronymes, Conventions
 
+Mettre tous les hyper-paramètres ici
+
 ## Introduction
 
 #### Contexte: 
@@ -88,6 +90,7 @@ https://docs.google.com/document/d/1HytWVtQqaVrpeAMHay2dsBTXUWB_GTnW1SdYKMtnhoY/
 #### Reward function
 
 - Son importance et effets. Noté que l'agent faisat toujours la même chose avec une mauvaise reward function. 
+- Répéter pourquoi il est plus simple de fractionner l'apprentissage. 
 
 #### Batch size et Copy Target period
 
