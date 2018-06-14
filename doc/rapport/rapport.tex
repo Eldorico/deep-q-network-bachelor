@@ -49,7 +49,7 @@
 
 
 \newcommand\vartitle{Étude sur l'apprentissage par renforcement dans les jeux \\Projet de Bachelor 2018 - hepia}
-\newcommand\varauthor{Federico Pfeiffer}
+\newcommand\varauthor{Étudiant: Federico Pfeiffer \\Professeur: Guido Bologna}
 \newcommand\vardate{\today}
 
 \title{\vartitle}
@@ -118,7 +118,7 @@
   
   \section{Contexte}
   
-  \par L'apprentissage par renforcement est une branche d'intelligence artificielle connaissant un essor depuis quelques années, et qui a permi des avancées technologiques telles que la voiture autonome, le logiciel "AlphaGo" de Google réussissant à battre le champion du monde de Go, ou encore la création de robots capables d'apprendre à se mouvoir sans intervention humaine. Le champ d'application est vaste, et est actuellement sujet à de nombreuses recherches pour découvrir de nouveaux champs d'applications. 
+  \par L'apprentissage par renforcement est une branche d'intelligence artificielle connaissant un essor depuis quelques années, et qui a permis des avancées technologiques telles que la voiture autonome, le logiciel "AlphaGo" de Google réussissant à battre le champion du monde de Go, ou encore la création de robots capables d'apprendre à se mouvoir sans intervention humaine. Le champ d'application est vaste, et est actuellement sujet à de nombreuses recherches pour découvrir de nouveaux champs d'applications. 
   
   \par J'ai profité du travail de Bachelor afin d'étudier par la pratique l'apprentissage par renforcement. Pour ce faire, un environnement de jeu a été créé pour faire évoluer un agent dans celui-ci. L'étude des réseaux de neurones artificiels a également été nécessaire étant donné qu'une grande partie des algorithmes d'apprentissage par renforcement utilisent de tels réseaux de neurones. 
   
@@ -919,6 +919,7 @@ def reward_function(world):
     return (1 - Direction.distance(world.agent, world.food) / max_distance)
 world_config = {
     'food' : True,
+    'ennemies': False,
     'print_reward' : False,
     'reward_function': reward_function
 }
@@ -1010,8 +1011,72 @@ agent = Agent(agent_config)
 
   \section{Architecture}
   
+  \subsection{Diagramme de classes}
+  
   \par Nous avons vu jusqu'ici le contenu des scripts permettant l'apprentissage de l'agent, et des scripts permettant la visualisation de l'agent en train d'évoluer dans le monde. Voici un diagramme des classes simplifié des classes utilisées par ces scripts. 
   
+  \begin{figure}[!h]
+  \center
+  \includegraphics[scale=0.6]{ressources/class_diagram.eps}
+  \caption{Input et Output adapters}
+  \end{figure} 
+  
+  \subsection{Méthodes clés}
+  
+  \subsubsection{Apprentissage}
+  
+  \par L'apprentissage de l'agent se fait à travers sa méthode \textit{Agent.train()}, et est résumée par ceci: 
+  
+  \begin{lstlisting}[language=python]
+def train(self, world, nb_episodes):
+   for i in range(nb_episodes):
+      self.play_episode(world)
+  \end{lstlisting} 
+  
+  \par La méthode \textit{Agent.play\_episode()} est quant à elle résumée par ceci: 
+  
+  \begin{lstlisting}[language=python]
+def play_episode(self, world, max_episode_steps=None):
+  current_state = world.reset()
+
+  episode_done = False
+  while not episode_done:
+      action = self.choose_action(current_state)
+      next_state, reward, game_over, world_debug = world.step(action)
+
+      if self.nb_steps_played % self.copy_target_period == 0:
+         self.copy_target_networks()
+
+      self.add_experience(next_state, reward, game_over, world)
+      self.train_networks()
+
+      if game_over: 
+          episode_done = True
+
+      current_state = next_state
+      self.epsilon.update_epsilon()
+      self.nb_steps_played += 1
+
+  \end{lstlisting} 
+  
+  \subsubsection{Choix d'une action}
+  
+  \par Comme un agent peut contenir plusieurs réseaux neuronaux, il convient de choisir correctement comment choisir son action. En effet, un réseau neuronal tel que le réseau \textit{play\_game}, dépend des réseaux neuronaux \textit{avoid\_ennemies} et \textit{fetch\_object} (nourriture) avant d'indiquer l'action à effectuer. La méthode \textit{Agent.choose\_action()} est implémentée de la sorte: 
+  
+  \begin{lstlisting}[language=python]
+def choose_action(self, state):
+  self.bus['state'] = state
+
+  nb_networks_that_predicted = 0
+  while nb_networks_that_predicted != len(self.networks):
+    for network in self.networks:
+      if len(network.depends_on) is 0 \\
+      or all(dependency.prediction_done for dependency in network.depends_on):
+        network.predict(self.bus, self.epsilon.value)
+        nb_networks_that_predicted += 1
+
+  return self.output_network.get_last_action()
+  \end{lstlisting} 
   
 
   \chapter{Résultats}
