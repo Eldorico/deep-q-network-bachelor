@@ -662,7 +662,7 @@ for i in range(max_episodes):
   
   \par Une action est donc un nombre entier compris entre $[0, nb\_actions\_possibles]$
 
-  \subsection{Mise à jour de la fonction Q(s,a)}
+  \subsection{Mise à jour de la fonction Q(s,a): ajustements à faire}
   
    \par Afin de faire fonctionner un agent avec la méthode Q-Learning utilisant un réseau neuronal pour estimer la valeur Q(s,a), il y a deux ajustements principaux à faire pour mettre à jour la fonction Q(s,a). 
   
@@ -1018,7 +1018,7 @@ agent = Agent(agent_config)
   \begin{figure}[!h]
   \center
   \includegraphics[scale=0.6]{ressources/class_diagram.eps}
-  \caption{Input et Output adapters}
+  \caption{Diagramme des classes}
   \end{figure} 
   
   \subsection{Méthodes clés}
@@ -1080,6 +1080,205 @@ def choose_action(self, state):
   
 
   \chapter{Résultats}
+  
+  \par Concevoir et implémenter l'architecture est une chose, faire en sorte que l'agent puisse apprendre correctement en est une autre. Il a beaucoup d'hyper-paramètres  à régler pour obtenir un résultat convenable. Au début du travail, il fallait faire tourner l'agent jusqu'à 14 jours avant de pouvoir affirmer si l'apprentissage se faisait ou non. De plus, étant donné qu'il y a une part de hasard dans l'apprentissage (valeurs initiales des poids $W$ des réseaux neuronaux, position des ennemis et fonction $epsilon$, l'apprentissage de l'agent peut varier d'une session à l'autre, même en gardant les mêmes hyper-paramètres. 
+  
+  \par Après de nombreux essais et de tests, nous présentons dans ce chapitre les paramètres principaux ayant majoritairement contribué à ce que l'agent puisse apprendre à évoluer correctement dans son environnement. 
+  
+  \section{Fonction récompense}
+  
+  \subsection{Problème rencontré}
+  
+  \par Un premier paramètre déterminant est le choix de la fonction récompense. Au début, afin d’entraîner l'agent à éviter les ennemis, la fonction récompense était définit comme suit: 
+  
+  \begin{lstlisting}[language=python]
+def reward_function(world):
+  if world.game_over:
+    return - 1
+  else:
+    return 1
+  \end{lstlisting} 
+  
+  \par L'idée est simplement de récompenser d'un point à chaque fois que l'agent effectue une action sans tomber sur un ennemi. S'il tombe sur un ennemi, l'agent reçoit un malus de 1.
+  
+  \par En constatant que l'apprentissage ne se faisait pas, (que le score de l'agent dans le jeu était constamment médiocre), nous avons utilisé Tensorboard afin de tracer l'histogramme des actions effectuées par l'agent, et l'histogramme de l'évolution des poids des réseaux neuronaux. 
+  
+  \begin{figure}[!h]
+   \center
+   \includegraphics[scale=0.4]{ressources/bad_reward_histograms.png}
+   \caption{Histogrammes des actions et poids avec une mauvaise fonction récompense}
+   \end{figure} 
+   
+ \par Nous avons pu en déduire que l'agent n'effectuait qu'une seule action (graphique en haut à gauche), et que l'apprentissage ne se faisait pas car l'histogramme des poids (autres graphiques) n'évoluaient pas. 
+  
+  \subsection{Explication}
+  
+  \subsubsection{Début de l'agent}
+  
+  \par A sa création, le réseau neuronal possède des poids d'une valeur répartie aléatoirement entre $[-0.5,0.5]$. Prenons par exemple un réseau estimant la valeur $Q(s,a)$ avec une couche de sortie d'un vecteur de taille 3; c'est à dire que le réseau estime $Q(s,a)$ dans un environnement supposé où il y a 3 actions possibles. L'évaluation de la fonction $Q(s,a)$ commencera par une certaine valeur: 
+  $$Q(s_t, a) = [0.1, 0.56, 0.22]$$
+  
+  \par À noter que l'utilisation du réseau neuronal a l'avantage de pouvoir estimer directement les 3 actions possibles, et n'a donc besoin que de l'état $t$ pour effectuer son estimation. Ainsi, au lieu de faire 3 fois le calcul $Q(s_t,a_1) = 0.1$, $Q(s_t,a_2) = 0.56$, $Q(s_t,a_3) = 0.22$, le réseau neuronal estime simplement $Q(s) = [0.1, 0.56, 0.22]$. Nous garderons cependant la notation suivante: 
+  $$Q(s_t, a) = [0.1, 0.56, 0.22]$$
+  
+  \par Dans ce même exemple, nous prendrons la fonction récompense suivante: 
+  
+  \begin{lstlisting}[language=python]
+def reward_function(world):
+  if world.game_over:
+    return - 0.5
+  else:
+    return 1
+  \end{lstlisting} 
+  
+  \par En continuant l'exemple donné, l'agent choisira donc l'action numéro 2, étant donné qu'il s'agit de l'action dont la valeur est la plus haute ($0.56$). En prenant la fonction récompense vue plus haut, l'agent reçoit la récompense de $1$ pour son action numéro 2. Il stocke donc dans son expérience les valeurs suivantes: 
+  
+  \begin{lstlisting}[language=python]
+   experience = [{'state': s_t, 'action': 2, 'reward': 1}]
+  \end{lstlisting}
+  
+  \par Dans les états qui suivent, étant donné que le réseau neuronal est à peine créé, il y a de fortes chances qu'il donne des valeurs équivalentes à l'état $s_{t+1}$: 
+  $$Q(s_{t+1}, a) = [0.101, 0.562, 0.219]$$
+  
+  
+  \par Par conséquent, l'agent va à nouveau choisir l'action numéro 2 à l'état $s_{t+1}$. Les valeurs de l'expérience de l'agent devient: 
+
+  \begin{lstlisting}[language=python]
+   experience = [{'state': s_t,   'action': 2, 'reward': 1},
+                  'state': s_t+1, 'action': 2, 'reward': 1}]
+  \end{lstlisting}  
+  
+  \par De même, à l'état $s_{t+2}$, l'action choisit à nouveau l'action numéro 2, mais cette fois-ci l'agent se fait attraper par un ennemi. La récompense qu'il reçoit est de $-0.5$, et l’expérience devient: 
+  
+  \begin{lstlisting}[language=python]
+   experience = [{'state': s_t,   'action': 2, 'reward':  1},
+                  'state': s_t+1, 'action': 2, 'reward':  1},
+                  'state': s_t+2, 'action': 2, 'reward': -0.5}]
+  \end{lstlisting}    
+  
+  \subsubsection{Mise à jour de Q(s,a)}
+  
+  \par Imaginons maintenant que l'expérience est suffisamment grande afin de commencer l’entraînement du réseau neuronal. Pour rappel, la mise à jour de la fonction $Q(s,a)$ se fait de la manière suivante: 
+  
+  $$Q(s_t,a_i) = r + \gamma Q(s_{t+1}, a_j)$$ 
+  
+  \par Pour simplifier les calculs, commençons par mettre à jour la fonction pour $s = s_{t+2}$. Prenons un $\gamma$ fixe de $\gamma=1$. Comme il n'y a pas eu d'état $s_{t+3}$, (l'épisode s'est arrêté à l'état $s_{t+2}$, où l'agent a été attrapé par un ennemi), l'équation est ajustée de la sorte:
+  \begin{eqnarray}
+  Q(s_{t+2},a=2) &=& -0.5 + \gamma Q(s_{t+3},a) \\
+  Q(s_{t+2},a=2) &=& -0.5 
+  \end{eqnarray}
+  
+ \begin{eqnarray}
+  Q(s_{t+1},a=2) &=&  1 + \gamma Q(s_{t+2},a=2) \\
+  Q(s_{t+1},a=2) &=&  1 - 0.5 = 0.5 
+  \end{eqnarray}
+  
+ \begin{eqnarray}
+  Q(s_t,a=2) &=&  1 + \gamma Q(s_{t+1},a=2) \\
+  Q(s_t,a=2) &=&  1 + 0.5 = 1.5
+  \end{eqnarray}
+  
+  \par Nous constatons que la valeur de l'action 2 s'est vue renforcée pour $s_t$. Si l'agent se retrouve dans le même état $s_t$ dans un autre épisode, il va à nouveau choisir l'action 2 étant donné que les valeurs des actions pour $Q(s_t,a)$ vaudra $Q(s_t, a) = [0.1, 1.5, 0.22]$. Si l'agent se retrouve dans l'état $s_{t+1}$, il va également choisir l'action 2 car celle-ci, bien que diminuée à $0.5$, elle reste la valeur la plus élevée: $Q(s_{t+1}, a) = [0.101, 0.5, 0.219]$. Aussi, la mise à jour de $Q(s,a)$ n'est faite uniquement pour les actions que l'agent a choisi. Par conséquent, les valeurs des autres actions ne seront pas mises à jour tant que l'agent n'effectue pas d'autre actions que l'action 2. Dans notre exemple, il faut attendre que l'agent se retrouve à l'état $s_{t+2}$ avant qu'il choisisse une autre action: $Q(s_{t+2}, a) = [0.12, -1, 0.211]$.  
+  
+  \par Comme l'épisode dure en général beaucoup plus longtemps qu'en trois actions effectuées, c'est à dire que la valeur de l'action numéro 2 n'est diminuée qu'après beaucoup plus d'actions numéro 2 choisies, l'action 2 a tendance a gagner en valeur et cette dernière n'est pas prête de diminuer. 
+  
+  \subsection{Fonctions récompense utilisées}
+  
+  \par L'enjeu de la fonction récompense est double. Le premier enjeu, comme vu dans la sous-section précédente, il faut choisir une fonction de sorte à ne pas trop renforcer les actions effectuées. Dans l'idéal, la somme des récompenses lors d'un épisode devrait être comprise entre $[0,1]$. Le deuxième enjeu est de choisir une fonction qui stimule l'apprentissage dans une tâche spécifique. 
+  
+  \par Les fonctions qui ont fait leur preuves dans le cadre de ce travail sont les suivantes: 
+  
+  \subsubsection{Éviter les ennemis}
+
+  \begin{lstlisting}[language=python]
+  def reward_function(world):
+    if world.game_over:
+        return - 1
+    else:
+        safe_distance = 20
+        min_distance = float('inf')
+        for ennemy in world.ennemies:
+            distance = Direction.distance(ennemy, world.agent)
+            if distance < min_distance:
+                min_distance = distance
+
+        if min_distance >= safe_distance:
+            return math.log(safe_distance+0.01) -1
+        elif min_distance <= 1:
+            return -1
+        else:
+            return math.log(min_distance+0.01) -1  
+   \end{lstlisting}   
+      
+   \par L'idée dans la fonction ci-dessus est de donner une récompenses élevée si l'agent se trouve éloigné de l'ennemi le plus proche. S'il se rapproche d'un ennemi, la  récompense diminue. Dans les graphiques ci-dessous, le graphique de gauche représente la récompense en fonction de sa distance avec l'ennemi le plus proche. Dans le graphique de droite, l'on trouve les valeurs de toutes les récompenses en fonction de la positions des ennemis (en blanc). 
+   
+   \begin{figure}[!h]
+   \center
+   \includegraphics[scale=0.4]{ressources/reward_function_avoid_ennemies.png}
+   \caption{Eviter ennemis: récompenses}
+   \end{figure} 
+   
+  \par Ci-dessous, les histogrammes de l'agent en train d'apprendre. Nous constatons que la distribution des actions s'est répartie entre les 9 actions possibles, et que les poids du réseau neuronal évolue. 
+  
+   \begin{figure}[!h]
+   \center
+   \includegraphics[scale=0.4]{ressources/reward_function_histograms_avoid_ennemies.png}
+   \caption{Eviter ennemis: histogrammes}
+   \end{figure} 
+
+ \subsubsection{Attraper nourriture}
+ 
+   \par La fonction récompense pour apprendre a attraper la nourriture dépend de la distance de l'agent avec la nourriture. Plus il est proche de celle-ci, plus la récompense sera élevée. Si l'endurance de l'agent tombe à 0, le jeu est terminé. L'agent reçoit à ce moment là un malus de $-5$. 
+   
+  \begin{lstlisting}[language=python]
+def reward_function(world):
+    if world.game_over:
+        return - 5
+    max_distance = 73
+    return (1 - Direction.distance(world.agent, world.food) / max_distance) 
+   \end{lstlisting}  
+   
+  
+  \par Ci dessous à gauche la récompense en fonction de la distance de l'agent avec la nourriture. A droite, la récompense en fonction de la position de l'agent; la nourriture est dans la zone la plus verte. 
+  
+     \begin{figure}[!h]
+   \center
+   \includegraphics[scale=0.4]{ressources/reward_function_fetch_food.png}
+   \caption{Attraper nourriture: récompense}
+   \end{figure} 
+   
+  \par Ci dessous les histogrammes de l'agent en train d'apprendre à attraper la nourriture. 
+        
+   \begin{figure}[!h]
+   \center
+   \includegraphics[scale=0.4]{ressources/reward_function_histograms_fetch_food.png}
+   \caption{Eviter ennemis: histogrammes}
+   \end{figure} 
+   
+   \subsubsection{Jouer au jeu complet}
+   
+   \par Enfin, lorsque l'agent doit apprendre à choisir quel réseau neuronal écouter entre le réseau "éviter les ennemis" et "attraper la nourriture", la même fonction que "attraper la nourriture" a été utilisée. Si l'endurance de l'agent tombe à zéro, le jeu est terminé. Si l'agent se fait attraper par un ennemi, le jeu est également terminé. Dans les deux cas, la fonction récompense attribue un malus de $-5$ si le jeu se termine. L'accent a été mis sur l'importance d'attraper de la nourriture.
+   
+   \section{Batch size}
+   
+   \subsection{Problème rencontré}
+   
+   \par Bien qu'une fonction récompense adéquate permet à l'agent d'apprendre, cela ne veut pas forcément dire que l'agent apprends dans des délais raisonnables. En effet, l'apprentissage pour éviter les ennemis prenait environ 14 jours avant d'arriver à un résultat médiocre. Afin d'accélérer le processus d'apprentissage, nous avons essayé d'augmenter la taille de l'échantillon (\textit{batch size}) avec lequel l'agent apprenait. Pour rappel, lorsque l’expérience de l'agent est suffisamment grande, la mise à jour des réseaux neuronaux est effectuée en prenant un échantillon aléatoire de la taille du paramètre \textit{batch size} sur l'expérience. 
+   
+   \par Au moment où l'apprentissage pour éviter les ennemis durait 14 jours, la taille de l'échantillon était de $32$, pioché sur une expérience de taille $50'000$. Ceci afin de s'assurer que l'apprentissage se fasse bien sur des échantillons suffisamment aléatoires. Nous avons donc tenté d'augmenter la taille de l'échantillon à $32'000$ pour sur une expérience de taille $50'000'000$ (en gardant la même proportion aléatoire), en espérant que l'agent apprendre plus rapidement en fonction de la taille de l'échantillon. \\
+   Malheureusement, cela a empiré la durée de l'apprentissage. Ci dessous le graphique du score en fonction du nombre d'épisodes. En bleu, le score pour un échantillon de taille $32$, en orange un échantillon de taille $32'000$.
+   
+   \begin{figure}[!h]
+   \center
+   \includegraphics[scale=0.4]{ressources/batch_size.png}
+   \caption{Score par épisode avec deux tailles d'échantillons}
+   \end{figure} 
+   
+   \subsection{Explication}
+   
+   \par Comme bien souvent, la conclusion nous a paru évidente qu'une fois avoir effectué les tests. Pour un échantillon de taille $32$ et d’expérience $50'000$, l'agent effectue $50'000$ actions avant d'ajuster son réseau neuronal. Cela veut dire qu'il doit attendre $50'000$ actions avant d'améliorer son comportement. Avec un échantillon de taille $32'000$ et d'expérience de taille $50'000'000$, l'agent doit attendre d'avoir effectué $50'000'000$ actions avant d'améliorer son comportement; l'apprentissage se fait donc beaucoup plus lentement. 
+   
+   \par A l'heure où ces lignes sont écrites, nous nous rendons compte que l'importance de cette section n'est peut être pas la taille de l'échantillon, mais de la taille de l’expérience avant d'effectuer la mise à jour du réseau neuronal. Il semblait important au moment des tests de garder un proportion $\frac{\text{taille échantillon}}{\text{taille expérience}}$ suffisamment basse pour garantir l'homogénéité des échantillons utilisés lors de la mise à jour du réseau neuronal. Il doit cependant y avoir un juste milieu concernant ces paramètres. 
   
   \chapter{Annexes}
        
