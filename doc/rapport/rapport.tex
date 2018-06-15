@@ -642,7 +642,7 @@ for i in range(max_episodes):
     
     \par Pour conclure cette section, il est important de signaler qu'un réseau de neurone ne peut s'ajuster qu'avec un seul X et T. Il faut bien entendu répéter le calcul de back-propagation un grand nombre de fois afin d'arriver à des valeurs des poids permettant un pourcentage de prédiction correct. Une fois le réseau de neurones bien entraîné (après avoir répété la back-propagation de nombreuses fois), on peut ensuite fournir une valeur X sans connaître son résultat correct, mais en osant espérer que la prédiction sera correcte. 
   
-  \section{Algorithme Deep Q-Learning (DQN)}
+  \section{Algorithme Deep Q-Network (DQN)}
   
     \par Dans la section "Q-Learning, nous avons vu une méthode pour enseigner à un agent comment apprendre à évoluer dans un environnement donné en explorant les actions possibles. La méthode s'avère efficace lorsque l'environnement ne possède qu'une petite quantité d'états / actions possibles. Dans ces petits environnements, l'agent peut garder une copie de chaque états et actions visitées afin d'estimer correctement la fonction Q(s,a) de sorte à apprendre à savoir quelle action effectuer pour un état donné, dans le but d'effectuer un score maximal lors d'un épisode. \\ 
    Lorsque l'environnement devient plus complexe, l'espace état / actions devient beaucoup plus grand et la tâche devient presque impossible étant donné la taille du tableau Q(s,a) à garder en mémoire, et le temps nécessaire pour explorer correctement tous les couples "état / action". Les réseaux neuronaux constituent une solution  adéquate pour effectuer une estimation complexe d'un problème donné. L'enjeu du Deep Q-learning est d'utiliser les réseaux neuronaux pour effectuer une estimation suffisante de la fonction Q(s,a) sans devoir connaître / explorer l'espace complet état / actions d'un environnement donné. Un réseau neuronal peut être appelé "Deep neural network" lorsque un réseau neuronal comprends de nombreuses couches cachées; la notion de "Deep" dans "Deep Q-learning" correspond donc à appliquer la méthode Q-learning avec un réseau de neurones à plusieurs couches cachées (hidden layers). 
@@ -686,11 +686,11 @@ for i in range(max_episodes):
     
     \par Bien entendu, toutes les N actions, le réseau TNetwork sera à nouveau copié depuis QNetwork car QNetwork tends à s'ajuster correctement. Dans l'implémentation du dernier exercice du rapport, TNetwork est copié depuis QNetwork toutes les 100 actions (hyper-paramètre COPY\_TARGET\_PERIOD). 
     
-   \subsection{Pseudo-code de l'algorithme Deep Q-Learning} 
+   \subsection{Pseudo-code de l'algorithme Deep Q-Network} 
    
    \subsubsection{Partie principale}
    
-   \par Voici un pseudo code effectuant l'algorithme Deep Q-Learning. 
+   \par Voici un pseudo code effectuant l'algorithme Deep Q-Network: 
    
    \begin{lstlisting}[language=python]
 #*****
@@ -1322,6 +1322,13 @@ def reward_function(world):
    \text{ input adapter } &=& \text{ 3 dernières position de l'agent et ennemis}
    \end{eqnarray}   
    
+   \begin{figure}[!h]
+   \center
+   \includegraphics[scale=0.45]{ressources/nn_model.png}
+   \caption{Architecture réseau neuronal utilisé}
+   \end{figure} 
+   
+   
    \textbf{Script attraper la nourriture:}
    \begin{eqnarray}
    \alpha \text{ (learning rate) } &=& 0.1 \\
@@ -1336,8 +1343,49 @@ def reward_function(world):
    \text{ input adapter } &=& \text{ endurance, distance ennemis et nourriture}
    \end{eqnarray}   
   
+  \chapter{Conclusion}
   
+  \section{Difficultés}
+  
+  \par Pour terminer, il parait important de relever les difficultés rencontrées lors de l'étude de l'apprentissage par renforcement. Le champ de celui-ci est vaste et est encore sujet à de nombreuses recherches. Il évolue d'années en années, et de nouveaux algorithmes voient le jour régulièrement. Il n'est évident de se plonger dans cette branche du machine learning tant les ressources sont diverses et pointues, et la théorie est bien souvent loin d'algorithmes concrets à reproduire chez soi. \\
+  Par ailleurs, le nombre important d'hyper-paramètres à ajuster rend l'implémentation difficile lorsque l'on cherche à résoudre un problème donné, bien que l'architecture créé pour cela aie été développée sans erreurs. \\
+  Enfin, le temps d'apprentissage est également une des principales contraintes. Si la compilation de certains programmes peut durer des heures, il n'est pas rare de devoir attendre des semaines afin de voir si l'agent apprend comme prévu. 
+  
+  \section{Perspectives}
+  
+   \par Cela reste néanmoins un sujet passionnant, d'actualité, qui mérite d'être approfondi. Avec l'avancée d'années en années de la recherche sur ce sujet, qui sait de quoi sera faite la technologie de demain. Il me parait important de suivre l'évolution de celui-ci pour pouvoir y garder un avis critique. 
+
+  \subsection{Nouvel environnement}  
+  
+  \par Si le temps me permettais d'améliorer ce travail de bachelor, je commencerais par changer d'environnement: l'environnement utilisé s'est avéré inapproprié. En effet, bien qu'il aie été possible d'enseigner à l'agent des tâches spécifiques telles qu'éviter des ennemis ou attraper de la nourriture, enseigner à l'agent à évoluer dans l'environnement complet en utilisant uniquement deux compétences n'est pas adaptée. Si l'ennemi le plus proche de l'agent et la nourriture se trouvent en bas à droite de l'agent, l'agent n'a pas la possibilité de choisir une action convenable afin d'éviter l'ennemi et de se diriger vers la nourriture. 
+
+   \begin{figure}[!h]
+   \center
+   \includegraphics[scale=0.3]{ressources/percpective.png}
+   \caption{Situation non adaptée à l'architecture choisie}
+   \end{figure} 
+
+  
+  \par L'exemple ci-dessus illustre ces propos. Dans cet état, le réseau neuronal "éviter ennemis" recommande de se diriger en haut à gauche, alors que le réseau  "attraper nourriture" recommande de se diriger en bas à droite. Le réseau "jouer au jeu complet" devrait choisir entre une de ces deux actions recommandées, et n'a pas possibilité de choisir une action intermédiaire. 
+  
+  \par Un environnement plus adapté à l'architecture de ce travail de bachelor serait par exemple un corps dans lequel l'agent doit apprendre à se mouvoir. 
+  
+   \begin{figure}[!h]
+   \center
+   \includegraphics[scale=1]{ressources/robot.jpg}
+   \caption{Nouvel environnement}
+   \end{figure} 
+   
+   \par Nous pourrions par exemple envisager un réseau neuronal pour apprendre à marcher, un autre pour apprendre à se relever lorsque le corps tombe, un troisième pour apprendre à attraper un objet à portée de main, et le dernier réseau pour apprendre à jongler entre les réseaux neuronaux. Les réseaux neuronaux ne seraient pas en contradictions contrairement à l'environnement de ce projet de bachelor. 
+   
+  \subsection{Nouvel algorithme}
+  
+  \par Un autre élément que je changerais est l'algorithme d'apprentissage par renforcement utilisé. L'algorithme "Deep Q-Network" utilisé dans ce travail de bachelor date de 2015 est à présent presque devenu un "cas d'école". Le désavantage de celui-ci est qu'il est "lent" d'apprentissage: il a pour but de diminuer l'erreur de Bellman (optimiser l'équation de Bellman) en n'ajustant que les valeurs pour les actions que l'agent a effectuées. D'autres algorithmes plus performants ont depuis vu le jour, comme les algorithmes "actor / critic": au lieu d'utiliser un QNetwork et un TNetwork, l'on peut par exemple utiliser un réseau neuronal ayant pour but d'estimer la meilleure action dans un état donné (actor), et un autre réseau ayant pour but d'estimer "l'erreur" du réseau "actor". Le réseau "actor" ne se mettrait pas à jour en fonction des récompenses reçues, mais uniquement en fonction des prévisions effectuées par le réseau "critic". L'avantage est que l'acteur mettrait à jour l’entièreté des valeurs de Q(s,a), et non uniquement des actions effectuées par l'agent. Le réseau "critic" se mettrait à jour en fonction des récompenses reçues en fonction de chaque état rencontré. Cette séparation (semble t'il) rend l'apprentissage plus générique et efficace. 
   
   \chapter{Annexes}
+  
+  \subsection{Installation}
+  
+  
        
 \end{document}
