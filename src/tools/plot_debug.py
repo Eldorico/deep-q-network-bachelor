@@ -8,29 +8,30 @@ if parentPath not in sys.path:
 
 from world import *
 
-""" put the reward fuunction here
+""" put the reward function here
 #############################################################################"""
+# def reward_function(world):
+#     if world.game_over:
+#         return - 1
+#     else:
+#         safe_distance = 20
+#         min_distance = float('inf')
+#         for ennemy in world.ennemies:
+#             distance = Direction.distance(ennemy, world.agent)
+#             if distance < min_distance:
+#                 min_distance = distance
+#
+#         if min_distance >= safe_distance:
+#             return math.log(safe_distance+0.01) -1
+#         elif min_distance <= 1:
+#             return -1
+#         else:
+#             return math.log(min_distance+0.01) -1
 def reward_function(world):
     if world.game_over:
         return - 5
     max_distance = 73
     return (1 - Direction.distance(world.agent, world.food) / max_distance)
-    # if world.game_over:
-    #     return - 1
-    # else:
-    #     safe_distance = 20
-    #     min_distance = float('inf')
-    #     for ennemy in world.ennemies:
-    #         distance = Direction.distance(ennemy, world.agent)
-    #         if distance < min_distance:
-    #             min_distance = distance
-    #
-    #     if min_distance >= safe_distance:
-    #         return math.log(safe_distance+0.01) -1
-    #     elif min_distance <= 1:
-    #         return -1
-    #     else:
-    #         return math.log(min_distance+0.01) -1
 """#############################################################################
 """
 
@@ -60,4 +61,6 @@ for ennemy in world.ennemies:
 
 pos = plt.imshow(Z, cmap='Greens', interpolation='none')
 plt.colorbar(pos)
+plt.xlabel("position x de l'agent")
+plt.ylabel("position y de l'agent")
 plt.show()
