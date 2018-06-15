@@ -853,7 +853,7 @@ def train(QNetwork, TNetwork, experience, batch_size, alpha):
   
   \subsection{Apprentissage}
     
-  \par L'apprentissage de l'agent se fait à travers trois scripts qui durent entre 24 et 48 heures. Chaque script a pour but d'enseigner à l'agent une "capacité": éviter les ennemis, attraper la nourriture ou apprendre à jongler entre les deux pour jouer au jeu complet. Chaque capacité est contenue dans un réseau neuronal QNetwork; l'apprentissage correspond à modifier les poids de ces réseaux (back-propagation) de sorte à pouvoir estimer correctement la fonction $Q(s,a)$.
+  \par L'apprentissage de l'agent se fait à travers trois scripts qui durent entre 24 et 72 heures. Chaque script a pour but d'enseigner à l'agent une "capacité": éviter les ennemis, attraper la nourriture ou apprendre à jongler entre les deux pour jouer au jeu complet. Chaque capacité est contenue dans un réseau neuronal QNetwork; l'apprentissage correspond à modifier les poids de ces réseaux (back-propagation) de sorte à pouvoir estimer correctement la fonction $Q(s,a)$.
 
   \renewcommand{\labelitemi}{\textbullet}
   \begin{itemize}
