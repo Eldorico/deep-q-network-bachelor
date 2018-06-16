@@ -1384,8 +1384,83 @@ def reward_function(world):
   
   \chapter{Annexes}
   
-  \subsection{Installation}
+  \section{Installation}
   
+  \par Les pré-requis sont \textbf{python3}, \textbf{pip}, \textbf{python3-tk} et \textbf{git}
   
-       
+  \begin{lstlisting}[language=bash]
+# télécharger le projet
+git clone https://github.com/Eldorico/deep-q-network-bachelor.git
+cd deep-q-network-bachelor
+
+# créer un environnement python virtuel dans le dossier
+pip install virtualenv
+virtualenv virtual_env_folder
+
+# activer l'environnement virtuel
+source virtual_env_folder/bin/activate
+
+# installer les dépendances
+pip install tensorflow
+pip install gym
+pip install pygame
+  \end{lstlisting}  
+  
+ \section{Jouer soi-même au jeu}
+  \begin{lstlisting}[language=bash]
+# activer l'environnement virtuel
+source virtual_env_folder/bin/activate
+
+# configurer le fichier src/world.py en fonction du besoin
+# (dans la partie __main__)
+# puis lancer l'environnement
+cd src
+python world.py
+
+# s'ouvriront 2 fenetres: une petite noire, et l'autre avec le jeu:
+# avoir le focus sur la fenetre noire, 
+# et jouer avec les fleches directionnelles
+  \end{lstlisting}  
+  
+ \section{Voir l'agent évoluer}
+  \begin{lstlisting}[language=bash]
+# activer l'environnement virtuel
+source virtual_env_folder/bin/activate
+
+# se déplacer ds dossier src
+cd src 
+
+# executer l'un des scripts suivants
+# python see_avoid_ennemies_in_action.py
+# python see_fetch_object_in_action.py
+# python see_play_game_in_action.py
+  \end{lstlisting}  
+
+\section{Entraîner l'agent depuis zéro}
+\begin{lstlisting}[language=bash]
+# activer l'environnement virtuel
+source virtual_env_folder/bin/activate
+
+# se déplacer ds dossier src
+cd src 
+
+# lancer le script pour apprendre à éviter les ennemis
+python trainer_avoid_ennemies.py
+# attendre 72 heures. Si le script n'est pas terminé, arrêter avec ctrl+c
+
+# lancer le script pour apprendre à attraper la nourriture
+python trainer_fetch_object.py
+# attendre 72 heures. Si le script n'est pas terminé, arrêter avec ctrl+c
+
+# copier les réseaux enregistrés dans le dossier un dossier play_game
+mkdir ../tmp_saves/play_game
+cp ../tmp_saves/avoid_ennemies/* ../tmp_saves/play_game
+cp ../tmp_saves/food/* ../tmp_saves/play_game
+
+# lancer le script pour apprendre à jouer le jeu complet
+python trainer_play_game.py
+# attendre 72 heures. Si le script n'est pas terminé, arrêter avec ctrl+c
+
+  \end{lstlisting}  
+
 \end{document}

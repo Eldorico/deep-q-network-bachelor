@@ -26,7 +26,7 @@ session = tf.Session()
 # use tensorboard
 Debug.USE_TENSORBOARD = True
 Debug.SAVE_MAIN_FILE = True
-Debug.SAVE_FOLDER = '../tmp_saves/debug/food'
+Debug.SAVE_FOLDER = '../tmp_saves/food'
 Debug.SESSION = session
 
 # debug

@@ -38,24 +38,24 @@ session = tf.Session()
 # use tensorboard
 Debug.USE_TENSORBOARD = True
 Debug.SAVE_MAIN_FILE = True
-Debug.SAVE_FOLDER = '../tmp_saves/debug/avoid_ennemies'
+Debug.SAVE_FOLDER = '../tmp_saves/avoid_ennemies'
 Debug.SESSION = session
 
 # debug
 # Debug.PRINT_PREDICTED_VALUES_ON_EVERY_N_EPISODES = 10000
 Debug.PRINT_EPISODE_NB_EVERY_N_EPISODES = 2500
-Debug.PRINT_SCORE_AVG_EVERY_N_EPISODES = 50 # 5000
+Debug.PRINT_SCORE_AVG_EVERY_N_EPISODES = 5000
 Debug.SAY_WHEN_HISTOGRAMS_ARE_PRINTED = False
 Debug.SAY_WHEN_AGENT_TRAINED = False
 Debug.OUTPUT_TO_TENSORBOARD_EVERY_N_EPISODES = 5000
 
 # create the neural network that will learn to avoid ennemies
-# avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world)*3, 1e-1,
-#        [[40, 'relu'],
-#         [40, 'relu'],
-#        [Action.NB_POSSIBLE_MOVE_ACTION, 'linear']]
-# )
-avoid_ennemy_model = ImportModel(session, Debug.SAVE_FOLDER, 'avoid_ennemy')
+avoid_ennemy_model = Model(session, 'avoid_ennemy', State.get_ennemy_agent_layer_shape(world)*3, 1e-1,
+       [[40, 'relu'],
+        [40, 'relu'],
+       [Action.NB_POSSIBLE_MOVE_ACTION, 'linear']]
+)
+# avoid_ennemy_model = ImportModel(session, Debug.SAVE_FOLDER, 'avoid_ennemy')
 def avoid_ennemy_input_adapter(bus, next_state=False):
     if next_state:
         input_states = [state.get_ennemy_agent_layer_only() for state in bus['last_states'][1:]]
