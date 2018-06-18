@@ -1324,6 +1324,7 @@ def reward_function(world):
    \caption{Score par épisode avec en fonction du nombre d'épisodes vécus}
    \end{figure} 
    
+   \newpage
    \section{Learning rate}
    
    \par Le dernier paramètre décisif dans la vitesse d'apprentissage fut de choisir un "learning rate" $\alpha$ plus élevé. Pour rappel, le poids des réseaux neuronaux sont ajustés de la manière suivante (cf chapitre 2, section 2.3.2: Valeur d’un état avec Q(s,a)). 
@@ -1332,11 +1333,16 @@ def reward_function(world):
    
    \par L'idée du paramètre \textit{learning rate} $\alpha$ est de mettre à jour le poids $W$ petit à petit, afin d'éviter une mise à jour trop brusque, faussant l'apprentissage. Jusqu'ici, la valeur du learning rate était de $\alpha = 0.01$. Choisir $\alpha$ trop petit rend l'apprentissage plus long, mais choisir $\alpha$ trop élevé peut totalement casser l'apprentissage. Une valeur dix fois plus élevée $\alpha = 0.1$ pour l'apprentissage à éviter les ennemis et attraper la nourriture a permis de réduire la durée de l'apprentissage à 72 heures maximum au lieu de quatre / cinq jours maximum. Pour l'apprentissage à jouer au jeu complet, la valeur $\alpha = 0.1$ a cependant cassé l'apprentissage, et la valeur de $\alpha = 0.01$ a été gardée. 
    
+   \begin{figure}[!h]
+   \center
+   \includegraphics[scale=0.5]{ressources/learning_rate_graph.png}
+   \caption{Learning\_rate $\alpha$: score par épisode en fonction du nombre d'épisodes vécus}
+   \end{figure} 
    
-   
+  \newpage
   \section{Hyper-paramètres finaux}
   
-  \par Pour terminer ce chapitre, voici la liste des hyper-paramètres utilisés pour chacun des scripts \textbf{trainer\_*.py}. Bien que les plus importants aient été décrits dans les sections précédentes, il parait important de signaler que les apprentissages tel qu'ils ont été décrit jusqu'ici n'auraient pas été les mêmes sans la combinaison de tous les hyper-paramètres à prendre en compte dans l'apprentissage par renforcement. Le seul paramètre qui n'est pas décrit dans cette section est le choix de la fonction de récompense, vu qu'elle a été décrite dans une section précédente. 
+  \par Pour terminer ce chapitre, voici la liste des hyper-paramètres utilisés pour chacun des scripts \textbf{trainer\_*.py}. Bien que les plus décisifs aient été décrits dans les sections précédentes, il parait important de signaler que les apprentissages tel qu'ils ont été décrit jusqu'ici n'auraient pas été les mêmes sans la combinaison de tous les autres hyper-paramètres à prendre en compte dans l'apprentissage par renforcement. Le seul paramètre qui n'est pas décrit dans cette section est le choix de la fonction de récompense, vu qu'elle a été décrite dans une section précédente. 
   
    \textbf{Hyper-paramètres communs aux 3 scripts:}   
    \begin{eqnarray}
@@ -1378,17 +1384,17 @@ def reward_function(world):
   
   \section{Difficultés}
   
-  \par Pour terminer, il parait important de relever les difficultés rencontrées lors de l'étude de l'apprentissage par renforcement. Le champ de celui-ci est vaste et est encore sujet à de nombreuses recherches. Il évolue d'années en années, et de nouveaux algorithmes voient le jour régulièrement. Il n'est évident de se plonger dans cette branche du machine learning tant les ressources sont diverses et pointues, et la théorie est bien souvent loin d'algorithmes concrets à reproduire chez soi. \\
-  Par ailleurs, le nombre important d'hyper-paramètres à ajuster rend l'implémentation difficile lorsque l'on cherche à résoudre un problème donné, bien que l'architecture créé pour cela aie été développée sans erreurs. \\
-  Enfin, le temps d'apprentissage est également une des principales contraintes. Si la compilation de certains programmes peut durer des heures, il n'est pas rare de devoir attendre des semaines afin de voir si l'agent apprend comme prévu. 
+  \par Pour terminer, il parait important de relever les difficultés rencontrées lors de l'étude de l'apprentissage par renforcement. Le champ de celui-ci est vaste et est encore sujet à de nombreuses recherches. Il évolue d'années en années, et de nouveaux algorithmes voient le jour régulièrement. Il n'est pas évident de se plonger dans cette branche du machine learning tant les ressources sont diverses et pointues, et la théorie est bien souvent loin d'algorithmes concrets à reproduire chez soi. Il convient également de noter que cette branche n'a pas été enseignée lors du cursus à l'hepia. \\
+  Par ailleurs, le nombre important d'hyper-paramètres à ajuster rend l'implémentation difficile lorsque l'on cherche à résoudre un problème donné, bien même que l'architecture puisse être créé sans erreurs. \\
+  Enfin, le temps d'apprentissage est également une des principales contraintes: il n'est pas rare de devoir attendre des semaines afin de voir si l'agent apprend comme prévu. 
   
   \section{Perspectives}
   
-   \par Cela reste néanmoins un sujet passionnant, d'actualité, qui mérite d'être approfondi. Avec l'avancée d'années en années de la recherche sur ce sujet, qui sait de quoi sera faite la technologie de demain. Il me parait important de suivre l'évolution de celui-ci pour pouvoir y garder un avis critique. 
+   \par Cela reste néanmoins un sujet passionnant, d'actualité, qui mérite d'être approfondi. Avec l'avancée d'années en années de la recherche sur ce sujet, qui sait de quoi sera faite la technologie de demain? Il me parait important de suivre l'évolution de ce sujet afin d'y garder un avis critique. 
 
   \subsection{Nouvel environnement}  
   
-  \par Si le temps me permettais d'améliorer ce travail de bachelor, je commencerais par changer d'environnement: l'environnement utilisé s'est avéré inapproprié. En effet, bien qu'il aie été possible d'enseigner à l'agent des tâches spécifiques telles qu'éviter des ennemis ou attraper de la nourriture, enseigner à l'agent à évoluer dans l'environnement complet en utilisant uniquement deux compétences n'est pas adaptée. Si l'ennemi le plus proche de l'agent et la nourriture se trouvent en bas à droite de l'agent, l'agent n'a pas la possibilité de choisir une action convenable afin d'éviter l'ennemi et de se diriger vers la nourriture. 
+  \par Si le temps me permettait d'améliorer ce travail de bachelor, je commencerais par changer d'environnement: l'environnement utilisé s'est avéré inapproprié. En effet, bien qu'il aie été possible d'enseigner à l'agent des tâches spécifiques telles qu'éviter des ennemis, attraper de la nourriture ou enseigner à l'agent à évoluer dans l'environnement complet en utilisant uniquement deux compétences, l'environnement choisi n'est pas adapté. Prenons l'exemple suivant: si l'ennemi le plus proche de l'agent et la nourriture se trouvent en bas à droite de l'agent, l'agent n'a pas la possibilité de choisir une action convenable afin d'éviter l'ennemi et de se diriger vers la nourriture. 
 
    \begin{figure}[!h]
    \center
@@ -1396,7 +1402,7 @@ def reward_function(world):
    \caption{Situation non adaptée à l'architecture choisie}
    \end{figure} 
 
-  
+  \newpage
   \par L'exemple ci-dessus illustre ces propos. Dans cet état, le réseau neuronal "éviter ennemis" recommande de se diriger en haut à gauche, alors que le réseau  "attraper nourriture" recommande de se diriger en bas à droite. Le réseau "jouer au jeu complet" devrait choisir entre une de ces deux actions recommandées, et n'a pas possibilité de choisir une action intermédiaire. 
   
   \par Un environnement plus adapté à l'architecture de ce travail de bachelor serait par exemple un corps dans lequel l'agent doit apprendre à se mouvoir. 
