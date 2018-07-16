@@ -101,7 +101,24 @@
     \thispagestyle{empty}
 
     \begin{abstract}
-    // TODO
+    \par L'intelligence artificielle a connu un grand essor ces 20 dernières années. Avec l'arrivée des réseaux de neurones artificiels, une nouvelle branche nommée "apprentissage par renforcement" s'est développée. Cette dernière consiste à enseigner à un agent autonome à évoluer par lui-même dans un environnement en explorant celui-ci. Une récompense est donnée à l'agent à chaque fois qu'il évolue correctement, renforçant ainsi son comportement. 
+
+    \begin{figure}[!h]
+    \center
+    \includegraphics[scale=0.5]{ressources/shema_agent_environnement.png}
+    \caption{Action et récompenses}
+    \end{figure} 
+     
+    \par Ce présent travail de bachelor s'est déroulé en deux étapes: étude de l'apprentissage par environnement, puis implémentation d'un agent capable d'apprendre à évoluer dans un environnement créé pour l'occasion. Ce rapport décrit la théorie nécessaire à la création d'un agent utilisant l'apprentissage par renforcement, puis il décrit l'implémentation en tant que telle, et termine par une analyse des résultats. 
+    
+    \par L'agent (en bleu) évolue dans un jeu (environnement) où il doit apprendre à éviter les ennemis (en rouge), tout en récupérant de la nourriture (en vert). Si l'agent se fait attraper par un ennemi, le jeu se termine. Si l'agent ne parvient pas à récolter la nourriture, son endurance finit par s’estomper et le jeu se termine. Le but de l'agent est de "survivre" le plus longtemps possible. 
+    
+   \begin{figure}[!h]
+   \center
+   \includegraphics[scale=0.25]{ressources/presentation_jeu.png}
+   \caption{Présentation de l'environnement (Jeu)}
+   \end{figure} 
+    
     \end{abstract}
 
 %    \vspace{1cm}
@@ -113,6 +130,8 @@
   \tableofcontents
   
   \newpage
+  
+
 
   \chapter{Introduction}
   
@@ -195,7 +214,7 @@
     
     \par Si la récompense est neutre, l'agent enregistre néanmoins l'action qu'il a entrepris au cas où l'action neutre même à futur état permettant un score positif ou négatif. Si l'agent est un joueur d'échec et que l'action qu'il entreprend ne permet pas de gagner, il est quand même important d'enregistrer l'état/action vécu si jamais cela l’emmène par la suite dans un état/action où il gagne ou perd. De même, si une voiture doit tourner à gauche et qu'elle continue tout droit pendant une fraction de seconde, elle doit pouvoir savoir si le fait de tourner à gauche la fraction de seconde d'après l'amènera à une sortie de route, ou si elle peut quand même tourner à gauche sans sortir de route. 
     
-    \par L'important pour l'agent est de pouvoir enregistrer les actions prises d'une manière où d'une autre, en vue de savoir si cette action mène plutôt à un échec, une réussite, ou à un état neutre. 
+    \par L'important pour l'agent est de pouvoir enregistrer les actions effectuées d'une manière où d'une autre, en vue de savoir si cette action mène plutôt à un échec, une réussite, ou à un état neutre. 
     
     \begin{figure}[!h]
     \center
@@ -1351,33 +1370,32 @@ def reward_function(world):
    \text{taille experience } &=& 50'000 \\
    \text{batch size } &=& 32 
    \end{eqnarray}
-   
-   \textbf{Script éviter les ennemis:}
-   \begin{eqnarray}
-   \alpha \text{ (learning rate) } &=& 0.1 \\
-   \gamma \text{ (discount factor) } &=& 0.8 \\
-   \text{ input adapter } &=& \text{ 3 dernières position de l'agent et ennemis}
-   \end{eqnarray}   
-   
+
    \begin{figure}[!h]
    \center
    \includegraphics[scale=0.45]{ressources/nn_model.png}
    \caption{Architecture réseau neuronal utilisé}
    \end{figure} 
    
+   \textbf{Script éviter les ennemis:}
+   \begin{eqnarray}
+   \alpha \text{ (learning rate) } &=& 0.1 \\
+   \gamma \text{ (discount factor) } &=& 0.8 \\
+   \text{ input adapter } &=& \text{3 dernières position de l'agent et ennemis}
+   \end{eqnarray}   
    
    \textbf{Script attraper la nourriture:}
    \begin{eqnarray}
    \alpha \text{ (learning rate) } &=& 0.1 \\
    \gamma \text{ (discount factor) } &=& 0.5 \\
-   \text{ input adapter } &=& \text{ position agent et position nourriture}
+   \text{ input adapter } &=& \text{position agent et position nourriture}
    \end{eqnarray}   
    
    \textbf{Script jouer au jeu complet:}
    \begin{eqnarray}
    \alpha \text{ (learning rate) } &=& 0.01 \\
    \gamma \text{ (discount factor) } &=& 0.5 \\
-   \text{ input adapter } &=& \text{ endurance, distance ennemis et nourriture}
+   \text{ input adapter } &=& \text{endurance, distance ennemis et nourriture}
    \end{eqnarray}   
   
   \chapter{Conclusion}
@@ -1385,7 +1403,7 @@ def reward_function(world):
   \section{Difficultés}
   
   \par Pour terminer, il parait important de relever les difficultés rencontrées lors de l'étude de l'apprentissage par renforcement. Le champ de celui-ci est vaste et est encore sujet à de nombreuses recherches. Il évolue d'années en années, et de nouveaux algorithmes voient le jour régulièrement. Il n'est pas évident de se plonger dans cette branche du machine learning tant les ressources sont diverses et pointues, et la théorie est bien souvent loin d'algorithmes concrets à reproduire chez soi. Il convient également de noter que cette branche n'a pas été enseignée lors du cursus à l'hepia. \\
-  Par ailleurs, le nombre important d'hyper-paramètres à ajuster rend l'implémentation difficile lorsque l'on cherche à résoudre un problème donné, bien même que l'architecture puisse être créé sans erreurs. \\
+  Par ailleurs, le nombre important d'hyper-paramètres à ajuster rend l'implémentation difficile lorsque l'on cherche à résoudre un problème donné, bien même que l'architecture puisse être créée sans erreurs. \\
   Enfin, le temps d'apprentissage est également une des principales contraintes: il n'est pas rare de devoir attendre des semaines afin de voir si l'agent apprend comme prévu. 
   
   \section{Perspectives}
@@ -1458,6 +1476,8 @@ python world.py
 # avoir le focus sur la fenetre noire, 
 # et jouer avec les fleches directionnelles
   \end{lstlisting}  
+
+ \newpage  
   
  \section{Voir l'agent évoluer}
   \begin{lstlisting}[language=bash]
@@ -1499,8 +1519,7 @@ python trainer_play_game.py
 # attendre 72 heures. Si le script n'est pas terminé, arrêter avec ctrl+c
 
 # pour voir ensuite l'agent évoluer, ajuster les variables 
-# Debug.SAVE_FOLDER en conséquence dans les scripts
-# src/see*
+# Debug.SAVE_FOLDER en conséquence dans les scripts src/see*
 
   \end{lstlisting}  
 
