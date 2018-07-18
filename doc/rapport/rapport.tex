@@ -157,8 +157,8 @@
   
   \section{Réalisation}
   
-  \par Le jeu dans lequel l'agent évolue est le suivant: un agent (en bleu) doit éviter des ennemis représentés en rouge, tout en récupérant de la nourriture (en vert). Au fur et à mesure que l'agent avance, l'endurance de l'agent faibli (le diamètre de l'agent diminue). Si l'endurance de l'agent est trop faible, le jeu se termine. Si l'agent se fait attraper par un ennemi, le jeu est également terminé. Si l'agent atteint la nourriture, son endurance est remise au maximum, et une nouvelle nourriture est placée aléatoirement dans le jeu. Le but de l'agent est jouer le plus longtemps sans que ce dernier se termine.\\
-  Les actions possibles pour l'agent sont d'avancer dans une direction des points cardinaux (N, NE, E, SE, S, SO, O, NE), ou ne rien faire. Le nombre d'actions possibles équivaut donc à neuf. 
+  \par Le jeu dans lequel l'agent évolue est le suivant: un agent (en bleu) doit éviter des ennemis représentés en rouge, tout en récupérant de la nourriture (en vert). Au fur et à mesure que l'agent avance, l'endurance de l'agent faiblit (le diamètre de l'agent diminue). Si l'endurance de l'agent est trop faible, le jeu se termine. Si l'agent se fait attraper par un ennemi, le jeu est également terminé. Si l'agent atteint la nourriture, son endurance est remise au maximum, et une nouvelle nourriture est placée aléatoirement dans le jeu. Le but de l'agent est jouer le plus longtemps possible sans que ce dernier se termine.\\
+  Les actions possibles pour l'agent sont d'avancer dans une direction des points cardinaux (N, NE, E, SE, S, SO, O, NE), ou ne rien faire. Le nombre d'actions possibles est donc égal à neuf. 
   
    \begin{figure}[!h]
    \center
@@ -171,13 +171,13 @@
   \begin{enumerate} 
   \item Apprendre à éviter les ennemis (sans nourriture)
   \item Apprendre à attraper la nourriture (sans ennemis)
-  \item Une fois les deux premières compétences apprises, l'agent doit ensuite apprendre à jongler entre les deux compétences afin de jouer convenablement au jeu. 
+  \item Une fois les deux premières compétences apprises, l'agent doit ensuite apprendre à jongler entre les deux compétences afin de jouer convenablement. 
   \end{enumerate}
   
   \par Cela implique les contraintes suivantes: 
   
   \begin{itemize}
-  \item L'environnement (jeu) doit être configurable pour qu'il être utilisé indépendamment avec uniquement des ennemis, que de la nourriture, ou les deux en même temps. 
+  \item L'environnement (jeu) doit être configurable pour qu'il ne puisse être utilisé indépendamment qu'avec des ennemis, que de la nourriture, ou les deux en même temps. 
   \item L'agent doit être implémenté de manière générique, de sorte à ce qu'il puisse apprendre les connaissances indépendamment. (éviter les ennemis, attraper la nourriture, ou les deux en même temps). 
   \item Une fois une compétence apprise, l'on doit pouvoir la sauvegarder afin d'être réutilisable pour la suite de l'apprentissage: une fois que l'agent a appris à éviter les ennemis ou attraper de la nourriture, ces deux compétences doivent être chargées pour la dernière étape de l'apprentissage, sans que l'agent n'aie à réapprendre ces compétences à chaque fois que le programme démarre. 
   \end{itemize}
@@ -212,7 +212,7 @@
   
     \par Chaque action mène à un changement d'état. Une action est la seule possibilité pour un agent d'influencer l'environnement dans lequel il évolue. C'est aussi la seule manière pour un agent de savoir si l'action qu'il a entrepris est bonne, mauvaise ou ``sans effet". Pour chaque action, l'agent reçoit une récompense (bonne, mauvaise ou neutre). Si la récompense est ``bonne", l'agent reçoit un score positif; si l'action est ``mauvaise", l'agent reçoit une récompense négative. L'agent peut alors ajuster son expérience dans le but de favoriser les actions menant à maximiser un score positif, ou minimiser un score négatif.
     
-    \par Si la récompense est neutre, l'agent enregistre néanmoins l'action qu'il a entrepris au cas où l'action neutre même à futur état permettant un score positif ou négatif. Si l'agent est un joueur d'échec et que l'action qu'il entreprend ne permet pas de gagner, il est quand même important d'enregistrer l'état/action vécu si jamais cela l’emmène par la suite dans un état/action où il gagne ou perd. De même, si une voiture doit tourner à gauche et qu'elle continue tout droit pendant une fraction de seconde, elle doit pouvoir savoir si le fait de tourner à gauche la fraction de seconde d'après l'amènera à une sortie de route, ou si elle peut quand même tourner à gauche sans sortir de route. 
+    \par Si la récompense est neutre, l'agent enregistre néanmoins l'action qu'il a entrepris au cas où l'action neutre mène à futur état permettant d'obtenir un score positif ou négatif. Si l'agent est un joueur d'échec et que l'action qu'il entreprend ne permet pas de gagner, il est quand même important d'enregistrer l'état/action vécu si jamais cela l’emmène par la suite dans un état/action où il gagne ou perd. De même, si une voiture doit tourner à gauche et qu'elle continue tout droit pendant une fraction de seconde, elle doit pouvoir savoir si le fait de tourner à gauche la fraction de seconde d'après l'amènera à une sortie de route, ou si elle peut quand même tourner à gauche sans sortir de route. 
     
     \par L'important pour l'agent est de pouvoir enregistrer les actions effectuées d'une manière où d'une autre, en vue de savoir si cette action mène plutôt à un échec, une réussite, ou à un état neutre. 
     
@@ -230,9 +230,9 @@
   
   \subsection{Fonctionnement général de l'apprentissage par renforcement}
   
-    \par L'apprentissage par renforcement consiste à donner une récompense à un agent lorsque ce dernier parvient à effectuer une tâche demandée, ou lorsqu'il s'en approche. De la même manière, l'agent reçoit un malus lorsque ce dernier s'éloigne de la tâche demandée. Le but de l'agent est d'obtenir un maximum de récompense. De cette manière, le comportement de l'agent est influencé par les récompenses et malus qu'il reçoit. Au fur et à mesure que l'agent effectue des actions et reçoit des récompenses/malus, ce dernier tend à renforcer un comportement menant à un maximum de récompenses, et éviter les actions menant à des malus. À noter qu'à partir de maintenant nous ne parlerons que de récompenses: un malus sera simplement traduit par une récompense négative. 
+    \par L'apprentissage par renforcement consiste à donner une récompense à un agent lorsque ce dernier parvient à effectuer une tâche demandée, ou lorsqu'il s'en approche. De la même manière, l'agent reçoit un malus lorsque ce dernier s'éloigne de la tâche demandée. Le but de l'agent est d'obtenir un maximum de récompense. De cette manière, le comportement de l'agent est influencé par les récompenses et malus qu'il reçoit. Au fur et à mesure que l'agent effectue des actions et reçoit des récompenses/malus, ce dernier tend à renforcer un comportement menant à un maximum de récompenses, et évite les actions menant à des malus. À noter qu'à partir de maintenant nous ne parlerons que de récompenses: un malus sera simplement traduit par une récompense négative. 
   
-    \par Plus concrètement, l'agent commence par effectuer des actions aléatoires et reçoit une récompense / malus pour chaque action effectuée. Pour chaque action commise, l'agent enregistre l'état $S$ dans lequel il se trouvait, l'action effectuée, la récompense/malus reçue  et l'état $S'$ dans lequel il se retrouve suite à l'action. Si l'agent se retrouve dans un état terminal, l'environnement est réinitialisé mais l'agent garde en mémoire les actions / états / récompenses vécus. À une fréquence définie par le développeur, l'agent passe par une phase d'ajustement \textit{(training)} où il parcourt tous les actions / états / récompenses vécus de sorte à ajuster son comportement (actions choisies) lors des états futurs qu'il rencontrera, dans le but de maximiser les récompenses. 
+    \par Plus concrètement, l'agent commence par effectuer des actions aléatoires et reçoit une récompense / malus pour chaque action effectuée. Pour chaque action commise, l'agent enregistre l'état $S$ dans lequel il se trouvait, l'action effectuée, la récompense/malus reçue  et l'état $S'$ dans lequel il se retrouve suite à l'action. Si l'agent se retrouve dans un état terminal, l'environnement est réinitialisé mais l'agent garde en mémoire les actions / états / récompenses vécus. À une fréquence définie par le développeur, l'agent passe par une phase d'ajustement \textit{(training)} où il parcourt toutes les actions / états / récompenses vécus de sorte à ajuster son comportement (actions choisies) lors des états futurs qu'il rencontrera, dans le but de maximiser les récompenses. 
 
   \subsection{Valeur d'un état}
   
@@ -347,7 +347,7 @@
     
     \par Au fur et à mesure que l'agent explore les actions, la fonction V(s) va petit à petit atteindre une estimation correcte, et l'agent va petit à petit connaître les meilleurs états à rencontrer, ou les meilleures actions à effectuer pour chaque état. 
     
-    \par Comment savoir si l'agent dispose de connaissances suffisantes pour arrêter d'explorer/tester des actions? A quel moment l'agent doit-il utiliser la connaissance qu'il dispose de V(s)? Une solution est d'effectuer une action aléatoire avec une probabilité $\epsilon$. La valeur de $\epsilon$ peut varier en fonction du temps selon ce qu'a choisit le programmeur. 
+    \par Comment savoir si l'agent dispose de connaissances suffisantes pour arrêter d'explorer/tester des actions? A quel moment l'agent doit-il utiliser la connaissance qu'il dispose de V(s)? Une solution est d'effectuer une action aléatoire avec une probabilité $\epsilon$. La valeur de $\epsilon$ peut varier en fonction du temps selon ce qu'a choisi le programmeur. 
   
   \subsection{Valeur d'un état avec Q(s,a)}
   
@@ -370,14 +370,20 @@
   \subsection{Algorithme Q-Learning}
   
    \par Si nous connaissions tous les états, actions et récompenses possibles, il serait possible de définir Q(s,a) dans un environnement déterministe, de la manière suivante: 
-    $$Q(s,a) = r +  \gamma Q(s',a')$$
+   \begin{eqnarray}
+    Q(s,a) = r +  \gamma Q(s',a')
+   \end{eqnarray}
     Or, ne connaissant pas tous les états, actions et récompenses possibles, (et ne voulant pas tous les explorer), l'idée du Q-learning est d'ajuster petit à petit Q(s,a), par une fraction $\alpha$ (appelée \textit{learning-rate}).  
-    $$Q(s,a) = old\_Q(s,a) + \alpha(Q(s',a') - old\_Q(s,a))$$
+    \begin{eqnarray}
+    Q(s,a) = old\_Q(s,a) + \alpha(Q(s',a') - old\_Q(s,a))
+    \end{eqnarray}
     Le terme $\alpha$ est appelé ``learning\_rate" est choisi arbitrairement par le développeur et est compris entre $[0,1]$. Il correspond à l'$\alpha$ utilisé lors d'un ``gradient descent". 
  
     \newpage   
     \par La méthode Q-Learning met donc Q(s,a) à jour selon la formule suivante: 
-    $$Q(s,a) = Q(s,a) + \alpha(\left\{  r + \gamma Q(s', a') \right\} - Q(s,a) )$$  
+    \begin{eqnarray}
+    Q(s,a) = Q(s,a) + \alpha(\left\{  r + \gamma Q(s', a') \right\} - Q(s,a) )
+    \end{eqnarray}
     
     \par Le pseudo-code de la méthode Q-learning peut être défini de la manière suivante: 
   
@@ -436,14 +442,14 @@ for i in range(max_episodes):
       \par Les réseaux de neurones sont utilisés de la manière suivante:
       
       \begin{enumerate}
-      \item On crée un réseau de neurones qui a pour but d'estimer (prédire) quelque chose de précis. Au début, le réseau de neurone renvoie des réponses aléatoires. 
-      \item On entraîne ce réseau de neurone en lui donnant de nombreux exemples avec la solution à estimer pour chaque exemple. (exemple d'input, solution)
-      \item Au bout d'un certain nombre d'exemples donnés, le réseau de neurone s'est ajusté de sorte à pouvoir estimer (prédire) de nouveaux inputs en les estimant correctement. 
+      \item On crée un réseau de neurones qui a pour but d'estimer (prédire) quelque chose de précis. Au début, le réseau de neurones renvoie des réponses aléatoires. 
+      \item On entraîne ce réseau de neurones en lui donnant de nombreux exemples avec la solution à estimer pour chaque exemple. (exemple d'input, solution)
+      \item Au bout d'un certain nombre d'exemples donnés, le réseau de neurones s'est ajusté de sorte à pouvoir estimer (prédire) de nouveaux inputs en les estimant correctement. 
       \end{enumerate}  
       
-      \par De nombreuses applications ont été trouvées pour les réseaux de neurones: on peut par exemple fournir des millier d'images comportant des tumeurs et des millier d'images ne comportant pas de tumeurs pour qu'à la fin de son apprentissage, le réseau puisse indiquer si l'image (qu'il n'a jamais vue) comporte ou ne comporte pas de tumeur. On peut également fournir un millier d'images de chiffres écrits à la main pour qu'à la fin de son apprentissage, le réseau puisse reconnaître le chiffre écrit dans une image quelconque que le réseau n'a pas encore vu. Le champ d'application est vaste: de la reconnaissance vocale à la proposition de contenu personnalisé pour Youtube ou Facebook, de nombreux domaines utilisent les réseaux neuronaux, suivant ce même principe de base. (Apprentissage, puis utilisation pour prédire quelque chose). 
+      \par De nombreuses applications ont été trouvées pour les réseaux de neurones: on peut par exemple fournir des milliers d'images comportant des tumeurs et des milliers d'images ne comportant pas de tumeurs pour qu'à la fin de son apprentissage, le réseau puisse indiquer si l'image (qu'il n'a jamais vue) comporte ou ne comporte pas de tumeur. On peut également fournir un millier d'images de chiffres écrits à la main pour qu'à la fin de son apprentissage, le réseau puisse reconnaître le chiffre écrit dans une image quelconque que le réseau n'a pas encore vu. Le champ d'application est vaste: de la reconnaissance vocale à la proposition de contenu personnalisé pour Youtube ou Facebook. De nombreux domaines utilisent les réseaux neuronaux, suivant ce même principe de base. (Apprentissage, puis utilisation pour prédire quelque chose). 
       
-      \par Dans le cas de l'apprentissage par renforcement, les réseaux de neurones permettent d'approximer correctement les fonctions V(s) ou Q(s,a) dans de nombreux environnements. L'utilisation d'un réseau de neurone permet les méthodes telles que le Deep Q-Learning que nous verrons dans la prochaine section. 
+      \par Dans le cas de l'apprentissage par renforcement, les réseaux de neurones permettent d'approximer correctement les fonctions V(s) ou Q(s,a) dans de nombreux environnements. L'utilisation d'un réseau de neurones permet les méthodes telles que le Deep Q-Learning que nous verrons dans la prochaine section. 
       
   \subsection{Présentation}
   
@@ -453,7 +459,7 @@ for i in range(max_episodes):
     \begin{itemize}
     \item Une couche ``d'input", représentant la couche par laquelle les données rentrent dans le réseau. 
     \item Un certain nombre de couches, appelées ``hidden layers". C'est dans ces couches que le réseau neuronal fait ses calculs pour effectuer une prédiction. 
-    \item Une couche ``d'output". C'est à travers cette couche que le résultat de la prédiction est transmise. 
+    \item Une couche ``d'output". C'est à travers cette couche que le résultat de la prédiction est transmis. 
     \end{itemize}    
     
     \par L'idée est que chaque neurone est relié à tous les neurones de la couche suivante, afin d'effectuer un calcul particulier à chaque couche. A la fin, la couche ``output" indique le résultat de la prédiction du réseau neuronal. 
@@ -464,7 +470,7 @@ for i in range(max_episodes):
     \caption{Réseau neuronal: présentation 1}
     \end{figure} 
     
-    \par Dans la figure ci-dessus, le but du réseau neuronal est de prédire si l'image donnée dans la couche ``input" est un chat, un chien, ou un renard. Le résultat de la prédiction indique que le réseau neuronal estime que l'image est à 60\% un chat, à 35\% un chien, et à 5\% un renard. Pour interpréter le résultat, on prends le neurone de sortie dont l'estimation est la plus haute: cela correspond à catégorie ``chat", ce qui indique que le réseau neuronal a estimé que l'image donnée en entrée est un chat. 
+    \par Dans la figure ci-dessus, le but du réseau neuronal est de prédire si l'image donnée dans la couche ``input" est un chat, un chien, ou un renard. Le résultat de la prédiction indique que le réseau neuronal estime que l'image est à 60\% un chat, à 35\% un chien, et à 5\% un renard. Pour interpréter le résultat, on prend le neurone de sortie dont l'estimation est la plus haute: cela correspond à catégorie ``chat", ce qui indique que le réseau neuronal a estimé que l'image donnée en entrée est un chat. 
     
     \begin{figure}[!h]
     \center
@@ -602,9 +608,9 @@ for i in range(max_episodes):
     
     \begin{eqnarray}
     X &=& \begin{pmatrix} x_1 \\ x_2  \end{pmatrix}     \\
-    Z1 &=& f\left(W_{z1}X+b_{z1}\right) = \begin{pmatrix} z1_{1} \\ z1_2 \\ z1_3  \end{pmatrix} \\
-    Z2 &=& f_2\left(W_{z2}Z1+b_{z2}\right) = \begin{pmatrix} z2_{1} \\ z2_2 \\ z2_3  \end{pmatrix} \\
-    Y &=& f_3\left( W_YZ2+b_y \right) = \begin{pmatrix} y_{1} \\ y_2  \end{pmatrix} 
+    Z_1 &=& f\left(W_{z1}X+b_{z1}\right) = \begin{pmatrix} z_{11} \\ z_{12} \\ z_{13}  \end{pmatrix} \\
+    Z_2 &=& f_2\left(W_{z2}Z_1+b_{z2}\right) = \begin{pmatrix} z_{21} \\ z_{22} \\ z_{23}  \end{pmatrix} \\
+    Y &=& f_3\left( W_YZ_2+b_y \right) = \begin{pmatrix} y_{1} \\ y_2  \end{pmatrix} 
     \end{eqnarray}
     
 
@@ -663,23 +669,23 @@ for i in range(max_episodes):
 
     \par Nous constatons (heureusement) qu'un certain schéma se répète dans le calcul des $\frac{dJ}{W_i}$, permettant ainsi le calcul des dérivées automatiquement par programmation. Plusieurs librairies fournissent cette possibilité. Pour ce travail de bachelor, la librairie TensorFlow développée par Google a été utilisée. 
     
-    \par Il est important de signaler qu'un réseau de neurone ne peut s'ajuster qu'avec un seul X et T. Il faut bien entendu répéter le calcul de back-propagation un grand nombre de fois afin d'arriver à des valeurs des poids permettant un pourcentage de prédiction correct. Une fois le réseau de neurones bien entraîné (après avoir répété la back-propagation de nombreuses fois), on peut ensuite fournir une valeur X sans connaître son résultat correct, mais supposant raisonnablement que la prédiction sera correcte. 
+    \par Il est important de signaler qu'un réseau de neurones ne peut s'ajuster qu'avec un seul X et T. Il faut bien entendu répéter le calcul de back-propagation un grand nombre de fois afin d'arriver à des valeurs des poids permettant un pourcentage de prédiction correct. Une fois le réseau de neurones bien entraîné (après avoir répété la back-propagation de nombreuses fois), on peut ensuite fournir une valeur X sans connaître son résultat correct, mais supposant raisonnablement que la prédiction sera correcte. 
     
   \subsection{Difficultés}
   
   \subsubsection{Le champ d'application des réseaux neuronaux est vaste}
   
-    \par Nous tenons à préciser ici que la théorie que nous avons vue dans ce chapitre ne constitue que les notions essentielles permettant appréhender correctement la suite de ce rapport. De nombreux modèles de réseaux neuronaux différèrent selon le champ d'application. Pour la reconnaissance d'images par exemple, il faut rajouter des couches de ``convolution" afin de traiter les images correctement avant de faire suivre l'information dans un réseau de neurones tel que nous l'avons vu. Ces modèles de réseaux de neurones s'appellent les ``convolutional neural networks". \\
+    \par Nous tenons à préciser ici que la théorie que nous avons vu dans ce chapitre ne constitue que les notions essentielles permettant appréhender correctement la suite de ce rapport. De nombreux modèles de réseaux neuronaux différèrent selon le champ d'application. Pour la reconnaissance d'images par exemple, il faut rajouter des couches de ``convolution" afin de traiter les images correctement avant de faire suivre l'information dans un réseau de neurones tel que nous l'avons vu. Ces modèles de réseaux de neurones s'appellent les ``convolutional neural networks". \\
     De même, pour la reconnaissance de voix et prédire la phrase prononcée par un utilisateur, il faut rajouter la notion de réseaux neuronaux récursifs, dont des sorties de certaines couches de neurones sont les entrées de couches positionnées en amont (reccurent neurals networks). 
   
   \subsubsection{Données fournies à l'apprentissage}
   
-    \par Nous pouvons constater que l’efficacité d'apprentissage d'un réseau de neurones dépend fortement des données qui lui sont transmises en phase d’apprentissage. Pour donner un exemple concret, voici l'histoire d'un groupe de programmeurs ayant développé un réseau de neurones capables de décerner la différence entre un chien et un loup. Après de nombreuses sessions d'apprentissages, le réseau ne pouvait discerner un chien que lorsqu'il ne se trouvait pas entouré de neige. De même, seuls les loups étaient reconnus lorsqu'ils étaient entourés de neige. Après des semaines d'études, les développeurs se sont rendus compte que la majorité des images de loups données lors de l'apprentissage était une image d'un loup dans la neige. Les développeurs se sont ainsi rendus compte que le réseau de neurone avait appris à reconnaître la neige pour discerner un chien d'un loup. \\
+    \par Nous pouvons constater que l’efficacité d'apprentissage d'un réseau de neurones dépend fortement des données qui lui sont transmises en phase d’apprentissage. Pour donner un exemple concret, voici l'histoire d'un groupe de programmeurs ayant développé un réseau de neurones capables de décerner la différence entre un chien et un loup. Après de nombreuses sessions d'apprentissages, le réseau ne pouvait discerner un chien que lorsqu'il ne se trouvait pas entouré de neige. De même, seuls les loups étaient reconnus lorsqu'ils étaient entourés de neige. Après des semaines d'études, les développeurs se sont rendus compte que la majorité des images de loups données lors de l'apprentissage était une image d'un loup dans la neige. Les développeurs se sont ainsi rendus compte que le réseau de neurones avait appris à reconnaître la neige pour discerner un chien d'un loup. \\
   Il convient donc de faire attention à fournir des données suffisamment diversifiées lors de l'apprentissage afin que celui-ci soit le plus performant possible. 
     
   \section{Algorithme Deep Q-Network (DQN)}
   
-    \par Dans la section ``Algorithme Q-Learning", nous avons vu une méthode pour enseigner à un agent comment apprendre à évoluer dans un environnement donné en explorant les actions possibles. La méthode s'avère efficace lorsque l'environnement ne possède qu'une petite quantité d'états / actions possibles. Dans ces petits environnements, l'agent peut garder une copie de chaque états et actions visitées afin d'estimer correctement la fonction Q(s,a) de sorte à apprendre à savoir quelle action effectuer pour un état donné, dans le but d'effectuer un score maximal lors d'un épisode. \\ 
+    \par Dans la section ``Algorithme Q-Learning", nous avons vu une méthode pour enseigner à un agent comment apprendre à évoluer dans un environnement donné en explorant les actions possibles. La méthode s'avère efficace lorsque l'environnement ne possède qu'une petite quantité d'états / actions possibles. Dans ces petits environnements, l'agent peut garder une copie de chaque état et action visité afin d'estimer correctement la fonction Q(s,a). De cette manière, il peut apprendre à savoir quelle action effectuer pour un état donné8, dans le but d'effectuer un score maximal lors d'un épisode. \\ 
    Lorsque l'environnement devient plus complexe, l'espace état / actions devient beaucoup plus grand et la tâche devient presque impossible étant donné la taille du tableau Q(s,a) à garder en mémoire. Les réseaux neuronaux constituent une solution  adéquate pour effectuer une estimation complexe d'un problème donné. L'enjeu de l'algorithme \textit{Deep Q-learning} est d'utiliser les réseaux neuronaux pour effectuer une estimation suffisante de la fonction Q(s,a) sans devoir connaître / explorer l'espace complet état / actions d'un environnement donné. \\
    Un réseau neuronal peut être appelé ``Deep neural network" lorsque un réseau neuronal comprends de nombreuses couches cachées; la notion de ``Deep" dans ``Deep Q-learning" correspond donc à appliquer la méthode Q-learning avec un réseau de neurones à plusieurs couches cachées (hidden layers). 
    
@@ -883,7 +889,7 @@ def train(QNetwork, TNetwork, experience, batch_size, alpha):
    \end{figure} 
   
   \par Il aurait été possible de n'utiliser qu'un grand réseau neuronal pour apprendre directement à jouer dans un monde complet, sans fractionner l'apprentissage. Il y a plusieurs raisons pour laquelle nous avons choisi d'utiliser plusieurs réseaux neuronaux / phases d'apprentissage: la première vient de la difficulté à choisir une fonction de récompense adéquate à ce que nous voulons enseigner à l'agent. L'apprentissage est plus efficace lorsque la fonction de récompense renforce le comportement de l'agent dans un contexte bien spécifique (éviter ennemis ou attraper la nourriture). \\
-  La deuxième raison vient du fait que plus un réseau neuronal est grand, moins l'apprentissage est rapide. Plus il y a d'inputs dans le réseau neuronal, plus ce dernier est grand. Il est donc préférable d’entraîner l'agent sur des problèmes spécifiques avant de l’entraîner à jouer de manière complète. Comme indiqué dans la figure ci-dessus, avec cette méthode, le réseau neuronal capable de jouer pas besoin de beaucoup d'inputs. Ce dernier ne connaît même pas la position de la nourriture, de l'agent ni des ennemis. \\
+  La deuxième raison vient du fait que plus un réseau neuronal est grand, moins l'apprentissage est rapide. Plus il y a d'inputs dans le réseau neuronal, plus ce dernier est grand. Il est donc préférable d’entraîner l'agent sur des problèmes spécifiques avant de l’entraîner à jouer de manière complète. Comme indiqué dans la figure ci-dessus, avec cette méthode, le réseau neuronal capable de jouer n'a pas besoin de beaucoup d'inputs. Ce dernier ne connaît même pas la position de la nourriture, de l'agent ni des ennemis. \\
   Enfin, une fois qu'un agent a appris une tâche spécifique, il n'y a pas besoin de le ré-entraîner  (pour autant que le monde et les inputs concernés ne changent pas). Imaginons maintenant que nous ayons utilisé un seul grand réseau neuronal pour jouer, et que l'on veuille ajouter une nouvelle tâche à apprendre à l'agent. Il faudrait ré-entraîner le tout depuis zéro. En fractionnant l'apprentissage en tâches spécifiques, il y aurait seulement besoin d’entraîner le nouveau réseau concernant la nouvelle tâche, et le réseau capable de jouer.  
   
   \subsection{Apprentissage}
@@ -937,7 +943,7 @@ def train(QNetwork, TNetwork, experience, batch_size, alpha):
   
   \subsection{Configuration}
   
-  \par Le choix de tous les hyper-paramètres tels que la fonction de récompense, le discount factor $\gamma$, la taille de l’expérience, le learning rate $\alpha$, etc. sont tous définis dans les scripts directement (et null part ailleurs). Cela facilite grandement lorsque qu'il s'agit de voir quels hyper-paramètres ont été utilisés lorsque un agent a spécialement réussi un apprentissage. De plus, à chaque fois que l'un script de type \textit{trainer} est executé, une copie de celui-ci est enregistrée dans le dossier choisi pour les sauvegardes. 
+  \par Le choix de tous les hyper-paramètres tels que la fonction de récompense, le discount factor $\gamma$, la taille de l’expérience, le learning rate $\alpha$, etc. sont tous définis dans les scripts directement (et nulle part ailleurs). Cela facilite grandement lorsqu'il s'agit de voir quels hyper-paramètres ont été utilisés lorsque un agent a spécialement réussi un apprentissage. De plus, à chaque fois qu'un script de type \textit{trainer} est exécuté, une copie de celui-ci est enregistrée dans le dossier choisi pour les sauvegardes. 
   
   \par Dans cette sous-section, nous passons en revue le contenu des scripts définis plus haut. 
   
@@ -1258,7 +1264,7 @@ def reward_function(world):
    \end{figure} 
    
   \newpage
-  \par Ci-dessous, les histogrammes de l'agent en train d'apprendre. Nous constatons que la distribution des actions s'est répartie entre les 9 actions possibles, et que les poids du réseau neuronal évolue. Nous pouvons donc en conclure que l'apprentissage se fait. 
+  \par Ci-dessous, les histogrammes de l'agent en train d'apprendre. Nous constatons que la distribution des actions s'est répartie entre les 9 actions possibles, et que les poids du réseau neuronal évoluent. Nous pouvons donc en conclure que l'apprentissage se fait. 
   
    \begin{figure}[!h]
    \center
@@ -1361,7 +1367,9 @@ def reward_function(world):
   \newpage
   \section{Hyper-paramètres finaux}
   
-  \par Pour terminer ce chapitre, voici la liste des hyper-paramètres utilisés pour chacun des scripts \textbf{trainer\_*.py}. Bien que les plus décisifs aient été décrits dans les sections précédentes, il parait important de signaler que les apprentissages tel qu'ils ont été décrit jusqu'ici n'auraient pas été les mêmes sans la combinaison de tous les autres hyper-paramètres à prendre en compte dans l'apprentissage par renforcement. Le seul paramètre qui n'est pas décrit dans cette section est le choix de la fonction de récompense, vu qu'elle a été décrite dans une section précédente. 
+  \par Pour terminer ce chapitre, voici la liste des hyper-paramètres utilisés pour chacun des scripts \textbf{trainer\_*.py}. Bien que les plus décisifs aient été décrits dans les sections précédentes, il parait important de signaler que les apprentissages tels qu'ils ont été décrits jusqu'ici n'auraient pas été les mêmes sans la combinaison de tous les autres hyper-paramètres à prendre en compte dans l'apprentissage par renforcement. Le seul paramètre qui n'est pas décrit dans cette section est le choix de la fonction de récompense, vu qu'elle a été décrite dans une section précédente. 
+  
+  \par Le choix de la taille du réseau neuronal s'est fait de manière empirique. L'idée était d'avoir un réseau le plus petit possible afin d'accélérer les calculs. Après avoir essayé deux couches cachées de 10 neurones, nous nous sommes rendus compte que le réseau avait tendance à être ``surchargé", c'est à dire qu'il n’emmagasinait la totalité ``d'information" nécessaire à effectuer une prédiction lorsque le nombre d'états à évaluer devenait conséquent. Nous avons finit par tester avec deux couches de 40 neurones et les résultats se sont avérés satisfaisants. Cette configuration n'a pas été re-testée ni changée par la suite. À noter que certaines technologies utilisées par Google utilisent des réseaux neuronaux de plus de mille neurones; les réseaux dans ce travail de bachelor sont par conséquent ``minimes". 
   
    \textbf{Hyper-paramètres communs aux 3 scripts:}   
    \begin{eqnarray}
@@ -1421,7 +1429,7 @@ def reward_function(world):
    \end{figure} 
 
   \newpage
-  \par L'exemple ci-dessus illustre ces propos. Dans cet état, le réseau neuronal ``éviter ennemis" recommande de se diriger en haut à gauche, alors que le réseau  ``attraper nourriture" recommande de se diriger en bas à droite. Le réseau ``jouer au jeu complet" devrait choisir entre une de ces deux actions recommandées, et n'a pas possibilité de choisir une action intermédiaire. 
+  \par L'exemple ci-dessus illustre ces propos. Dans cet état, le réseau neuronal ``éviter ennemis" recommande de se diriger en haut à gauche, alors que le réseau  ``attraper nourriture" recommande de se diriger en bas à droite. Le réseau ``jouer au jeu complet" devrait choisir entre une de ces deux actions recommandées, et n'a pas la possibilité de choisir une action intermédiaire. 
   
   \par Un environnement plus adapté à l'architecture de ce travail de bachelor serait par exemple un corps dans lequel l'agent doit apprendre à se mouvoir. 
   
